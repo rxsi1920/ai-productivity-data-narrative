@@ -1,2 +1,1 @@
-# ai-productivity-dashboard
-The Rise of Artificial Intelligence: Data Narrative Studio
+# The Rise of Artificial Intelligence: Data Narrative Studio
