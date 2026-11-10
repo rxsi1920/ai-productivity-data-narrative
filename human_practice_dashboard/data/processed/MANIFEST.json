@@ -1,0 +1,70 @@
+{
+  "wildai_commit": "795a71852d569173fcdaca1db2a466109cd80814",
+  "workforce_commit": "b33f3b25b7cce24833c857d242c90152c3b41571",
+  "licence": "WildAI results: CC BY-NC-SA 4.0. Other files: see data/workforce/SOURCE.md",
+  "tables": {
+    "adoption": {
+      "rows": 72,
+      "inputs": {
+        "workforce/btos_ai.csv": "7c692080aa527eca2d132c5bd59879d077ebbaa4c9b5aada6b37982b8cb60ca2"
+      }
+    },
+    "genai_use": {
+      "rows": 444,
+      "inputs": {
+        "workforce/owid_genai.csv": "3ae4db252385410799a31be7a9b15eb4fde7cc74b86a034a88c837017a22974f"
+      }
+    },
+    "evidence": {
+      "rows": 6,
+      "inputs": {
+        "workforce/evidence.csv": "a0ef4f928e6139ec9fadabeecc480b6f2d3414059b3f0917b8e5e4030624fb53"
+      }
+    },
+    "entry_level": {
+      "rows": 4,
+      "inputs": {
+        "workforce/entry_level_employment.csv": "6033f3f9aa0f70c7365ade29fd38997cc9cf34f31e7ef8d606cd55ba4668df30"
+      }
+    },
+    "web_composition": {
+      "rows": 183,
+      "inputs": {
+        "wildai/monthly_topic_format.csv": "349a33f298b5ea8aad928fdc75e242f7ffe3d32312079b87c9f007550e48182b",
+        "wildai/monthly_ai_share.csv": "9ccbf3d88bec75bc9e0b033dbcab022477e3483ffbadd8a72c21ab8a1786a814"
+      }
+    },
+    "ai_share": {
+      "rows": 114,
+      "inputs": {
+        "wildai/monthly_ai_share.csv": "9ccbf3d88bec75bc9e0b033dbcab022477e3483ffbadd8a72c21ab8a1786a814",
+        "wildai/ai_share_forecast.csv": "85b239b5348f547191fcdf0405e6de2b1d60ad413d7cc3869953902a8f5e3921"
+      }
+    },
+    "topic_format": {
+      "rows": 35448,
+      "inputs": {
+        "wildai/monthly_topic_format.csv": "349a33f298b5ea8aad928fdc75e242f7ffe3d32312079b87c9f007550e48182b"
+      }
+    },
+    "fig3_points": {
+      "rows": 287,
+      "inputs": {
+        "wildai/models.csv": "a366746bd8a39590d9019819559c970a1a8545473cfd2b01ce07329e0be95864",
+        "wildai/losses.csv": "60cde374b373124f3c744218b3a5d792ac831631e82270b1781c88d7982bccc3"
+      }
+    },
+    "cost": {
+      "rows": 462,
+      "inputs": {
+        "wildai/cost_of_not_filtering.csv": "233df8badd9abcde624b74e27c51f3e9c3c4320d5cd2c0ef24b30ba2ebb2ff57"
+      }
+    },
+    "definitions": {
+      "rows": 8,
+      "inputs": {
+        "schaeffer/section_a_schaeffer_table.csv": "bd5a8f49a9719c37d9d2bf70edc773aa7d5fd88fca168b72ae9c00ae6ce182c9"
+      }
+    }
+  }
+}

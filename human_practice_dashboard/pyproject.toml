@@ -1,0 +1,16 @@
+[project]
+name = "human-practice-dashboard"
+version = "0.1.0"
+description = "36104 Assignment 3: the human practice and knowledge page of the Data Narrative Studio"
+requires-python = ">=3.11,<3.14"
+dependencies = [
+  "altair==6.3.0",
+  "pandas==3.0.5",
+  "streamlit==1.63.0",
+]
+
+[project.optional-dependencies]
+dev = ["pytest==9.1.1"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
