@@ -9,12 +9,6 @@
         "workforce/btos_ai.csv": "7c692080aa527eca2d132c5bd59879d077ebbaa4c9b5aada6b37982b8cb60ca2"
       }
     },
-    "genai_use": {
-      "rows": 444,
-      "inputs": {
-        "workforce/owid_genai.csv": "3ae4db252385410799a31be7a9b15eb4fde7cc74b86a034a88c837017a22974f"
-      }
-    },
     "evidence": {
       "rows": 6,
       "inputs": {
@@ -39,12 +33,6 @@
       "inputs": {
         "wildai/monthly_ai_share.csv": "9ccbf3d88bec75bc9e0b033dbcab022477e3483ffbadd8a72c21ab8a1786a814",
         "wildai/ai_share_forecast.csv": "85b239b5348f547191fcdf0405e6de2b1d60ad413d7cc3869953902a8f5e3921"
-      }
-    },
-    "topic_format": {
-      "rows": 35448,
-      "inputs": {
-        "wildai/monthly_topic_format.csv": "349a33f298b5ea8aad928fdc75e242f7ffe3d32312079b87c9f007550e48182b"
       }
     },
     "fig3_points": {

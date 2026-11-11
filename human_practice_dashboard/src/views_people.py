@@ -7,7 +7,7 @@ import altair as alt
 import pandas as pd
 import streamlit as st
 
-from .charts import AI, GRID, HUMAN, INK, INK2, MIXED, NEUTRAL, STRENGTH_COLOURS, STRENGTH_ORDER, STRENGTH_SHAPES, style
+from .charts import AI, HUMAN, INK, INK2, MIXED, NEUTRAL, STRENGTH_COLOURS, STRENGTH_ORDER, STRENGTH_SHAPES, style
 from .data import WILDAI_COMMIT, WORKFORCE_COMMIT
 from .views import EMPTY, KPI_HEIGHT, WILDAI_CITE, _footer, _heading, _pct
 
@@ -15,10 +15,6 @@ KARAN_REPO = "https://github.com/karanmakhijauts/at-3-dvn"
 BTOS_CITE = (
     "US Census Bureau, Business Trends and Outlook Survey (BTOS), https://www.census.gov/hfp/btos; file `btos_ai.csv` "
     f"as collected by Karan Makhija ([repo]({KARAN_REPO}), commit `{WORKFORCE_COMMIT[:7]}`)."
-)
-OWID_CITE = (
-    "Our World in Data, *Estimated share of working-age adults who use generative AI* (modelled from Microsoft AI "
-    "Diffusion Report data), https://ourworldindata.org/grapher/estimated-share-people-generative-ai; file `owid_genai.csv`."
 )
 EVIDENCE_CITE = (
     f"Findings hand-built from the cited papers by Karan Makhija ([repo]({KARAN_REPO}), commit `{WORKFORCE_COMMIT[:7]}`), "
@@ -100,104 +96,63 @@ def render_answer(tables: dict[str, pd.DataFrame]) -> None:
         delta_color="off", delta_arrow="off", border=True, height=KPI_HEIGHT,
     )
     st.caption(
-        f"Units and baselines differ. Firms: per cent of US firms answering Yes, two-week periods. Jobs: per cent change in "
+        f"Units and baselines differ. Firms: per cent of US firms answering Yes to the Census Bureau BTOS AI-use question, two-week periods (source: `btos_ai.csv`). Jobs: per cent change in "
         f"employment from November 2022 to June 2026, US payroll data from one provider. Web text: share of tokens in a "
         f"monthly sample of about 5,000 documents, latest {last_month:%B %Y}. Compute: a multiplier predicted by a fitted "
         "law for a 268M-parameter model, not a measured cost. Each figure is charted, with its source and limits, below."
     )
 
 
-# ----------------------------------------------------------------------------- adoption
-ANSWER_STYLE = {"Yes": (INK, [1, 0]), "No": (NEUTRAL, [6, 3]), "Do not know": (NEUTRAL, [2, 3])}
-
-
-def render_adoption(adoption: pd.DataFrame, genai_use: pd.DataFrame) -> None:
-    with st.container(key="adoption"):
-        _heading("AI use at work is spreading", "How quickly are firms and working-age adults taking up AI?")
-        latest_label = adoption.sort_values("period_order")["period_label"].iloc[-1]
-        st.caption(
-            f"Unit: per cent of US firms giving each answer to the BTOS AI-use question, by two-week collection period. "
-            f"Latest observation: {latest_label}. Periods are numbered within the year (P24 of 2025 to P21 of 2026, about "
-            "11 months). US firms only; one survey question; this is use, not intensity or quality of use."
-        )
-        left, right = st.columns([3, 2], gap="large")
-        with left:
-            answers = st.multiselect("Answers to show", list(ANSWER_STYLE), default=["Yes"], key="adoption_answers")
-            frame = adoption[adoption["answer"].isin(answers)].sort_values("period_order")
-            if frame.empty:
-                st.info(EMPTY)
-            else:
-                labels = adoption.drop_duplicates("period_order").sort_values("period_order")
-                ticks = labels[(labels["period_order"] - 1) % 4 == 0]
-                expr = " : ".join(f"datum.value == {int(o)} ? '{l}'" for o, l in zip(ticks["period_order"], ticks["period_label"])) + " : ''"
-                n = int(labels["period_order"].max())
-                x = alt.X(
-                    "period_order:Q",
-                    title="Two-week collection period (year-period)",
-                    scale=alt.Scale(domain=[0, n + 2.5]),
-                    axis=alt.Axis(values=[int(v) for v in ticks["period_order"]], labelExpr=expr, grid=False),
-                )
-                y = alt.Y("share_pct:Q", title="Share of US firms (%)", scale=alt.Scale(zero=True))
-                shown = [a for a in ANSWER_STYLE if a in answers]
-                colour = alt.Color("answer:N", scale=alt.Scale(domain=shown, range=[ANSWER_STYLE[a][0] for a in shown]), legend=alt.Legend(title="Answer"))
-                dash = alt.StrokeDash("answer:N", scale=alt.Scale(domain=shown, range=[ANSWER_STYLE[a][1] for a in shown]), legend=None)
-                line = alt.Chart(frame).mark_line(strokeWidth=2).encode(x=x, y=y, color=colour, strokeDash=dash)
-                ends = frame[frame["period_order"].isin([1, n])].assign(text=lambda f: f["share_pct"].map(lambda v: f"{v:.1f}%"))
-                dots = alt.Chart(ends).mark_point(filled=True, size=60, opacity=1).encode(x=x, y=y, color=colour)
-                first_lab = alt.Chart(ends[ends["period_order"] == 1]).mark_text(color=INK, align="left", dx=-4, dy=-12, fontSize=12).encode(x=x, y=y, text="text:N")
-                last_lab = alt.Chart(ends[ends["period_order"] == n]).mark_text(color=INK, align="left", dx=8, fontSize=12).encode(x=x, y=y, text="text:N")
-                st.altair_chart(style(line + dots + first_lab + last_lab, height=320), theme=None, width="stretch")
-        with right:
-            entities = sorted(e for e in genai_use["entity"].unique() if e != "World")
-            country = st.selectbox(
-                "Working-age adults using generative AI: compare a country with the world",
-                entities,
-                index=entities.index("Australia") if "Australia" in entities else 0,
-                key="adoption_country",
-            )
-            for name in ("World", country):
-                rows = genai_use[genai_use["entity"] == name].sort_values("day")
-                if rows.empty:
-                    st.info(EMPTY)
-                    continue
-                a, b = rows.iloc[0], rows.iloc[-1]
-                st.metric(
-                    f"{name}: adults aged 15 to 64 using generative AI",
-                    f"{b['share_pct']:.1f}%",
-                    delta=f"from {a['share_pct']:.1f}% ({a['day']} to {b['day']})",
-                    delta_color="off", delta_arrow="off", border=True,
-                )
-            st.caption(
-                "Unit: per cent of people aged 15 to 64. Modelled estimates from Microsoft usage data with three dates "
-                f"only; not a survey. Latest observation: {genai_use['day'].max()}."
-            )
-        _footer(frame if not frame.empty else adoption.head(0), "Download filtered BTOS rows", "btos_ai_use.csv", "adoption_download", f"{BTOS_CITE} {OWID_CITE}")
-
-
 # ----------------------------------------------------------------------------- output vs skill
-def _evidence_panel(frame: pd.DataFrame, title: str, key: str) -> None:
-    st.markdown(f"**{title}**")
-    if frame.empty:
-        st.info(EMPTY)
-        return
-    frame = frame.assign(text=frame.apply(lambda r: ("▲ " if r["direction"] == "gain" else "▼ ") + r["short_label"], axis=1))
-    order = list(frame.sort_values("sample_size", ascending=False)["label"])
-    y = alt.Y("label:N", sort=order, title=None, axis=alt.Axis(labelLimit=230, grid=True))
+PANEL_HEADERS = {"output": "OUTPUT GAINS", "skill": "SKILL AND LEARNING SIGNALS"}
+
+
+def _evidence_chart(frame: pd.DataFrame) -> alt.LayerChart:
+    """One chart, two labelled groups: output findings on top, skill findings below."""
+    rows, order = [], []
+    for panel, header in PANEL_HEADERS.items():
+        part = frame[frame["panel"] == panel].sort_values("sample_size", ascending=False)
+        order.append(header)
+        rows.append({"row": header, "kind": "header", "text": "" if len(part) else "no findings at the selected strength", "sample_size": 100})
+        for r in part.itertuples():
+            order.append(r.label)
+            rows.append(
+                {
+                    "row": r.label,
+                    "kind": "finding",
+                    "text": ("▲ " if r.direction == "gain" else "▼ ") + r.short_label,
+                    "sample_size": r.sample_size,
+                    "evidence_strength": r.evidence_strength,
+                    "design": r.design,
+                    "finding": r.finding,
+                }
+            )
+    data = pd.DataFrame(rows)
+    findings, headers = data[data["kind"] == "finding"], data[data["kind"] == "header"]
+    is_header = f"indexof({list(PANEL_HEADERS.values())!r}, datum.value) >= 0"
+    y = alt.Y(
+        "row:N",
+        sort=order,
+        title=None,
+        axis=alt.Axis(labelLimit=260, grid=True, labelFontWeight={"expr": f"{is_header} ? 'bold' : 'normal'"}, labelColor={"expr": f"{is_header} ? '{INK}' : '{INK2}'"}),
+    )
     x = alt.X(
         "sample_size:Q",
         title="People in the study (log scale)",
         scale=alt.Scale(type="log", domain=[100, 300000]),
         axis=alt.Axis(values=[100, 300, 1000, 3000, 10000], format=",d", grid=False),
     )
-    points = alt.Chart(frame).mark_point(filled=True, size=170, opacity=1).encode(
+    legend = alt.Legend(title="Evidence strength")
+    points = alt.Chart(findings).mark_point(filled=True, size=170, opacity=1).encode(
         x=x,
         y=y,
-        color=alt.Color("evidence_strength:N", scale=alt.Scale(domain=STRENGTH_ORDER, range=STRENGTH_COLOURS), legend=alt.Legend(title="Evidence strength")),
-        shape=alt.Shape("evidence_strength:N", scale=alt.Scale(domain=STRENGTH_ORDER, range=STRENGTH_SHAPES), legend=alt.Legend(title="Evidence strength")),
-        tooltip=[alt.Tooltip("label:N", title="Study"), alt.Tooltip("design:N", title="Design"), alt.Tooltip("finding:N", title="Finding")],
+        color=alt.Color("evidence_strength:N", scale=alt.Scale(domain=STRENGTH_ORDER, range=STRENGTH_COLOURS), legend=legend),
+        shape=alt.Shape("evidence_strength:N", scale=alt.Scale(domain=STRENGTH_ORDER, range=STRENGTH_SHAPES), legend=legend),
+        tooltip=[alt.Tooltip("row:N", title="Study"), alt.Tooltip("design:N", title="Design"), alt.Tooltip("finding:N", title="Finding")],
     )
-    text = alt.Chart(frame).mark_text(color=INK, align="left", dx=12, fontSize=12).encode(x=x, y=y, text="text:N")
-    st.altair_chart(style(points + text, height=70 + 55 * len(frame)), theme=None, width="stretch", key=key)
+    text = alt.Chart(findings).mark_text(color=INK, align="left", dx=12, fontSize=12).encode(x=x, y=y, text="text:N")
+    notes = alt.Chart(headers).mark_text(color=INK2, align="left", fontSize=12, fontStyle="italic").encode(x=x, y=y, text="text:N")
+    return style(alt.layer(notes, points, text), height=90 + 44 * len(order))
 
 
 def render_evidence(evidence: pd.DataFrame) -> None:
@@ -218,11 +173,7 @@ def render_evidence(evidence: pd.DataFrame) -> None:
                 f"##### {int((out['direction'] == 'gain').sum())} of {len(out)} output findings show a gain. Of {len(skill)} skill "
                 f"findings, {int((skill['direction'] == 'loss').sum())} show a loss and {int((skill['direction'] == 'gain').sum())} a gain."
             )
-            c1, c2 = st.columns(2, gap="large")
-            with c1:
-                _evidence_panel(out, "Output gains", "evidence_output_chart")
-            with c2:
-                _evidence_panel(skill, "Skill and learning signals", "evidence_skill_chart")
+            st.altair_chart(_evidence_chart(frame), theme=None, width="stretch", key="evidence_chart")
             with st.expander("Read each finding, its design and how far it was checked", expanded=False):
                 st.dataframe(
                     frame[["panel_title", "label", "design", "sample_size", "sample_unit", "finding", "evidence_strength", "strength_rationale", "source_url", "location_in_source", "check_status"]],
@@ -310,7 +261,7 @@ def render_entry_level(entry: pd.DataFrame) -> None:
 LABELS = {"Human": ("Human-labelled", HUMAN, 0), "Mixed": ("Mixed", MIXED, 1), "AI": ("AI-labelled", AI, 2)}
 
 
-def render_web_composition(comp: pd.DataFrame) -> None:
+def render_web_composition(comp: pd.DataFrame, ai_share: pd.DataFrame) -> None:
     comp = comp.copy()
     comp["month"] = pd.to_datetime(comp["month"])
     last = comp["month"].max()
@@ -362,6 +313,15 @@ def render_web_composition(comp: pd.DataFrame) -> None:
         mids[1]["y"] = min(mids[1]["y"], mids[2]["y"] - 0.07)
         ends = alt.Chart(pd.DataFrame(mids)).mark_text(color=INK, align="left", dx=6, fontSize=12).encode(x="month:T", y=alt.Y("y:Q"), text="text:N")
         st.altair_chart(style(area + ends, height=340), theme=None, width="stretch")
+        forecast = ai_share[ai_share["kind"] == "forecast"].assign(month=lambda f: pd.to_datetime(f["month"])).set_index("month")
+        f27, f28 = forecast.loc[pd.Timestamp("2027-12-01")], forecast.loc[pd.Timestamp("2028-12-01")]
+        st.markdown(
+            f"**Where the trend points.** If the recent trend continues, the source's forecast puts the AI-labelled share of "
+            f"tokens at {_pct(f27['share'])} by the end of 2027 (80% band {_pct(f27['lo80'])} to {_pct(f27['hi80'])}) and "
+            f"{_pct(f28['share'])} by the end of 2028 (80% band {_pct(f28['lo80'])} to {_pct(f28['hi80'])}). This is an "
+            "extrapolation of the monthly series (a random walk with drift), not an observation; the compute chart in "
+            "section 4 marks both scenarios."
+        )
         st.caption(
             "Read this as a share, not a volume: every month is the same size of sample, so the chart cannot show whether "
             "people are writing less in total, only that their writing is a smaller part of what a crawler now collects. "
@@ -373,7 +333,7 @@ def render_web_composition(comp: pd.DataFrame) -> None:
             "Download web composition",
             "web_composition.csv",
             "composition_download",
-            f"{WILDAI_CITE} File `monthly_topic_format.csv`, summed by month and label.",
+            f"{WILDAI_CITE} File `monthly_topic_format.csv`, summed by month and label; forecast from `ai_share_forecast.csv`.",
         )
 
 
@@ -465,14 +425,13 @@ def render_limits() -> None:
 
 
 def render_sources(tables: dict[str, pd.DataFrame]) -> None:
-    adoption, use = tables["adoption"], tables["genai_use"]
+    adoption = tables["adoption"]
     obs = _observed(tables["ai_share"])
     with st.container(key="sources"):
         st.subheader("Sources and last data refresh")
         rows = pd.DataFrame(
             [
                 {"Dataset": "US firms using AI (Census Bureau BTOS)", "Latest observation": adoption.sort_values("period_order")["period_label"].iloc[-1], "Copied into this app": f"26 Oct 2026 (Karan's repo, commit {WORKFORCE_COMMIT[:7]})", "Licence": "US government work"},
-                {"Dataset": "Adults using generative AI (Our World in Data / Microsoft)", "Latest observation": str(use["day"].max()), "Copied into this app": f"26 Oct 2026 (Karan's repo, commit {WORKFORCE_COMMIT[:7]})", "Licence": "CC BY 4.0 (OWID)"},
                 {"Dataset": "Output and skill findings (five papers, 2023 to 2025)", "Latest observation": "2025 (Lee et al.)", "Copied into this app": f"26 Oct 2026 (Karan's repo, commit {WORKFORCE_COMMIT[:7]})", "Licence": "Cited facts"},
                 {"Dataset": "Early-career employment (Brynjolfsson, Chandar and Chen)", "Latest observation": "June 2026", "Copied into this app": "10 Nov 2026 (from the August 2026 paper)", "Licence": "Cited facts"},
                 {"Dataset": "Web text and model runs (WildAI, Russell et al.)", "Latest observation": f"{obs['month'].iloc[-1]:%B %Y}", "Copied into this app": f"3 Nov 2026 (commit {WILDAI_COMMIT[:7]})", "Licence": "CC BY-NC-SA 4.0"},
@@ -481,6 +440,6 @@ def render_sources(tables: dict[str, pd.DataFrame]) -> None:
         )
         st.table(rows.set_index("Dataset"))
         st.caption(
-            "Last data refresh: 10 November 2026. Every number on this page is in, or computed from, the files in "
+            "Last data refresh: 11 November 2026. Every number on this page is in, or computed from, the files in "
             "`data/processed/`, which `python -m src.data` rebuilds from the source copies in `data/`. See `DATA_DICTIONARY.md`."
         )

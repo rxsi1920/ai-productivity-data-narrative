@@ -24,15 +24,6 @@ def test_ai_share_headlines(t):
     assert round(s[("2028-12-01", "forecast")], 3) == 0.507  # "50.7% by the end of 2028"
 
 
-def test_topic_format_matches_paper_figure_2(t):
-    f = t["topic_format"]
-    f = f[(f["month"] >= "2026-01-01") & (f["month"] <= "2026-06-01") & f["label"].isin(["AI", "Human"])]
-    tokens = f.groupby(["format", "label"])["tokens"].sum().unstack()
-    shares = tokens / tokens.sum() * 100
-    assert round(shares.loc["Tutorial", "AI"], 1) == 18.5 and round(shares.loc["Tutorial", "Human"], 1) == 6.2
-    assert round(shares.loc["Personal Blog", "AI"], 1) == 1.0 and round(shares.loc["Personal Blog", "Human"], 1) == 8.6
-
-
 def test_figure_3_worked_example(t):
     f = t["fig3_points"].set_index("name")["change_pct"]
     assert round(f["268m-g075-ai-r1"], 3) == -1.031
@@ -64,11 +55,6 @@ def test_adoption_first_and_last_period(t):
     assert len(yes) == 24
     assert (yes.iloc[0]["period_label"], yes.iloc[0]["share_pct"]) == ("2025-P24", 17.3)
     assert (yes.iloc[-1]["period_label"], yes.iloc[-1]["share_pct"]) == ("2026-P21", 24.6)
-
-
-def test_genai_use_charts_the_share_not_gdp(t):
-    world = t["genai_use"].query("entity == 'World'").sort_values("day")
-    assert list(world["share_pct"]) == [15.1, 16.3, 17.8]
 
 
 def test_evidence_counts(t):

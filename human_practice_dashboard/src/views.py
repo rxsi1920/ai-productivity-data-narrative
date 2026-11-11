@@ -11,7 +11,7 @@ import numpy as np
 import pandas as pd
 import streamlit as st
 
-from .charts import AI, GRID, HUMAN, INK, INK2, NEUTRAL, style
+from .charts import AI, HUMAN, INK, INK2, NEUTRAL, style
 from .data import CONTEXT_NOTE, WILDAI_COMMIT
 
 KPI_HEIGHT = 150  # pixels; one height so every key-figure box matches
@@ -136,291 +136,8 @@ def render_definitions(defs: pd.DataFrame) -> None:
         )
 
 
-# ----------------------------------------------------------------------------- 1. AI share
-def render_ai_share(data: pd.DataFrame) -> None:
-    data = data.copy()
-    data["month"] = pd.to_datetime(data["month"])
-    obs = data[data["kind"] == "observed"].copy()
-    fc = data[data["kind"] == "forecast"].copy()
-    horizon = pd.Timestamp("2028-12-01")  # the horizon the paper reports; the source file runs to Dec 2030
-
-    def at(month: str, frame: pd.DataFrame) -> pd.Series:
-        return frame[frame["month"] == pd.Timestamp(month)].iloc[0]
-
-    jun24, jun26, last = at("2024-06-01", obs), at("2026-06-01", obs), obs.iloc[-1]
-    end27, end28 = at("2027-12-01", fc), at("2028-12-01", fc)
-
-    with st.container(key="ai_share_trajectory"):
-        _heading(
-            "Where the trend points: AI-labelled share of web text, observed and forecast",
-            "If the recent trend continues, how much of the web text a future model learns from will be AI-written?",
-        )
-        july25 = at("2025-07-01", obs)
-        june25 = at("2025-06-01", obs)
-        st.caption(
-            f"Unit: share of web tokens labelled AI. Latest observation: {last['month']:%B %Y}. The forecast is an extrapolation. "
-            "**Read the figures below as a trajectory, not a count of the whole internet.** Each month is about 5,000 "
-            "sampled documents, labelled by Pangram 3.3.2. Russell et al. describe the share as that of tokens passing "
-            "FineWeb's quality filters. "
-            f"The sampling source changes in July 2025 (FineWeb to random Common Crawl files); the series shows no visible jump "
-            f"({_pct(june25['share'])} in June 2025, {_pct(july25['share'])} in July 2025). "
-            "The forecast is a random walk with drift fitted to the monthly series, so its bands widen with distance. "
-            "The chart stops at the end of 2028, the paper's horizon; the downloadable file runs to December 2030."
-        )
-        cols = st.columns(5)
-        cols[0].metric("June 2024", _pct(jun24["share"]), border=True, height=KPI_HEIGHT)
-        cols[1].metric("June 2026", _pct(jun26["share"]), border=True, height=KPI_HEIGHT)
-        cols[2].metric(f"{last['month']:%B %Y} (latest)", _pct(last["share"]), border=True, height=KPI_HEIGHT)
-        cols[3].metric(
-            "End 2027 (forecast)",
-            _pct(end27["share"]),
-            delta=f"80% band {_pct(end27['lo80'])} to {_pct(end27['hi80'])}",
-            delta_color="off",
-            delta_arrow="off",
-            border=True,
-            height=KPI_HEIGHT,
-        )
-        cols[4].metric(
-            "End 2028 (forecast)",
-            _pct(end28["share"]),
-            delta=f"80% band {_pct(end28['lo80'])} to {_pct(end28['hi80'])}",
-            delta_color="off",
-            delta_arrow="off",
-            border=True,
-            height=KPI_HEIGHT,
-        )
-        left, right = st.columns([3, 2])
-        band = left.radio("Forecast band", ["80%", "95%", "Hide forecast"], horizontal=True, key="ai_share_band")
-        mark_switch = right.checkbox("Mark the change of sampling source", value=True, key="ai_share_source_marker")
-
-        def detail(row: pd.Series) -> str:
-            if row["kind"] == "observed":
-                return (
-                    f"{_pct(row['share'])} observed (95% interval {_pct(row['lo95'])} to {_pct(row['hi95'])}; "
-                    f"{int(row['documents']):,} documents)"
-                )
-            return (
-                f"{_pct(row['share'])} forecast (80% band {_pct(row['lo80'])} to {_pct(row['hi80'])}; "
-                f"95% band {_pct(row['lo95'])} to {_pct(row['hi95'])})"
-            )
-
-        data["detail"] = data.apply(detail, axis=1)
-        plotted = data[data["month"] <= horizon]
-        obs = plotted[plotted["kind"] == "observed"]
-        fc = plotted[plotted["kind"] == "forecast"]
-        y_title = "Share of tokens labelled AI"
-        x_enc = alt.X("month:T", title=None, axis=alt.Axis(format="%Y", tickCount="year", grid=False))
-        y_max = float(fc["hi95"].max() if band == "95%" else fc["hi80"].max() if band == "80%" else obs["hi95"].max())
-        y_scale = alt.Scale(domain=[0, min(1.0, y_max * 1.05)])
-        y_axis = alt.Axis(format="%", tickCount=6)
-
-        layers = [
-            alt.Chart(obs)
-            .mark_area(color=AI, opacity=0.18)
-            .encode(x=x_enc, y=alt.Y("lo95:Q", title=y_title, scale=y_scale, axis=y_axis), y2="hi95:Q"),
-            alt.Chart(obs)
-            .mark_line(color=AI, strokeWidth=2)
-            .encode(x=x_enc, y=alt.Y("share:Q", title=y_title, scale=y_scale, axis=y_axis)),
-        ]
-        if band != "Hide forecast":
-            lo, hi = ("lo80", "hi80") if band == "80%" else ("lo95", "hi95")
-            joined = pd.concat([obs.tail(1).assign(lo=obs.tail(1)["share"], hi=obs.tail(1)["share"]), fc.assign(lo=fc[lo], hi=fc[hi])])
-            layers.append(
-                alt.Chart(joined)
-                .mark_area(color=AI, opacity=0.1)
-                .encode(x=x_enc, y=alt.Y("lo:Q", title=y_title, scale=y_scale, axis=y_axis), y2="hi:Q")
-            )
-            layers.append(
-                alt.Chart(pd.concat([obs.tail(1), fc]))
-                .mark_line(color=AI, strokeWidth=2, strokeDash=[6, 4])
-                .encode(x=x_enc, y=alt.Y("share:Q", title=y_title, scale=y_scale, axis=y_axis))
-            )
-            label_rows = pd.DataFrame(
-                [
-                    {"month": pd.Timestamp("2021-06-01"), "share": 0.07, "text": "Observed (95% interval)"},
-                    {"month": fc["month"].iloc[len(fc) // 2], "share": float(fc["share"].iloc[len(fc) // 2]) - 0.07, "text": f"Forecast ({band} band)"},
-                ]
-            )
-            layers.append(
-                alt.Chart(label_rows)
-                .mark_text(color=INK2, align="left", fontSize=12)
-                .encode(x=alt.X("month:T"), y=alt.Y("share:Q"), text="text:N")
-            )
-        marks = [(jun24, "left", 8), (last, "right", -8)]
-        if band != "Hide forecast":
-            marks += [(end27, "right", -8), (end28, "right", -8)]
-        mark_rows = pd.DataFrame(
-            [
-                {"month": pd.Timestamp(r["month"]), "share": float(r["share"]), "text": f"{pd.Timestamp(r['month']):%b %Y}: {_pct(r['share'])}", "align": a}
-                for r, a, _ in marks
-            ]
-        )
-        layers.append(alt.Chart(mark_rows).mark_point(filled=True, color=AI, size=70, opacity=1, stroke="white", strokeWidth=1).encode(x="month:T", y="share:Q"))
-        for a, dx in (("left", 8), ("right", -8)):
-            layers.append(
-                alt.Chart(mark_rows[mark_rows["align"] == a])
-                .mark_text(color=INK, align=a, dx=dx, dy=10 if a == "left" else -10, fontSize=12)
-                .encode(x="month:T", y="share:Q", text="text:N")
-            )
-        if mark_switch:
-            switch = pd.DataFrame({"month": [pd.Timestamp("2025-07-01")], "text": ["sampling source changes"]})
-            layers.append(alt.Chart(switch).mark_rule(color=NEUTRAL, strokeDash=[2, 3]).encode(x="month:T"))
-            layers.append(
-                alt.Chart(switch)
-                .mark_text(color=INK2, align="right", dx=-4, dy=-4, baseline="bottom", fontSize=11)
-                .encode(x="month:T", y=alt.value(14), text="text:N")
-            )
-        hover = alt.selection_point(name="hover", fields=["month"], nearest=True, on="pointerover", empty=False, clear="pointerout")
-        layers.append(
-            alt.Chart(plotted)
-            .mark_rule(color=INK2)
-            .encode(
-                x="month:T",
-                opacity=alt.condition(hover, alt.value(0.5), alt.value(0)),
-                tooltip=[alt.Tooltip("month:T", format="%B %Y", title="Month"), alt.Tooltip("detail:N", title="Value")],
-            )
-            .add_params(hover)
-        )
-        st.altair_chart(style(alt.layer(*layers)), theme=None, width="stretch")
-
-        table = data.drop(columns=["detail"]).assign(month=lambda f: f["month"].dt.strftime("%Y-%m"))
-        _footer(
-            table,
-            "Download AI-share series",
-            "ai_share_series.csv",
-            "ai_share_download",
-            f"{WILDAI_CITE} Files `monthly_ai_share.csv`, `ai_share_forecast.csv`.",
-        )
-
-
-# ----------------------------------------------------------------------------- 2. topic and format
-def _shares(records: pd.DataFrame, dimension: str) -> pd.DataFrame:
-    tokens = records[records["label"].isin(["AI", "Human"])].groupby([dimension, "label"])["tokens"].sum().unstack("label").fillna(0)
-    for column in ("AI", "Human"):
-        if column not in tokens:
-            tokens[column] = 0
-    shares = tokens[["AI", "Human"]] / tokens[["AI", "Human"]].sum()
-    out = shares.rename(columns={"AI": "ai_share", "Human": "human_share"}).reset_index()
-    out = out.rename(columns={dimension: "category"})
-    out["gap"] = out["ai_share"] - out["human_share"]
-    out["ai_tokens"] = out["category"].map(tokens["AI"])
-    out["human_tokens"] = out["category"].map(tokens["Human"])
-    return out.sort_values("gap", ascending=False).reset_index(drop=True)
-
-
-def render_topic_format(data: pd.DataFrame) -> None:
-    months = sorted(data["month"].unique())
-    with st.container(key="topic_format_shift"):
-        _heading(
-            "What kind of human writing is being crowded out?",
-            "Do AI-labelled and human-labelled web texts cover the same formats and topics?",
-        )
-        st.caption(f"Unit: share of AI-labelled (or human-labelled) tokens. Latest observation: {pd.Timestamp(months[-1]):%B %Y}.")
-        controls, chart_panel = st.columns([2, 3], gap="large")
-        with controls:
-            dimension = st.radio("Compare by", ["Format", "Topic"], horizontal=True, key="shift_dimension")
-            span = st.select_slider(
-                "Months",
-                options=months,
-                value=("2026-01-01", "2026-06-01"),
-                format_func=lambda m: pd.Timestamp(m).strftime("%b %Y"),
-                key="shift_period",
-            )
-            show = st.radio("Show", ["5 largest gaps each way", "All"], horizontal=True, key="shift_show")
-            records = data[(data["month"] >= span[0]) & (data["month"] <= span[1])]
-            shares = _shares(records, dimension.lower())
-            if shares.empty:
-                st.info(EMPTY)
-            else:
-                top, bottom = shares.iloc[0], shares.iloc[-1]
-                st.metric(
-                    f"Biggest gap toward AI text: {top['category']}",
-                    f"{_pct(top['ai_share'])} vs {_pct(top['human_share'])}",
-                    delta="share of AI-labelled vs human-labelled tokens",
-                    delta_color="off",
-                    delta_arrow="off",
-                    border=True,
-                )
-                st.metric(
-                    f"Biggest gap toward human text: {bottom['category']}",
-                    f"{_pct(bottom['ai_share'])} vs {_pct(bottom['human_share'])}",
-                    delta="share of AI-labelled vs human-labelled tokens",
-                    delta_color="off",
-                    delta_arrow="off",
-                    border=True,
-                )
-        with chart_panel:
-            if shares.empty:
-                st.info(EMPTY)
-            else:
-                if show != "All" and len(shares) > 10:
-                    shares = pd.concat([shares.head(5), shares.tail(5)])
-                order = list(shares["category"])
-                top_share = float(shares[["ai_share", "human_share"]].max().max())
-                tick = 0.05 if top_share > 0.2 else 0.02 if top_share > 0.08 else 0.01
-                long = shares.melt(
-                    id_vars=["category", "gap", "ai_tokens", "human_tokens"],
-                    value_vars=["human_share", "ai_share"],
-                    var_name="who",
-                    value_name="share",
-                )
-                long["who"] = long["who"].map({"human_share": "Human-labelled text", "ai_share": "AI-labelled text"})
-                y = alt.Y("category:N", sort=order, title=None, axis=alt.Axis(grid=False, labelLimit=240))
-                colour = alt.Color(
-                    "who:N",
-                    scale=alt.Scale(domain=["Human-labelled text", "AI-labelled text"], range=[HUMAN, AI]),
-                    legend=alt.Legend(title=None),
-                )
-                segment = (
-                    alt.Chart(shares)
-                    .mark_rule(color=GRID, strokeWidth=3)
-                    .encode(y=y, x=alt.X("human_share:Q"), x2="ai_share:Q")
-                )
-                dots = (
-                    alt.Chart(long)
-                    .mark_circle(size=110, opacity=1)
-                    .encode(
-                        y=y,
-                        x=alt.X(
-                            "share:Q",
-                            title=f"Share of each label's tokens, by {dimension.lower()} (%)",
-                            scale=alt.Scale(domain=[-0.14 * top_share, 1.14 * top_share], nice=False),
-                            axis=alt.Axis(format="%", values=[round(i * tick, 4) for i in range(int(top_share / tick) + 2)]),
-                        ),
-                        color=colour,
-                        tooltip=[
-                            alt.Tooltip("category:N", title=dimension),
-                            alt.Tooltip("who:N", title="Label"),
-                            alt.Tooltip("share:Q", format=".1%", title="Share of that label's tokens"),
-                        ],
-                    )
-                )
-                long["is_high"] = long["share"] >= long.groupby("category")["share"].transform("max")
-                long["text"] = long["share"].map(lambda v: f"{v * 100:.1f}%")
-                value_labels = [
-                    alt.Chart(long[long["is_high"] == high])
-                    .mark_text(align="left" if high else "right", dx=10 if high else -10, fontSize=11)
-                    .encode(y=y, x=alt.X("share:Q"), text="text:N", color=alt.Color("who:N", legend=None))
-                    for high in (True, False)
-                ]
-                st.altair_chart(style(alt.layer(segment, dots, *value_labels), height=max(300, 34 * len(shares))), theme=None, width="stretch")
-        st.caption(
-            "Each dot is the share of all human-labelled (blue) or all AI-labelled (orange) tokens that fall in that "
-            "category, so each colour sums to 100% across categories and the gap shows where AI text concentrates. "
-            "Documents Pangram labels as mixed are left out. Format and topic labels come from WebOrganizer. This shows "
-            "what the web contains; it does not show that any model has collapsed."
-        )
-        shown_records = records
-        _footer(
-            shown_records,
-            "Download filtered records",
-            "topic_format_records.csv",
-            "topic_format_download",
-            f"{WILDAI_CITE} File `monthly_topic_format.csv` (about 5,000 sampled documents per month).",
-        )
-
-
 # ----------------------------------------------------------------------------- 4. Figure 3
+LABEL_ALL_UP_TO = 2  # print a value at every point while this many model sizes or fewer are selected
 BUDGET_NAMES = {4.72: "about 5", 18.88: "about 20", 37.76: "about 40", 54.72: "about 55", 72.97: "about 73", 87.5: "about 88"}
 
 
@@ -443,7 +160,7 @@ def render_loss_effect(data: pd.DataFrame, today_share: float, today_month: pd.T
             format_func=lambda b: f"{BUDGET_NAMES[b]} ({b})",
             key="fig3_budget",
         )
-        chosen = c2.multiselect("Model sizes", list(sizes.values()), default=list(sizes.values()), key="fig3_sizes")
+        chosen = c2.multiselect("Model sizes", list(sizes.values()), default=["268M"], key="fig3_sizes")
         d1, d2 = st.columns(2)
         show_human = d1.checkbox("Compare with adding fresh human text", value=True, key="fig3_show_human")
         mark_today = d2.checkbox(
@@ -486,9 +203,18 @@ def render_loss_effect(data: pd.DataFrame, today_share: float, today_month: pd.T
             lines = alt.Chart(frame).mark_line(strokeWidth=1.5, opacity=0.8).encode(x=x, y=y, color=colour, detail=alt.Detail(["size_label:N", "arm_label:N"]))
             points = alt.Chart(frame).mark_point(filled=True, opacity=0.95, stroke="white", strokeWidth=0.8).encode(x=x, y=y, color=colour, size=sized, tooltip=tooltip)
             layers = [zero, lines, points]
-            biggest = size_order[-1]
-            ladder = frame[(frame["size_label"] == biggest) & (frame["arm"] == "ai")].assign(text=lambda f: f["change_pct"].map(lambda v: f"{v:+.2f}%"))
-            layers.append(alt.Chart(ladder).mark_text(color=INK, dy=-15, fontSize=11).encode(x=x, y=y, text="text:N"))
+            # Print the value at every point.  With three or more sizes the labels would collide, so only the
+            # largest selected size is labelled and the caption says so.
+            labelled = frame if len(size_order) <= LABEL_ALL_UP_TO else frame[frame["size_label"] == size_order[-1]]
+            labelled = labelled.assign(text=labelled["change_pct"].map(lambda v: f"{v:+.2f}%"))
+            # AI labels sit above the point, moving to the upper left where the curve climbs; human labels sit below.
+            steep = (labelled["arm"] == "ai") & (labelled["x"] >= 0.3)
+            for part, props in (
+                (labelled[(labelled["arm"] == "ai") & ~steep], dict(dy=-15)),
+                (labelled[steep], dict(align="right", dx=-9, dy=-7)),
+                (labelled[labelled["arm"] == "human"], dict(dy=16)),
+            ):
+                layers.append(alt.Chart(part).mark_text(fontSize=11, **props).encode(x=x, y=y, text="text:N", color=alt.Color("arm_label:N", legend=None)))
             if mark_today:
                 today = pd.DataFrame({"x": [r_today], "text": [f"today's web ≈ {_pct(today_share, 0)} AI, r ≈ {r_today:.2f}"]})
                 layers.append(alt.Chart(today).mark_rule(color=NEUTRAL, strokeDash=[4, 3]).encode(x="x:Q"))
@@ -506,9 +232,14 @@ def render_loss_effect(data: pd.DataFrame, today_share: float, today_month: pd.T
             if not hu.empty:
                 hb = hu.loc[hu["change_pct"].idxmin()]
                 m3.metric("Best result with fresh human text", f"{hb['change_pct']:+.2f}%", delta=f"run {hb['name']}", delta_color="off", delta_arrow="off", border=True)
+        n_sizes = len(keep)
+        printed = (
+            "The value is printed at every point (AI text above the point, fresh human text below)."
+            if n_sizes <= LABEL_ALL_UP_TO
+            else f"With {n_sizes} sizes selected only the largest is labelled, to keep the labels legible; every value is in the data table below."
+        )
         st.caption(
-"Below zero means the model predicts human text better than its human-only twin. Printed values are the AI-text runs of the largest "
-            "model size selected; every other value is in the data table below. Each added-text amount is a "
+            f"Below zero means the model predicts human text better than its human-only twin. {printed} Each added-text amount is a "
             "separate trained model. The x position is the realised ratio of added tokens to human tokens. An AI share s of all "
             "training tokens corresponds to r = s / (1 − s), which is how the marker for today's web is placed. These are "
             "constructed mixtures of AI and human documents, not recursive training, so this does not test model collapse "
@@ -648,7 +379,7 @@ def render_cost(cost: pd.DataFrame, ai_share: pd.DataFrame) -> None:
             "Below 1× means AI text helps for that target. Grey bars mark the 80% band of the forecast AI share. Read the three targets side by side: the same unfiltered data "
             "looks costly when judged on human text and cheap when judged on a mixed or AI-written test set, which is why "
             "the authors recommend reporting human and AI loss separately. The band columns are our derivation: the 80% band of "
-            "the forecast AI share (from the forecast chart above) pushed through the curve by linear interpolation; they are not in the paper." + note
+            "the forecast AI share (file `ai_share_forecast.csv`) pushed through the curve by linear interpolation; they are not in the paper." + note
         )
         _footer(
             curve_all,

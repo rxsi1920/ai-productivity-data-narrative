@@ -134,13 +134,6 @@ def build_ai_share() -> pd.DataFrame:
     return pd.concat([observed, forecast], ignore_index=True).sort_values("month").reset_index(drop=True)
 
 
-def build_topic_format() -> pd.DataFrame:
-    """Monthly tokens and documents by WebOrganizer topic x format x Pangram label."""
-    frame = pd.read_csv(WILDAI / "monthly_topic_format.csv", **CSV_READ)
-    frame.insert(0, "month", _month_start(frame["period"]))
-    return frame.drop(columns="period").sort_values(["month", "topic", "format", "label"]).reset_index(drop=True)
-
-
 def build_web_composition() -> pd.DataFrame:
     """Monthly share of sampled web tokens and documents by Pangram label (Human, Mixed, AI)."""
     frame = pd.read_csv(WILDAI / "monthly_topic_format.csv", **CSV_READ)
@@ -170,21 +163,6 @@ def build_adoption() -> pd.DataFrame:
         }
     )
     return out.sort_values(["period_order", "answer"]).reset_index(drop=True)
-
-
-def build_genai_use() -> pd.DataFrame:
-    """Estimated share of working-age adults using generative AI, by country and date (OWID / Microsoft)."""
-    raw = pd.read_csv(WORKFORCE / "owid_genai.csv", **CSV_READ)
-    out = pd.DataFrame(
-        {
-            "entity": raw["Entity"],
-            "code": raw["Code"],
-            "day": raw["Day"],
-            "share_pct": raw["Estimated share of working-age adults who use generative AI"],
-            "region": raw["World region according to OWID"],
-        }
-    )
-    return out.dropna(subset=["share_pct"]).sort_values(["entity", "day"]).reset_index(drop=True)
 
 
 PANEL_TITLES = {"output": "Output gains", "skill": "Skill and learning signals"}
@@ -260,11 +238,11 @@ COVERAGE = {
     3: ("Not covered", "This needs successive generations of models; the WildAI models are single-generation mixes of human and AI text."),
     4: ("Not covered", "No chart measures variance or diversity."),
     5: ("Loss and compute charts", "Both are about the scaling law: what added AI text does to loss at a fixed human-token budget, and the compute multiplier that follows."),
-    6: ("Format chart (partly)", "The format chart shows which formats and topics AI-labelled and human-labelled web text cover. It describes web composition, not a model losing modes."),
-    7: ("Format chart (partly)", "The format chart shows AI text under-represents some formats, such as personal blogs. It does not measure how a model handles rare cases."),
+    6: ("Not covered", "No chart shows a model losing or merging modes. The web-composition chart describes what the web contains, not what a model has lost."),
+    7: ("Not covered", "No chart measures how a model handles rare cases."),
     8: ("Not covered", "No chart checks whether model output is supported by the real data."),
 }
-CONTEXT_NOTE = "The web-composition and AI-share charts are context for every definition: they show how much AI text is already in web data."
+CONTEXT_NOTE = "The web-composition chart is context for every definition: it shows how much AI text is already in web data."
 
 
 def build_definitions() -> pd.DataFrame:
@@ -300,12 +278,6 @@ def validate(tables: dict[str, pd.DataFrame]) -> None:
     if observed["month"].max() >= forecast["month"].min():
         raise ValueError("ai_share: forecast must start after the last observation")
 
-    topics = tables["topic_format"]
-    if not set(topics["label"]) <= {"AI", "Human", "Mixed"}:
-        raise ValueError("topic_format: unexpected label")
-    if (topics[["documents", "tokens"]] < 0).any().any() or topics.duplicated(["month", "topic", "format", "label"]).any():
-        raise ValueError("topic_format: negative counts or duplicate keys")
-
     fig3 = tables["fig3_points"]
     if fig3["x"].le(0).any() or fig3["change_pct"].isna().any():
         raise ValueError("fig3_points: non-positive x or missing loss")
@@ -338,10 +310,6 @@ def validate(tables: dict[str, pd.DataFrame]) -> None:
     if (adoption.groupby("period_code")["share_pct"].sum() - 100).abs().max() > 0.5:
         raise ValueError("adoption: answers should sum to about 100% in every period")
 
-    use = tables["genai_use"]
-    if use.duplicated(["entity", "day"]).any() or not use["share_pct"].between(0, 100).all():
-        raise ValueError("genai_use: duplicate entity/day or share outside 0-100")
-
     evidence = tables["evidence"]
     if evidence["id"].duplicated().any() or not set(evidence["panel"]) <= {"output", "skill"}:
         raise ValueError("evidence: duplicate id or unknown panel")
@@ -358,24 +326,20 @@ def validate(tables: dict[str, pd.DataFrame]) -> None:
 # --------------------------------------------------------------------------- IO
 BUILDERS = {
     "adoption": build_adoption,
-    "genai_use": build_genai_use,
     "evidence": build_evidence,
     "entry_level": build_entry_level,
     "web_composition": build_web_composition,
     "ai_share": build_ai_share,
-    "topic_format": build_topic_format,
     "fig3_points": build_fig3_points,
     "cost": build_cost,
     "definitions": build_definitions,
 }
 INPUTS = {
     "adoption": [WORKFORCE / "btos_ai.csv"],
-    "genai_use": [WORKFORCE / "owid_genai.csv"],
     "evidence": [WORKFORCE / "evidence.csv"],
     "entry_level": [WORKFORCE / "entry_level_employment.csv"],
     "web_composition": [WILDAI / "monthly_topic_format.csv", WILDAI / "monthly_ai_share.csv"],
     "ai_share": [WILDAI / "monthly_ai_share.csv", WILDAI / "ai_share_forecast.csv"],
-    "topic_format": [WILDAI / "monthly_topic_format.csv"],
     "fig3_points": [WILDAI / "models.csv", WILDAI / "losses.csv"],
     "cost": [WILDAI / "cost_of_not_filtering.csv"],
     "definitions": [SCHAEFFER / "section_a_schaeffer_table.csv"],

@@ -22,15 +22,7 @@ def test_opening_screen_states_question_answer_and_story():
     text = " ".join(m.value for m in app.markdown)
     assert GROUP_QUESTION in text and "Our answer" in text
     assert [h.value[0] for h in app.header] == list("12345")
-    assert len(app.get("vega_lite_chart")) >= 8
-
-
-def test_adoption_answers_empty_state():
-    app = run()
-    app.multiselect(key="adoption_answers").set_value([]).run()
-    assert EMPTY in infos(app) and not app.exception
-    app.multiselect(key="adoption_answers").set_value(["Yes", "No"]).run()
-    assert EMPTY not in infos(app)
+    assert len(app.get("vega_lite_chart")) == 5  # evidence, entry level, web composition, loss, compute
 
 
 def test_evidence_filter_rewrites_headline_and_empty_state():
@@ -52,12 +44,19 @@ def test_composition_basis_changes_the_figures():
     assert tokens == ["63.5%"] and documents != tokens and not app.exception
 
 
-def test_forecast_band_changes_the_chart():
+def test_one_strength_keeps_both_group_headers():
     app = run()
-    specs = lambda a: [c.proto.spec for c in a.get("vega_lite_chart")]
-    before = specs(app)
-    app.radio(key="ai_share_band").set_value("95%").run()
-    assert specs(app) != before
+    app.multiselect(key="evidence_strength").set_value(["Low"]).run()  # only one skill finding is rated Low
+    assert not app.exception and EMPTY not in infos(app)
+    assert any("0 of 0 output findings" in m.value for m in app.markdown)
+
+
+def test_loss_chart_labels_every_point_by_default():
+    app = run()
+    assert app.multiselect(key="fig3_sizes").value == ["268M"]
+    assert any("The value is printed at every point" in c.value for c in app.caption)
+    app.multiselect(key="fig3_sizes").set_value(["86.2M", "135M", "268M"]).run()
+    assert any("only the largest is labelled" in c.value for c in app.caption)
 
 
 def test_loss_budget_changes_metrics_and_empty_state():

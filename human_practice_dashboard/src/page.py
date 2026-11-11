@@ -38,12 +38,10 @@ def render_page() -> None:
     st.caption(f"User story: {USER_STORY}")
     views_people.render_answer(tables)
 
-    st.header("1. Today: AI use is spreading and measured output is rising")
+    st.header("1. Today: measured output is rising")
     st.markdown(
         "The gain is real and measured. The same studies carry the first warnings about judgement and learning."
     )
-    views_people.render_adoption(tables["adoption"], tables["genai_use"])
-    st.divider()
     views_people.render_evidence(tables["evidence"])
 
     st.header("2. People: the places where skills are practised are thinning")
@@ -55,11 +53,7 @@ def render_page() -> None:
         "What people write is also what models are trained on. As more text is produced with AI, less of what a crawler "
         "collects is written by people alone."
     )
-    views_people.render_web_composition(tables["web_composition"])
-    st.divider()
-    views.render_ai_share(tables["ai_share"])
-    st.divider()
-    views.render_topic_format(tables["topic_format"].assign(month=lambda f: f["month"].astype(str)))
+    views_people.render_web_composition(tables["web_composition"], tables["ai_share"])
 
     st.header("4. Models: learning from AI text costs more")
     st.markdown(
