@@ -1,0 +1,25 @@
+code,barrier,group,year,pct_all_firms,pct_of_considerers
+E_AI_BLE,Lack of expertise,Skills,2023,4.45,68.7
+E_AI_BLE,Lack of expertise,Skills,2024,7.1,70.9
+E_AI_BLE,Lack of expertise,Skills,2025,7.76,69.9
+E_AI_BLEG,Unclear legal consequences,"Ethics, law & privacy",2023,2.95,45.5
+E_AI_BLEG,Unclear legal consequences,"Ethics, law & privacy",2024,5.26,52.5
+E_AI_BLEG,Unclear legal consequences,"Ethics, law & privacy",2025,5.92,53.3
+E_AI_BCDP,Data-protection & privacy concerns,"Ethics, law & privacy",2023,2.75,42.4
+E_AI_BCDP,Data-protection & privacy concerns,"Ethics, law & privacy",2024,4.89,48.8
+E_AI_BCDP,Data-protection & privacy concerns,"Ethics, law & privacy",2025,5.82,52.4
+E_AI_BDDT,Data availability or quality,Data & systems,2023,3.1,47.8
+E_AI_BDDT,Data availability or quality,Data & systems,2024,4.44,44.3
+E_AI_BDDT,Data availability or quality,Data & systems,2025,4.8,43.2
+E_AI_BINC,Incompatible with existing systems,Data & systems,2023,3.13,48.3
+E_AI_BINC,Incompatible with existing systems,Data & systems,2024,4.15,41.4
+E_AI_BINC,Incompatible with existing systems,Data & systems,2025,4.59,41.4
+E_AI_BCST,Costs seem too high,Cost & value,2023,2.97,45.8
+E_AI_BCST,Costs seem too high,Cost & value,2024,3.34,33.3
+E_AI_BCST,Costs seem too high,Cost & value,2025,4.24,38.2
+E_AI_BEC,Ethical concerns,"Ethics, law & privacy",2023,1.43,22.1
+E_AI_BEC,Ethical concerns,"Ethics, law & privacy",2024,2.36,23.6
+E_AI_BEC,Ethical concerns,"Ethics, law & privacy",2025,2.72,24.5
+E_AI_BNU,Not useful for the business,Cost & value,2023,1.29,19.9
+E_AI_BNU,Not useful for the business,Cost & value,2024,2.07,20.7
+E_AI_BNU,Not useful for the business,Cost & value,2025,1.96,17.7

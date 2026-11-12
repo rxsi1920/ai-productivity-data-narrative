@@ -1,0 +1,8 @@
+side,page,indicator,baseline_period,baseline_value,latest_period,latest_value,measure,evidence,change_pct
+Context,Adoption,Organisations using AI (% of firms),2022,50.0,2025,88.0,"Survey, global",Strong,76.0
+Gain,Profitability,"US corporate profits (US$bn, SAAR)",2022 Q4,2868.27,2026 Q2,4279.937,National accounts,"Strong, but not causal",49.2
+Context,Profitability,"US employee pay (US$bn, SAAR)",2022 Q4,13696.826,2026 Q2,16349.724,National accounts,Strong,19.4
+Context,Cognitive,OECD average PISA maths score (points),2018,487.0,2022,472.36,"Test, pre-gen-AI",Baseline only: tested before ChatGPT,-3.0
+Cost,Feedback loops,New Stack Overflow questions (per year),2022,1334601.0,2025-11 to 2026-10,29282.0,Platform count,Strong for one community,-97.8
+Cost,Feedback loops,English Wikipedia human page views (per year),2022,86593856190.0,2025-11 to 2026-10,79388208198.0,Platform count,Moderate: bot filtering changes,-8.3
+Cost,Ethical,Reported AI incidents (per year),2022,101.0,2024,233.0,Media-reported database,Moderate: reporting grows too,130.7
