@@ -1,0 +1,20 @@
+[server]
+enableStaticServing = true
+
+[[theme.fontFaces]]
+family = "Manrope"
+url = "app/static/font/Manrope/Manrope-VariableFont_wght.ttf"
+style="normal"
+
+[[theme.fontFaces]]
+family = "Manrope"
+url = "app/static/font/Manrope/Manrope-VariableFont_wght.ttf"
+style="italic"
+
+[[theme.fontFaces]]
+family = "Manrope"
+url = "app/static/font/Manrope/Manrope-VariableFont_wght.ttf"
+
+[theme]
+font = "Manrope"
+primaryColor = "#6082ff"
