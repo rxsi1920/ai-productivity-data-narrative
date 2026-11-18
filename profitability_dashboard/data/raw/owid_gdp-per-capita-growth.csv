@@ -1,0 +1,78 @@
+Entity,Code,Year,GDP per capita growth (annual %)
+East Asia and Pacific (WB),WB_EAP,2015,4.0095267
+East Asia and Pacific (WB),WB_EAP,2016,3.8981755
+East Asia and Pacific (WB),WB_EAP,2017,4.2984815
+East Asia and Pacific (WB),WB_EAP,2018,4.182446
+East Asia and Pacific (WB),WB_EAP,2019,3.5036364
+East Asia and Pacific (WB),WB_EAP,2020,-0.49793494
+East Asia and Pacific (WB),WB_EAP,2021,6.224978
+East Asia and Pacific (WB),WB_EAP,2022,2.856708
+East Asia and Pacific (WB),WB_EAP,2023,3.8606315
+East Asia and Pacific (WB),WB_EAP,2024,3.5569198
+East Asia and Pacific (WB),WB_EAP,2025,3.8862288
+European Union (27),OWID_EU27,2015,2.1707106
+European Union (27),OWID_EU27,2016,1.7174958
+European Union (27),OWID_EU27,2017,2.669324
+European Union (27),OWID_EU27,2018,1.8777236
+European Union (27),OWID_EU27,2019,1.6810378
+European Union (27),OWID_EU27,2020,-5.5705366
+European Union (27),OWID_EU27,2021,6.530947
+European Union (27),OWID_EU27,2022,3.338689
+European Union (27),OWID_EU27,2023,0.058998466
+European Union (27),OWID_EU27,2024,0.7878189
+European Union (27),OWID_EU27,2025,1.3355608
+Latin America and Caribbean (WB),WB_LAC,2015,-0.73507017
+Latin America and Caribbean (WB),WB_LAC,2016,-1.6635935
+Latin America and Caribbean (WB),WB_LAC,2017,0.6389878
+Latin America and Caribbean (WB),WB_LAC,2018,0.3690537
+Latin America and Caribbean (WB),WB_LAC,2019,-0.4940312
+Latin America and Caribbean (WB),WB_LAC,2020,-7.513922
+Latin America and Caribbean (WB),WB_LAC,2021,6.459603
+Latin America and Caribbean (WB),WB_LAC,2022,3.4734716
+Latin America and Caribbean (WB),WB_LAC,2023,1.5060909
+Latin America and Caribbean (WB),WB_LAC,2024,1.5494102
+Latin America and Caribbean (WB),WB_LAC,2025,1.6450671
+North America (WB),WB_NA,2015,1.9484233
+North America (WB),WB_NA,2016,0.92633814
+North America (WB),WB_NA,2017,1.7437984
+North America (WB),WB_NA,2018,2.258479
+North America (WB),WB_NA,2019,1.9053327
+North America (WB),WB_NA,2020,-2.7780588
+North America (WB),WB_NA,2021,5.926215
+North America (WB),WB_NA,2022,1.9712489
+North America (WB),WB_NA,2023,1.8065755
+North America (WB),WB_NA,2024,1.5339606
+North America (WB),WB_NA,2025,1.5517529
+South Asia (WB),WB_SA,2015,6.461739
+South Asia (WB),WB_SA,2016,6.737337
+South Asia (WB),WB_SA,2017,5.601968
+South Asia (WB),WB_SA,2018,5.2793407
+South Asia (WB),WB_SA,2019,3.0410094
+South Asia (WB),WB_SA,2020,-5.905373
+South Asia (WB),WB_SA,2021,8.330282
+South Asia (WB),WB_SA,2022,6.2417364
+South Asia (WB),WB_SA,2023,5.8489914
+South Asia (WB),WB_SA,2024,5.81541
+South Asia (WB),WB_SA,2025,6.1826096
+Sub-Saharan Africa (WB),WB_SSA,2015,0.19770178
+Sub-Saharan Africa (WB),WB_SSA,2016,-1.3317772
+Sub-Saharan Africa (WB),WB_SSA,2017,-0.15363213
+Sub-Saharan Africa (WB),WB_SSA,2018,0.107922725
+Sub-Saharan Africa (WB),WB_SSA,2019,-0.08793226
+Sub-Saharan Africa (WB),WB_SSA,2020,-5.7477374
+Sub-Saharan Africa (WB),WB_SSA,2021,0.99375933
+Sub-Saharan Africa (WB),WB_SSA,2022,1.4825861
+Sub-Saharan Africa (WB),WB_SSA,2023,0.21581669
+Sub-Saharan Africa (WB),WB_SSA,2024,1.1158184
+Sub-Saharan Africa (WB),WB_SSA,2025,1.6400782
+World,OWID_WRL,2015,1.9138081
+World,OWID_WRL,2016,1.5999817
+World,OWID_WRL,2017,2.2840085
+World,OWID_WRL,2018,2.1811664
+World,OWID_WRL,2019,1.6108458
+World,OWID_WRL,2020,-3.834623
+World,OWID_WRL,2021,5.601633
+World,OWID_WRL,2022,2.5467925
+World,OWID_WRL,2023,1.9105996
+World,OWID_WRL,2024,1.9144297
+World,OWID_WRL,2025,1.9876086
