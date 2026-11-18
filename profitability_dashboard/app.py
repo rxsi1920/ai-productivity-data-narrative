@@ -2,11 +2,12 @@
 Did AI lift profitability through productivity?
 A Streamlit dashboard built only from public, citable source files in ./data.
 
-Every number on screen is computed in this file from one of those raw files.
-The Appendix lists each figure with its source file and the exact
-transformation applied; each chart has a "Data behind this chart" expander.
+data/raw/ holds the source samples; scripts/build_processed.py rebuilds data/processed/,
+which is the only data this app reads. Every number on screen is computed in this file
+from those processed files; each chart's ⓘ shows the exact table, and the Appendix lists
+every headline figure with its source file and calculation.
 
-Run:  streamlit run app.py
+Run (from this folder):  python scripts/build_processed.py  then  streamlit run app.py
 """
 from pathlib import Path
 
@@ -15,9 +16,11 @@ import pandas as pd
 import plotly.graph_objects as go
 import streamlit as st
 
-DATA = Path(__file__).parent / "data"
+DATA = Path(__file__).resolve().parent / "data" / "processed"
+LAST_REFRESH = "22 Oct 2026"  # date the source files in data/raw were downloaded
 
 st.set_page_config(page_title="AI, Productivity & Profitability", page_icon="📈", layout="wide", initial_sidebar_state="collapsed")
+
 
 # --------------------------------------------------------------------------------------
 # 1. Source registry — where every file came from
@@ -612,11 +615,15 @@ SOURCES.update({
     ),
 })
 
+for _k in [k for k, v in SOURCES.items() if not (DATA / v["file"]).exists()]:
+    SOURCES.pop(_k)
+
 # ======================================================================================
 # 9. THEME — professional dark "tech" style
 # ======================================================================================
-BLUE, TEAL, AMBER, RED, VIOLET, GREEN, SLATE, MUTED = "#3B82F6", "#14B8A6", "#F59E0B", "#EF4444", "#A78BFA", "#22C55E", "#94A3B8", "#475569"
+BLUE, TEAL, AMBER, RED, VIOLET, GREEN, SLATE, MUTED = "#3B82F6", "#14B8A6", "#F59E0B", "#F97316", "#A78BFA", "#38BDF8", "#94A3B8", "#475569"  # RED/GREEN remapped to orange/sky: colour-vision safe
 PAL = [BLUE, TEAL, AMBER, VIOLET, "#F472B6", "#38BDF8", RED, GREEN]
+QUAL = ["#56B4E9", "#F59E0B", "#009E73", "#F0E442", "#CC79A7", "#E2E8F0"]  # Okabe-Ito based: min ΔE ≥ 11 under simulated CVD
 BG, PANEL, EDGE, GRID, TEXT, SUB = "#0B1220", "#0F172A", "#1E293B", "#1E293B", "#E2E8F0", "#94A3B8"
 H = 400
 
@@ -652,6 +659,12 @@ div[data-testid="stVerticalBlockBorderWrapper"] > div {{padding: 0.5rem 0.75rem 
 .imp .ih {{color: {TEXT}; font-weight: 700; font-size: 1rem;}}
 .imp .ib {{color: {SUB}; font-size: .84rem; margin-top: 4px; line-height: 1.4;}}
 div[data-testid="stPopover"] button {{padding: 0 8px; min-height: 1.5rem; font-size: .75rem; border-color: {EDGE}; background: transparent;}}
+.answer {{background: #0F1B33; border: 1px solid #1E3A8A; border-radius: 8px; padding: 12px 18px; color: {TEXT}; font-size: .98rem; line-height: 1.5;}}
+.answer b {{color: #93C5FD;}}
+.limits {{background: {PANEL}; border: 1px dashed #334155; border-radius: 8px; padding: 10px 16px; color: {SUB}; font-size: .84rem; line-height: 1.5;}}
+.limits b {{color: {TEXT};}}
+.foot {{color: {SUB}; font-size: .76rem; border-top: 1px solid {EDGE}; margin-top: 18px; padding-top: 8px; line-height: 1.5;}}
+.foot a {{color: #38BDF8;}}
 </style>
 """, unsafe_allow_html=True)
 
@@ -666,7 +679,7 @@ def mini(fig: go.Figure, h: int = H, ysuf: str = "", ypre: str = "", legend: boo
     return fig
 
 
-def card(title: str, sub: str, fig: go.Figure | None, df: pd.DataFrame, keys: list[str], how: str, key: str, before=None):
+def card(title: str, sub: str, fig: go.Figure | None, df: pd.DataFrame, keys: list[str], how: str, key: str, before=None, empty_msg: str | None = None):
     """A panel: action title (the takeaway) + source line, a small ⓘ popover with file / transformation / table, then the chart."""
     with st.container(border=True):
         t, p = st.columns([9, 1])
@@ -679,8 +692,14 @@ def card(title: str, sub: str, fig: go.Figure | None, df: pd.DataFrame, keys: li
         if before:
             st.markdown("<div style='height:6px'></div>", unsafe_allow_html=True)
             before()
-        if fig is not None:
+        if empty_msg:
+            st.info(empty_msg)
+        elif fig is not None:
             st.plotly_chart(fig, width="stretch", config={"displayModeBar": False}, key=f"ch_{key}")
+
+
+def limits_box(items: list[str]):
+    st.markdown("<div class='limits'><b>What this data cannot show</b><br>" + "<br>".join("• " + i for i in items) + "</div>", unsafe_allow_html=True)
 
 
 def plain(label: str) -> str:
@@ -733,13 +752,6 @@ record(f"Working-age adults using gen AI worldwide, {gu_last_day}", f"{gu_world[
        ["genai_use"], "Row Entity = World, as published (Microsoft's population-weighted figure).")
 
 # capital
-dcm = load("dc_build").copy()
-dcm["date"] = pd.to_datetime(dcm["Month"] + "-01")
-dcm["bn"] = dcm["Data center construction"] / 1e9
-dc_year = dcm.assign(year=dcm["date"].dt.year).groupby("year")["bn"].sum()
-dc_mult = dc_year[2025] / dc_year[2022]
-record("US data-centre construction spending, 2025 (vs 2022)", f"${dc_year[2025]:.1f}bn ({dc_mult:.1f}× 2022)", ["dc_build"],
-       "Sum of the 12 monthly values for each calendar year ÷ 1e9 (constant 2021 US$).")
 _cs = load("cset").set_index(["Entity", "Year"]).iloc[:, -1] / 1e9
 cset_world = _cs.loc["World"]
 cset_us_share25 = _cs.loc[("United States", 2025)] / cset_world[2025] * 100
@@ -806,17 +818,31 @@ kpi(k[1], f"Adults using gen AI · world", f"{gu_world[gu_last_day]:.1f}%", f"�
 kpi(k[2], "Private AI funding · 2025", f"${cset_world[2025]:.0f}bn", f"▲ {cset_world[2025] / cset_world[2022]:.1f}× 2022 · US {cset_us_share25:.0f}%", "nt")
 kpi(k[3], "World productivity growth", f"{w_post:.1f}%/yr", f"▼ 2022–25 vs {w_pre:.1f}% in 2015–19", "dn")
 kpi(k[4], "US profits vs pay · since 2022", f"{pg:+.0f}%", f"vs employee pay {wg:+.0f}%", "nt")
+st.markdown("<div style='height:6px'></div>", unsafe_allow_html=True)
+st.markdown(f"<div class='answer'><b>Answer: only partly, so far.</b> Productivity grew fastest in the industries that use AI most "
+            f"(EU, r = {c_ind['r']:+.2f}, 6 industries), and US corporate profits rose {pg:.0f}% from {qlabel(pd.Timestamp(base))} to {qlabel(CPs.index[-1])} while employee pay rose {wg:.0f}%. "
+            f"But economy-wide productivity growth slowed ({w_pre:.1f}% → {w_post:.1f}% a year worldwide, 2015–19 vs 2022–25), and countries that use AI most "
+            f"did not grow faster — so the measured gain is narrow and goes more to profits than to pay.</div>", unsafe_allow_html=True)
 
 # --------------------------------------------------------------------------------------
 section("Is AI becoming standard practice?", "Adoption", "adoption")
 c1, c2 = st.columns(2)
 with c1:
-    REG_COL = {"Europe": BLUE, "North America": TEAL, "Asia": AMBER, "Oceania": VIOLET, "South America": "#F472B6", "Africa": SLATE}
+    REG_COL = dict(zip(["Europe", "North America", "Asia", "Oceania", "South America", "Africa"], QUAL))
+    REG_SYM = dict(zip(REG_COL, ["circle", "diamond", "square", "triangle-up", "cross", "x"]))
+    sel_regs = st.session_state.get("genai_regions", list(REG_COL))
     sc = gu_now.dropna(subset=["gdppc"])
+    sc = sc[sc["region"].isin(sel_regs)]
+
+    def _reg_pick():
+        st.multiselect("Regions", list(REG_COL), default=list(REG_COL), key="genai_regions", label_visibility="collapsed",
+                       placeholder="Choose one or more regions")
     fig = go.Figure()
     for reg, cl in REG_COL.items():
+        if reg not in sel_regs:
+            continue
         d = sc[sc["region"] == reg]
-        fig.add_scatter(x=d["gdppc"], y=d["share"], mode="markers", name=reg, marker=dict(size=9, color=cl, opacity=0.8, line=dict(color="#0B1220", width=0.6)),
+        fig.add_scatter(x=d["gdppc"], y=d["share"], mode="markers", name=reg, marker=dict(size=9, color=cl, symbol=REG_SYM[reg], opacity=0.85, line=dict(color="#0B1220", width=0.6)),
                         text=d["Entity"], hovertemplate="<b>%{text}</b><br>%{y:.1f}% use gen AI · GDP/person $%{x:,.0f}<extra></extra>")
     lab = sc[sc["Entity"].isin(top3 + ["United States", "China", "India", "Australia", "Germany", "Japan"])]
     fig.add_scatter(x=lab["gdppc"], y=lab["share"], mode="text", text=lab["Entity"], textposition=["bottom center" if e in ("Germany", "China") else ("middle right" if e == "United States" else "top center") for e in lab["Entity"]], textfont=dict(size=10, color=TEXT),
@@ -825,10 +851,11 @@ with c1:
                   annotation_text=f"World {gu_world[gu_last_day]:.1f}%", annotation_position="top left", annotation_font=dict(size=11, color=SUB))
     card(f"Gen-AI use is global and rising with income — {gu_world[gu_last_day]:.0f}% of adults worldwide, up to {gu_now['share'].max():.0f}% in {top3[0]}",
          f"each dot = a country · % of working-age adults using gen AI ({pd.Timestamp(gu_last_day):%b %Y}) vs GDP per person · Microsoft, World Bank via OWID",
-         mini(fig, ysuf="%", xtitle="GDP per person (2021 int-$, log scale)").update_layout(hovermode="closest")
+         mini(fig, ysuf="%", xtitle="GDP per person (2021 int-$, log scale)", ytitle="% of adults using gen AI").update_layout(hovermode="closest")
          .update_xaxes(type="log", showgrid=True, gridcolor=GRID, tickprefix="$"),
          gu_now[["Entity", "Code", "Day", "share", "gdppc", "region"]].sort_values("share", ascending=False), ["genai_use"],
-         f"Rows with Day = {gu_last_day} and a 3-letter country code; values as published; countries without GDP per capita are omitted from the chart.", "genai_gdp")
+         f"Rows with Day = {gu_last_day} and a 3-letter country code; values as published; countries without GDP per capita are omitted from the chart.", "genai_gdp",
+         before=_reg_pick, empty_msg=None if len(sc) else "No region selected. Pick at least one region above to show countries.")
 with c2:
     fig = go.Figure()
     regs = ["All geographies", "North America", "Europe", "Asia-Pacific", "Greater China", "Developing markets"]
@@ -836,11 +863,18 @@ with c2:
         d = comp[comp["Entity"] == r]
         fig.add_scatter(x=d["Year"], y=d["Organizations reporting having adopted AI"], mode="lines+markers",
                         name={"All geographies": "All regions", "Developing markets": "Developing", "Greater China": "China", "North America": "N. America"}.get(r, r),
-                        line=dict(width=4 if i == 0 else 1.6, color=BLUE if i == 0 else [SLATE, TEAL, AMBER, VIOLET, "#F472B6"][i - 1]),
-                        marker=dict(size=7 if i == 0 else 4), opacity=1 if i == 0 else 0.75, hovertemplate="%{y:.0f}%")
+                        line=dict(width=4 if i == 0 else 1.8, color=QUAL[i]),
+                        marker=dict(size=7 if i == 0 else 5), opacity=1 if i == 0 else 0.85, hovertemplate="%{y:.0f}%")
+    _ends = sorted([(comp[comp["Entity"] == r].sort_values("Year")["Organizations reporting having adopted AI"].iloc[-1], i, r) for i, r in enumerate(regs)])
+    _yl = []
+    for v_, i, r in _ends:  # direct end labels, nudged apart so they don't overlap
+        y_ = v_ if not _yl or v_ - _yl[-1] >= 2.6 else _yl[-1] + 2.6
+        _yl.append(y_)
+        fig.add_annotation(x=comp["Year"].max(), y=y_, text=f"{v_:.0f}% {r.replace('All geographies', 'All').replace('Developing markets', 'Developing').replace('Greater China', 'China')}",
+                           showarrow=False, xanchor="left", xshift=6, font=dict(size=10, color=QUAL[i]))
     card(f"{k_adopt:.0f}% of companies now use AI — up from {allg[2023]:.0f}% in 2023",
          "% of organisations using AI in ≥1 business function · McKinsey survey via AI Index / OWID",
-         mini(fig, ysuf="%").update_xaxes(dtick=1), comp[comp["Entity"].isin(regs)], ["companies"], "None — values as published.", "adopt")
+         mini(fig, ysuf="%", xtitle="year", ytitle="% of organisations using AI").update_xaxes(dtick=1, range=[comp["Year"].min() - 0.3, comp["Year"].max() + 1.3]), comp[comp["Entity"].isin(regs)], ["companies"], "None — values as published.", "adopt")
 c3, c4 = st.columns(2)
 with c3:
     hm = ind.dropna(subset=["ai_adoption_pct"]).pivot(index="industry", columns="year", values="ai_adoption_pct")
@@ -851,7 +885,7 @@ with c3:
                                hovertemplate="%{y} · %{x}: %{z:.1f}%<extra></extra>"))
     card(f"Adoption depends on the industry — {ind_top['label']} {ind_top['AI adoption 2025 (%)']:.0f}% vs {ind_low['label'].lower()} {ind_low['AI adoption 2025 (%)']:.0f}%",
          "% of EU firms (10+ staff) using AI · Eurostat (no 2022 survey)",
-         mini(fig, legend=False).update_layout(hovermode="closest").update_xaxes(side="top", type="category"), hm.round(2).rename(columns=str).reset_index(names="industry"),
+         mini(fig, legend=False, xtitle="survey year", ytitle="industry").update_layout(hovermode="closest").update_xaxes(side="top", type="category"), hm.round(2).rename(columns=str).reset_index(names="industry"),
          ["ind_ai"], "Mean of the survey sections mapped to each industry (Trade & transport = mean of G, H, I; Professional & admin = mean of M, N).", "heat")
 with c4:
     s = sz.loc[["10-49", "50-249", "GE250"]]
@@ -861,7 +895,7 @@ with c4:
                     text=[f"{v:.0f}%" for v in row], textposition="outside", cliponaxis=False, hovertemplate="%{y:.1f}%")
     card(f"Large firms are {large_small:.1f}× more likely to use AI than small ones",
          "% of EU firms using AI, by number of employees · Eurostat",
-         mini(fig, ysuf="%").update_layout(barmode="group", bargap=0.25).update_xaxes(type="category"), s.rename(columns=str).reset_index(), ["eu_size"], "Values as published.", "size")
+         mini(fig, ysuf="%", xtitle="survey year", ytitle="% of firms using AI").update_layout(barmode="group", bargap=0.25).update_xaxes(type="category"), s.rename(columns=str).reset_index(), ["eu_size"], "Values as published.", "size")
 
 # --------------------------------------------------------------------------------------
 section("How much capital is flowing into AI?", "Investment", "capital")
@@ -881,7 +915,7 @@ with c1:
                            hovertemplate="%{y}: $%{x:,.1f}bn<extra></extra>"))
     card(f"AI capital is concentrated: US AI companies raised {us_share:.0f}% of the world's ${world_tot:,.0f}bn since 2022",
          "funding raised by private AI companies, 2022–2025 total, constant 2021 US$bn · top 12 countries · CSET via OWID",
-         mini(fig, legend=False).update_xaxes(tickprefix="$", ticksuffix="bn", showgrid=True, gridcolor=GRID, range=[0, top.max() * 1.18]),
+         mini(fig, legend=False, xtitle="funding raised 2022–25 (constant 2021 US$bn)", ytitle="country of AI company").update_xaxes(tickprefix="$", ticksuffix="bn", showgrid=True, gridcolor=GRID, range=[0, top.max() * 1.18]),
          tot.round(3).rename("US$bn 2022–25").reset_index().rename(columns={"Entity": "country"}), ["cset"],
          "Country rows (3-letter code), summed over 2022–2025, ÷ 1e9.", "cset")
 with c2:
@@ -890,9 +924,12 @@ with c2:
         d = nv[nv["Entity"] == seg]
         fig.add_bar(x=d["Quarter"], y=d["NVIDIA’s quarterly revenue"] / 1e9, name={"Data centers and AI": "Data centre & AI chips", "Gaming, devices, automotive": "Other"}[seg],
                     marker_color=cl, hovertemplate="$%{y:.1f}bn")
+    _dc = nv[nv["Entity"] == "Data centers and AI"].set_index("Quarter")["NVIDIA’s quarterly revenue"] / 1e9
+    for _q in ["2022-Q4", _dc.index[-1]]:
+        fig.add_annotation(x=_q, y=_dc[_q], text=f"${_dc[_q]:.1f}bn", showarrow=True, arrowhead=0, ay=-28, font=dict(size=11, color=TEXT))
     card(f"Spending on AI hardware: NVIDIA's data-centre sales are up {nv_mult:.0f}× since late 2022",
          "quarterly revenue, US$bn · company filings via OWID",
-         mini(fig, ypre="$").update_layout(barmode="stack").update_xaxes(tickangle=-45, nticks=10), nv, ["nvidia"], "Revenue ÷ 1e9; 'Total' rows not drawn.", "nvidia")
+         mini(fig, ypre="$", xtitle="quarter", ytitle="revenue per quarter (US$bn)").update_layout(barmode="stack").update_xaxes(tickangle=-45, nticks=10), nv, ["nvidia"], "Revenue ÷ 1e9; 'Total' rows not drawn.", "nvidia")
 c3, c4 = st.columns(2)
 with c3:
     fig = go.Figure()
@@ -901,10 +938,14 @@ with c3:
         fig.add_scatter(x=d["Year"], y=d["share"], name=r.replace(" (IEA)", ""), mode="lines+markers", marker=dict(size=7),
                         line=dict(width=3.5 if r == "World" else 2, color=[BLUE, TEAL, AMBER, TEXT][i], dash="dot" if r == "World" else None),
                         hovertemplate="%{y:.2f}%")
+    for i, r in enumerate(["United States", "Europe (IEA)", "China", "World"]):
+        d = pw[pw["Entity"] == r].sort_values("Year")
+        fig.add_scatter(x=d["Year"], y=d["share"], mode="text", text=[f"{v:.1f}%" for v in d["share"]], textposition="top center",
+                        textfont=dict(size=10, color=[BLUE, TEAL, AMBER, TEXT][i]), showlegend=False, hoverinfo="skip")
     us_pw = pw[(pw["Entity"] == "United States")].set_index("Year")["share"]
     card(f"The build-out shows in power use: data centres take {us_pw[2025]:.1f}% of US electricity",
          "% of electricity demand used by data centres (all uses, incl. AI) · IEA via OWID",
-         mini(fig, ysuf="%").update_xaxes(dtick=1), pw.rename(columns={"share": "share_pct"}), ["dc_power"], "Values as published.", "power")
+         mini(fig, ysuf="%", xtitle="year", ytitle="% of electricity demand").update_xaxes(dtick=1), pw.rename(columns={"share": "share_pct"}), ["dc_power"], "Values as published.", "power")
 with c4:
     gdf = load("genai").copy(); gdf["US$bn"] = (gdf["Global investment in generative AI"] / 1e9).round(2)
     fig = go.Figure(go.Bar(x=gdf["Year"], y=gdf["US$bn"], marker_color=[MUTED] * (len(gdf) - 3) + [BLUE] * 3,
@@ -912,7 +953,7 @@ with c4:
                            hovertemplate="%{x}: $%{y:,.1f}bn<extra></extra>"))
     card(f"Capital to build AI: ${k_gi:.0f}bn of private investment in gen-AI developers in 2025",
          "US$bn, constant 2021 prices · Quid via Stanford AI Index 2026 / OWID",
-         mini(fig, ypre="$", legend=False).update_xaxes(dtick=1), gdf, ["genai"], "Value ÷ 1e9.", "genai")
+         mini(fig, ypre="$", legend=False, xtitle="year", ytitle="investment (constant 2021 US$bn)").update_xaxes(dtick=1), gdf, ["genai"], "Value ÷ 1e9.", "genai")
 
 # --------------------------------------------------------------------------------------
 section("Has it paid off in productivity and profits?", "Payoff", "payoff")
@@ -924,17 +965,23 @@ eu_low_yr = int(gw.loc[2022:, "EU-27"].idxmin()); eu_low = gw.loc[eu_low_yr, "EU
 record(f"EU-27 GDP per person growth, {eu_low_yr}", f"{eu_low:.2f}%", ["gdppc_growth"], "Value as published (NY.GDP.PCAP.KD.ZG), EU-27 row.")
 fig = go.Figure()
 for x0, x1, lab in [(2019.5, 2020.5, "COVID-19"), (2021.6, 2023.4, "War in Ukraine · energy shock · rate hikes")]:
-    fig.add_vrect(x0=x0, x1=x1, fillcolor="rgba(239,68,68,.08)", line_width=0, layer="below",
-                  annotation_text=lab, annotation_position="top left", annotation_font=dict(size=11, color="#FCA5A5"))
+    fig.add_vrect(x0=x0, x1=x1, fillcolor="rgba(249,115,22,.08)", line_width=0, layer="below",
+                  annotation_text=lab, annotation_position="top left", annotation_font=dict(size=11, color="#FDBA74"))
 style = {"World": (TEXT, 3, "dot"), "North America": (BLUE, 2.5, None), "EU-27": (TEAL, 2.5, None), "East Asia & Pacific": (AMBER, 2, None)}
 for reg in ["South Asia", "Latin America", "Sub-Saharan Africa", "East Asia & Pacific", "North America", "EU-27", "World"]:
     col, wid, dash = style.get(reg, (MUTED, 1.4, None))
     fig.add_scatter(x=gw.index, y=gw[reg], name=reg, mode="lines+markers", line=dict(color=col, width=wid, dash=dash), marker=dict(size=5 if reg in style else 3),
                     hovertemplate="%{y:.1f}%")
 fig.add_hline(y=0, line_color="#334155")
+_regs = sorted(style, key=lambda r_: gw.loc[2025, r_]); _pos = {}
+for _r in _regs:  # nudge labels apart so they don't overlap (values unchanged)
+    _y = gw.loc[2025, _r]; _prev = max(_pos.values()) if _pos else None
+    _pos[_r] = _y if _prev is None or _y - _prev >= 0.75 else _prev + 0.75
+for reg in style:
+    fig.add_annotation(x=2025, y=_pos[reg], text=f"{reg} {gw.loc[2025, reg]:.1f}%", showarrow=False, xanchor="left", xshift=6, font=dict(size=10, color=style[reg][0]))
 card(f"The economy itself was shocked — COVID, then the 2022 war and energy shock; EU growth per person fell to {eu_low:.1f}% in {eu_low_yr}",
      "GDP per person, real annual growth · productivity = output ÷ hours, so it moves with these swings · World Bank WDI via OWID",
-     mini(fig, h=340, ysuf="%").update_xaxes(dtick=1, range=[2014.6, 2025.4]),
+     mini(fig, h=340, ysuf="%", xtitle="year", ytitle="real GDP per person, % change").update_xaxes(dtick=1, range=[2014.6, 2026.6]),
      gw.round(2).reset_index(), ["gdppc_growth"], "Values as published (annual % change in real GDP per person); pivoted to year × region.", "gdppc")
 c1, c2 = st.columns(2)
 with c1:
@@ -946,13 +993,15 @@ with c1:
                         showlegend=False, hoverinfo="skip")
     fig.add_scatter(x=pr["2015–19"], y=pr.index, mode="markers", name="2015–19 (before)", marker=dict(size=11, color=MUTED),
                     hovertemplate="%{y}: %{x:.2f}%/yr before<extra></extra>")
-    fig.add_scatter(x=pr["2022–25"], y=pr.index, mode="markers", name="2022–25 (gen-AI era)", marker=dict(size=13, color=BLUE),
+    fig.add_scatter(x=pr["2022–25"], y=pr.index, mode="markers+text", name="2022–25 (gen-AI era)", marker=dict(size=13, color=BLUE),
+                    text=[f"{v:.1f}%" for v in pr["2022–25"]], textposition=["middle right" if a_ >= b_ else "middle left" for a_, b_ in zip(pr["2022–25"], pr["2015–19"])],
+                    textfont=dict(size=11, color=TEXT),
                     hovertemplate="%{y}: %{x:.2f}%/yr since 2022<extra></extra>")
     faster = [r for r in pr.index if pr.loc[r, "2022–25"] > pr.loc[r, "2015–19"] + 0.3]
     slower = [r for r in ["World", "EU-27", "East Asia"] if r in pr.index and pr.loc[r, "2022–25"] < pr.loc[r, "2015–19"]]
     card(f"Since 2022, productivity growth slowed for the {' and '.join([s_.replace('World', 'world') for s_ in slower[:2]])} — North America is the big-economy exception",
-         "output per hour worked, average annual growth · green = faster, red = slower · ILO modelled estimates (2025 nowcast)",
-         mini(fig).update_layout(hovermode="closest").update_xaxes(ticksuffix="%", showgrid=True, gridcolor=GRID, zeroline=True, zerolinecolor="#334155"),
+         "output per hour worked, average annual growth · blue line = faster, orange line = slower · ILO modelled estimates (2025 nowcast)",
+         mini(fig, xtitle="average annual growth in output per hour (%)", ytitle="region").update_layout(hovermode="closest").update_xaxes(ticksuffix="%", showgrid=True, gridcolor=GRID, zeroline=True, zerolinecolor="#334155"),
          prod_reg.reset_index(), ["ilo_oph"], "(2019 ÷ 2015)^(1/4) − 1 and (2025 ÷ 2022)^(1/3) − 1.", "dumbbell")
 with c2:
     cap = 100 - lis
@@ -971,7 +1020,7 @@ with c2:
     fig.add_hline(y=100, line_color="#334155", line_dash="dot")
     card("Profit margins rose in the US — not in the EU or worldwide",
          "profit share indexed to 2019 = 100 · BEA via FRED, Eurostat, ILO",
-         mini(fig, ytitle="index, 2019 = 100").update_xaxes(dtick=1, range=[2018.7, 2025.7]), idx.reset_index(names="year"), ["cp", "gdp", "eu_profit", "ilo_lis"],
+         mini(fig, ytitle="profit share, index 2019 = 100", xtitle="year").update_xaxes(dtick=1, range=[2018.7, 2025.7]), idx.reset_index(names="year"), ["cp", "gdp", "eu_profit", "ilo_lis"],
          "US: annual mean of quarterly CP ÷ GDP; EU: B2G_B3G_RAT_S11 (EU27); World: 100 − ILO labour income share. Each ÷ its 2019 value × 100.", "profitidx")
 
 # --------------------------------------------------------------------------------------
@@ -987,7 +1036,7 @@ with c1:
     fig.add_hline(y=0, line_color="#334155")
     card(f"Industries that use AI most grew productivity fastest — led by {ind_top['label']}",
          f"EU-27 · x: % firms using AI (2025) · y: productivity growth 2021–25 · bubble = value added · r = {c_ind['r']:+.2f}, 6 industries · Eurostat",
-         mini(fig, ysuf="%", legend=False, xtitle="% of firms using AI, 2025", ytitle="productivity growth 2021–25").update_layout(hovermode="closest")
+         mini(fig, ysuf="%", legend=False, xtitle="% of firms using AI, 2025", ytitle="productivity growth 2021–25 (%)").update_layout(hovermode="closest")
          .update_xaxes(ticksuffix="%", showgrid=True, gridcolor=GRID), ind_b.round(2), ["ind_ai", "ind_gva", "ind_hours"],
          "Productivity = real value added ÷ hours worked, 2025 ÷ 2021 − 1; bubble = 2025 nominal value added (€bn); Pearson r.", "indbubble")
 with c2:
@@ -1080,7 +1129,7 @@ with c1:
     fig.add_hline(y=100, line_color="#334155")
     card(f"Since 2022, US profits grew {pg:.0f}% — employee pay only {wg:.0f}%",
          "indexed, 2022Q4 = 100 · BEA via FRED (CP, COE, GDP)",
-         mini(fig, ytitle="index, 2022Q4 = 100").update_xaxes(range=[ix.index[0], ix.index[-1] + pd.Timedelta(days=200)]),
+         mini(fig, ytitle="index, 2022Q4 = 100", xtitle="quarter").update_xaxes(range=[ix.index[0], ix.index[-1] + pd.Timedelta(days=200)]),
          ix.round(2).join(pd.DataFrame({"Profits $bn (CP)": CPs, "Employee pay $bn (COE)": COE, "GDP $bn": G}).round(3)).reset_index(names="date").iloc[::-1],
          ["cp", "coe", "gdp"], "Each series ÷ its 2022Q4 value × 100 (raw US$bn columns shown; newest first).", "profitpay")
 with c2:
@@ -1091,7 +1140,7 @@ with c2:
     n_fell = int((lc < 0).sum())
     card(f"Workers' share of income fell in {n_fell} of {len(lc)} regions since 2019",
          "change in labour income share of GDP, 2019→2025, percentage points · ILO modelled estimates",
-         mini(fig, legend=False).update_layout(hovermode="closest").update_xaxes(ticksuffix=" pp", showgrid=True, gridcolor=GRID,
+         mini(fig, legend=False, xtitle="change in labour share of GDP, 2019→2025 (pp)", ytitle="region").update_layout(hovermode="closest").update_xaxes(ticksuffix=" pp", showgrid=True, gridcolor=GRID,
                                                                                  range=[lc.min() - 1, lc.max() + 1]),
          lis[[2019, 2025]].rename(columns=str).assign(change_pp=ls_chg).reset_index(), ["ilo_lis"], "Labour income share 2025 − 2019 (percentage points).", "labshare")
 
@@ -1105,7 +1154,7 @@ with c1:
                            hovertemplate="%{y}: %{x:.0f}%<extra></extra>"))
     card(f"Skills, not cost, hold firms back: {top_bar['pct_of_firms_that_considered_AI']:.0f}% lack expertise vs {cost_bar['pct_of_firms_that_considered_AI']:.0f}% citing cost",
          "reasons given by EU firms that considered AI but don't use it, 2025 · Eurostat",
-         mini(fig, legend=False).update_layout(hovermode="closest").update_xaxes(ticksuffix="%", range=[0, 85], showgrid=True, gridcolor=GRID),
+         mini(fig, legend=False, xtitle="% of firms that considered AI but did not adopt it", ytitle="barrier").update_layout(hovermode="closest").update_xaxes(ticksuffix="%", range=[0, 85], showgrid=True, gridcolor=GRID),
          barriers.round(2), ["eu_barriers"], f"Each barrier ÷ E_AI_EC ({considered}% of all firms considered AI but don't use it) × 100.", "barriers")
 with c2:
     yu = OUTCOMES["Youth unemployment rate (%)"]["get"]()
@@ -1116,16 +1165,22 @@ with c2:
     g_ix = g.pivot(index="year", columns="group", values="value")
     fig = go.Figure()
     for grp, cl in [("8 highest AI-adopting countries", BLUE), ("Other European countries", MUTED)]:
-        fig.add_scatter(x=g_ix.index, y=g_ix[grp], name=grp, mode="lines+markers", line=dict(color=cl, width=3), marker=dict(size=7), hovertemplate="%{y:.1f}%")
+        fig.add_scatter(x=g_ix.index, y=g_ix[grp], name=grp, mode="lines+markers+text", line=dict(color=cl, width=3), marker=dict(size=7), hovertemplate="%{y:.1f}%",
+                        text=[f"{v:.1f}%" for v in g_ix[grp]], textposition="top center", textfont=dict(size=10, color=cl))
     d_top = g_ix.loc[2025, "8 highest AI-adopting countries"] - g_ix.loc[2022, "8 highest AI-adopting countries"]
     d_oth = g_ix.loc[2025, "Other European countries"] - g_ix.loc[2022, "Other European countries"]
     card(f"Watch the talent pipeline: youth unemployment is rising in AI-leading countries ({d_top:+.1f} pp since 2022)",
          f"unemployment rate, ages 15–24, unweighted average · others {d_oth:+.1f} pp · Eurostat",
-         mini(fig, ysuf="%").update_xaxes(dtick=1), g.round(3), ["eu_unemp", "eu_ai"],
+         mini(fig, ysuf="%", xtitle="year", ytitle="unemployment rate, ages 15–24 (%)").update_xaxes(dtick=1), g.round(3), ["eu_unemp", "eu_ai"],
          "Y15-24 unemployment; unweighted mean of the 8 countries with the highest 2025 AI adoption (E_AI_TANY) vs all others.", "youth")
 
-# --------------------------------------------------------------------------------------
 st.markdown("<div style='height:10px'></div>", unsafe_allow_html=True)
+limits_box([
+    "<b>Causation.</b> Every comparison is a before/after break or a correlation; the 2022 energy shock, rate rises and post-COVID rebound happened at the same time.",
+    "<b>Firm-level AI use</b> is measured consistently only in Europe (Eurostat); the world view uses adults' gen-AI use (Microsoft) as a stand-in.",
+    "<b>Profit measures differ</b>: US after-tax corporate profits ÷ GDP; EU gross operating surplus ÷ value added; world = 100 − ILO labour share.",
+    "<b>Latest periods are provisional</b>: ILO 2025 values are nowcasts and recent quarters of US national accounts are revised.",
+])
 with st.expander("Appendix · data & method — every figure, source file and raw data", expanded=False):
     st.markdown("<div id='appendix'></div>", unsafe_allow_html=True)
     t1, t2, t3, t4 = st.tabs(["Figures & calculations", "Source files", "Inspect a raw file", "Limits"])
@@ -1150,3 +1205,7 @@ with st.expander("Appendix · data & method — every figure, source file and ra
             "- Gen-AI use is estimated by Microsoft from its own platform data, scaled to each country's working-age population.\n"
             "- Data-centre construction excludes IT hardware; data-centre electricity covers all uses, not only AI."
         )
+
+st.markdown(f"<div class='foot'><b>Sources:</b> " + " · ".join(f"<a href='{v['url']}' target='_blank'>{v['publisher']}</a>" for v in SOURCES.values())
+            + f"<br><b>Last data refresh:</b> {LAST_REFRESH}. Every number on this page is computed from <code>data/processed/</code>, "
+              "rebuilt from <code>data/raw/</code> by <code>scripts/build_processed.py</code>.</div>", unsafe_allow_html=True)
