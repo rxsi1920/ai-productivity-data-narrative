@@ -49,7 +49,7 @@ This is the measured-gains part of the group question: *Do AI’s measured produ
 From this folder:
 
 ```bash
-pip install -r requirements.txt          # or: uv add plotly scipy (pandas and streamlit are already in pyproject.toml)
+pip install -r requirements.txt          # or: uv sync (streamlit, pandas and plotly are already in the repo’s pyproject.toml)
 python scripts/build_processed.py        # rebuilds data/processed/ from data/raw/
 streamlit run app.py
 ```
