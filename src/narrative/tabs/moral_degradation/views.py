@@ -1,6 +1,5 @@
 import ast
 import re
-from datetime import date
 
 import altair as alt
 import numpy as np
@@ -381,15 +380,15 @@ def render_() -> None:
     st.header("2. AI's Self-awareness of Morality")
 
 
-def render_moral_summary(data: pd.DataFrame) -> None:
+def render_moral_summary(data: pd.DataFrame, label: str = "Our answer") -> None:
 
-    last_year = date.today().year - 1
-    submitted_dates = pd.to_datetime(data["date_submitted"], errors="coerce")
-    total_last_year = (submitted_dates.dt.year == last_year).sum()
+    last_year = 2025  # latest full year in the data; same count as the section 1 chart and Home
+    published = pd.to_datetime(data["date_published"], errors="coerce", utc=True)
+    total_last_year = f"{(published.dt.year == last_year).sum():,}"
 
     with st.container(key="moral_answer", border=True):
         st.markdown(f"""
-            **Our answer:** Early on, AI weakens our moral judgement and the safeguards are thin, but does not have a proveable cause. In controlled experiments, people who talked to a flattering AI felt more in the right and were less willing to repair the conflict, and this held in more than one study. Around that, the safety net is clean, in that reported AI incidents reached {total_last_year} in {last_year} and are still accelerating, models differ widely in how closely their moral scores match human validation, and in most areas of responsible AI only a minority of countries have a binding national framework. The first is a single-conversation experiment, the second is a count of reports, and the third is a snapshot of policy status. The effect on judgement is measured in surveys, the failures and gaps are indicators, and more importantly lacks a time-series data that indicates people's moral judgement erodes over time.
+            **{label}:** Early on, AI weakens our moral judgement and the safeguards are thin, but does not have a proveable cause. In controlled experiments, people who talked to a flattering AI felt more in the right and were less willing to repair the conflict, and this held in more than one study. Around that, the safety net is clean, in that reported AI incidents reached {total_last_year} in {last_year} and are still accelerating, models differ widely in how closely their moral scores match human validation, and in most areas of responsible AI only a minority of countries have a binding national framework. The first is a single-conversation experiment, the second is a count of reports, and the third is a snapshot of policy status. The effect on judgement is measured in surveys, the failures and gaps are indicators, and more importantly lacks a time-series data that indicates people's moral judgement erodes over time.
         """)
 
 
