@@ -24,6 +24,7 @@ def run() -> AppTest:
 def infos(app: AppTest) -> list[str]:
     return [i.value for i in app.info]
 
+
 def evidence_headline(app: AppTest) -> str:
     return next(
         m.value
@@ -31,14 +32,20 @@ def evidence_headline(app: AppTest) -> str:
         if "output findings show a gain" in m.value and "show a loss" in m.value
     )
 
+
 def test_opening_screen_states_question_answer_and_story():
     app = run()
     assert not app.exception
-    assert app.title[0].value == "What cost does the AI efficiency we are gaining now have on the expertise that tomorrow's workers and models need?"
+    assert (
+        app.title[0].value
+        == "What cost does the AI efficiency we are gaining now have on the expertise that tomorrow's workers and models need?"
+    )
     text = " ".join(m.value for m in app.markdown)
     assert GROUP_QUESTION in text and "Our answer" in text
     assert [h.value[0] for h in app.header] == list("1234")
-    assert len(app.get("vega_lite_chart")) == 5  # evidence, entry level, web composition, loss, compute
+    assert (
+        len(app.get("vega_lite_chart")) == 5
+    )  # evidence, entry level, web composition, loss, compute
 
 
 def test_evidence_filter_rewrites_headline_and_empty_state():
@@ -54,15 +61,21 @@ def test_evidence_filter_rewrites_headline_and_empty_state():
 
 def test_composition_basis_changes_the_figures():
     app = run()
-    tokens = [m.value for m in app.metric if m.label.startswith("Human-labelled share,")]
+    tokens = [
+        m.value for m in app.metric if m.label.startswith("Human-labelled share,")
+    ]
     app.radio(key="composition_basis").set_value("Documents").run()
-    documents = [m.value for m in app.metric if m.label.startswith("Human-labelled share,")]
+    documents = [
+        m.value for m in app.metric if m.label.startswith("Human-labelled share,")
+    ]
     assert tokens == ["63.5%"] and documents != tokens and not app.exception
 
 
 def test_one_strength_keeps_both_group_headers():
     app = run()
-    app.multiselect(key="evidence_strength").set_value(["Low"]).run()  # only one skill finding is rated Low
+    app.multiselect(key="evidence_strength").set_value(
+        ["Low"]
+    ).run()  # only one skill finding is rated Low
     assert not app.exception and EMPTY not in infos(app)
     assert any("0 of 0 output findings" in m.value for m in app.markdown)
 

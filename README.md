@@ -6,7 +6,7 @@ The question is arguable. Firm and industry data show real gains in output and p
 
 ## Persona and decision
 
-**Persona:** a company's C-suite (CEO, CFO or COO) at a mid-to-large firm.
+**Persona:** a company's C-suite (i.e., CEO, CFO or COO) at a mid-to-large firm.
 
 **Decision:** whether to invest in adopting AI, and if so, how to roll it out. The choices are:
 - where to expect a return first,
@@ -15,43 +15,41 @@ The question is arguable. Firm and industry data show real gains in output and p
 
 ## Our answer
 
-**Not yet proven either way, and the gains are narrower than the hype suggests.**
-- **Gains:**
-  - AI-intensive industries grew productivity fastest.
-  - US corporate profits rose faster than pay.
-  - Controlled studies show 12–37% output gains on specific tasks.
-  - But economy-wide productivity growth slowed, and countries that use AI most did not grow faster.
-- **Costs:** these are early indicators, not proven harms.
-  - Early-career employment in AI-exposed jobs fell 11% while less-exposed peers grew 10%.
-  - The human-written share of new web text fell from 87% to 64% in two years.
-  - Flattering AI made people feel more in the right and less willing to repair a conflict.
+**Our answer: not clearly, so far.** The gains are real but narrower than the hype suggests, and the costs are early signals, not yet proven harm.
 
-The gains are measured; the costs are early signals. A firm adopting AI should therefore expect a narrow return and protect training pathways and human judgement as it scales.
+**Gains (measured):**
+  - AI-intensive industries grew productivity fastest, and US corporate profits rose faster than employee pay.
+  - Controlled studies show output gains of 14% to 37% on specific tasks.
+  - But economy-wide productivity growth slowed, and the countries that use AI most did not grow faster.
+
+**Costs (early indicators):**
+  - Since November 2022, employment of 22- to 25-year-olds fell 11% in the most AI-exposed jobs while it grew 10% in the least exposed.
+  - The human-written share of sampled web text fell from 87% to 64% in the two years to August 2026.
+  - A flattering AI left people feeling more in the right and less willing to repair a conflict.
+
+**For a firm adopting AI:** expect a narrow return, and protect training pathways and human judgement as you scale. Because the gains are measured and the costs are early indicators, a reader who weighs measured gains more heavily could reach the opposite answer.
 
 ## User stories
 
-**1. Profitability.** As a CFO deciding whether to fund AI adoption, I want to see whether firms and industries that use AI have become more productive and profitable, so that I know what return to expect and where it shows up first.
+**1. Profitability.** As a C-suite executive deciding on AI investment (i.e., CEO or CFO), I want to see whether AI adoption has raised productivity and profits, so that I can judge the expected return.
 - Open **Profitability**. Read the KPI row and the answer box.
 - Go to **Evidence**. In the country chart, switch the **scope** (World / Europe) and **outcome** dropdowns. The "X of Y beat the median" count and r update.
 - Read **Who captures the gains?**: profits +49% vs employee pay +19%.
 
-Here is the text to add to your group README. It replaces the page 2 story.
+**2. Feedback loop and cognition.** As a C-suite executive deciding on AI policy (i.e., COO or CTO), I want to see how AI use is affecting staff training and model training, so that I can decide where to prioritise human skilled input vs. AI-efficient output for business continuity.
+- Open **Feedback loop and cognition** and read the answer box.
+- In section 1, untick levels in **Evidence strength**. The headline count updates; unticking all shows a message instead of an empty chart.
+- In section 3, switch **Measure the share by** between Tokens and Documents. The human-labelled share changes.
+- In section 4, pick **Model sizes**, and tick **Compare with adding fresh human text** or **Mark today's web**.
+- In Part C, choose **What should the model be good at?** and enter a training budget. The compute multiplier and extra cost update.
 
-**2. Feedback loop and cognition.** As a C-suite executive deciding on AI policy, I want to see how AI use is affecting staff training and model training, so that I can decide where to keep human-skilled input versus AI-efficient output.
-- Open **Feedback loop and cognition**.
-- In section 1, untick evidence strengths in **Evidence strength**. Removing them all shows a message instead of an empty chart.
-- In section 3 (**Cognition**), switch **Show** between both signals, accuracy on a misleading task, and self-reported critical thinking. The headline gap (14 to 24 points) and the charts update.
-- In section 4, switch **Tokens / Documents** to see the human-written share of web text.
-- In section 5, move the **training budget** slider and pick **model sizes** to see how loss changes when AI text is added.
-- Open the **Smarter, or slipping?** tab for the full dashboard: adoption, output vs skill, and rollout options.
-
-**3. Moral degradation.** As a C-suite executive responsible for AI risk, I want to see whether AI is weakening people's judgement and whether safeguards keep up, so that I can decide what guardrails to require before scaling AI.
+**3. Moral degradation.** As a C-suite executive deciding on AI governance (i.e., CEO or CFO), I want to see how AI-related incidents and ethical risks are changing, so that I can price risk and guardrails into the business case.
 - Open **Moral degradation**.
 - In section 1, change **Forecast from year** to see the incident-report trend.
 - In section 3, pick a **Responsible AI dimension** and **country group** to see how many countries have binding rules.
 - In section 4, change **Select study** to compare the sycophancy experiments.
 
-Then open **Overall conclusion**, which puts the three parts side by side.
+Then open **Overall conclusion** for the group answer and decision points.
 
 ## Run it
 

@@ -1,14 +1,12 @@
 import pandas as pd
 import streamlit as st
 
-from narrative.story import GROUP_QUESTION
+from narrative.story import GROUP_ANSWER, GROUP_QUESTION
 from narrative.utils import get_proc_data_dir
 
 DATA = get_proc_data_dir()
 
 INTRO = (
-    "Our answer: not clearly, so far. The gains are measured but narrow, mostly showing up in AI-heavy industries and "
-    "in profits more than pay, while the costs to skills, training data and moral judgement are early indicators, not yet proven harm. "
     "Regardless of proof, the use of Artificial Intelligence is spreading rapidly, and that comes with implications on resources, "
     "business continuity, and ethics. This dashboard brings the following to the attention of decision-makers:"
 )
@@ -143,6 +141,8 @@ def _headline(col, label, value, delta, note, delta_color="normal"):
 def render_landing(pages):
     st.title("The Rise of Artificial Intelligence")
     st.subheader(GROUP_QUESTION)
+    with st.container(border=True, key="group_answer"):
+        st.markdown(GROUP_ANSWER)
     st.markdown(INTRO)
 
     h = headline_figures()

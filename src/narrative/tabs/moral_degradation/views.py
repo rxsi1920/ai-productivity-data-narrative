@@ -1,5 +1,6 @@
 import ast
 import re
+from datetime import date
 
 import altair as alt
 import numpy as np
@@ -378,6 +379,18 @@ def render_gmf_failures(data: pd.DataFrame) -> None:
 
 def render_() -> None:
     st.header("2. AI's Self-awareness of Morality")
+
+
+def render_moral_summary(data: pd.DataFrame) -> None:
+
+    last_year = date.today().year - 1
+    submitted_dates = pd.to_datetime(data["date_submitted"], errors="coerce")
+    total_last_year = (submitted_dates.dt.year == last_year).sum()
+
+    with st.container(key="moral_answer", border=True):
+        st.markdown(f"""
+            **Our answer:** Early on, AI weakens our moral judgement and the safeguards are thin, but does not have a proveable cause. In controlled experiments, people who talked to a flattering AI felt more in the right and were less willing to repair the conflict, and this held in more than one study. Around that, the safety net is clean, in that reported AI incidents reached {total_last_year} in {last_year} and are still accelerating, models differ widely in how closely their moral scores match human validation, and in most areas of responsible AI only a minority of countries have a binding national framework. The first is a single-conversation experiment, the second is a count of reports, and the third is a snapshot of policy status. The effect on judgement is measured in surveys, the failures and gaps are indicators, and more importantly lacks a time-series data that indicates people's moral judgement erodes over time.
+        """)
 
 
 def render_human_validation_scores(data: pd.DataFrame) -> None:
@@ -1389,6 +1402,7 @@ def render_syco_effects(study2_df: pd.DataFrame, study3_df: pd.DataFrame) -> Non
         return (
             alt.layer(zero, spans, points, text_right, text_left)
             .properties(
+                width="container",
                 height=70 * len(order),
                 background="transparent",
                 title=alt.TitleParams(group, anchor="start", fontSize=14),
@@ -1467,7 +1481,11 @@ def render_syco_rightness_distribution(
     )
 
     def prepare(df, study):
-        if not isinstance(df, pd.DataFrame) or df.empty or "rightorwrong" not in df.columns:
+        if (
+            not isinstance(df, pd.DataFrame)
+            or df.empty
+            or "rightorwrong" not in df.columns
+        ):
             return None
         out = df.copy()
         if "is_syco" in out.columns:
@@ -1773,27 +1791,26 @@ def render_syco_scenario_effects(
                 text=alt.Text("effect:Q", format="+.2f"),
             )
         )
-        return alt.layer(zero, spans, points, text_right, text_left).properties(
-            width=260,
-            height=42 * len(scenario_order),
-            title=alt.TitleParams(label, anchor="start", fontSize=14),
+        return (
+            alt.layer(zero, spans, points, text_right, text_left)
+            .properties(
+                width="container",
+                height=42 * len(scenario_order),
+                background="transparent",
+                title=alt.TitleParams(label, anchor="start", fontSize=14),
+            )
+            .configure_view(strokeWidth=0)
+            .configure_title(color=fg)
+            .configure_axis(
+                grid=True,
+                gridColor=grid,
+                domainColor=domain,
+                tickColor=domain,
+                labelColor=muted,
+                titleColor=muted,
+            )
         )
-
-    chart = (
-        alt.hconcat(*[panel(c, i == 0) for i, c in enumerate(outcomes)], spacing=16)
-        .properties(background="transparent")
-        .configure_view(strokeWidth=0)
-        .configure_title(color=fg)
-        .configure_axis(
-            grid=True,
-            gridColor=grid,
-            domainColor=domain,
-            tickColor=domain,
-            labelColor=muted,
-            titleColor=muted,
-        )
-    )
-
+        
     def spread(label):
         sub = effects[
             (effects["outcome"] == label) & (effects["scenario"] != "All scenarios")
@@ -1811,11 +1828,18 @@ def render_syco_scenario_effects(
     if (right_sub["lo"] > 0).all() or (right_sub["hi"] < 0).all():
         caption += "For feeling in the right, every scenario's interval excludes zero. "
     if (repair_sub["lo"] > 0).all() or (repair_sub["hi"] < 0).all():
-        caption += "For willingness to repair, every scenario's interval excludes zero. "
+        caption += (
+            "For willingness to repair, every scenario's interval excludes zero. "
+        )
     caption += "Source: [Cheng et al., 2025](https://arxiv.org/abs/2510.01395)."
 
     with st.container():
-        st.altair_chart(chart, use_container_width=True, theme=None)
+        left, right = st.columns([1.5, 1], gap="small")
+        with left:
+            st.altair_chart(panel("rightorwrong", True), use_container_width=True, theme=None)
+        with right:
+            st.altair_chart(panel("repair_score", False), use_container_width=True, theme=None)
+
         st.caption(caption, text_alignment="center")
 
         if st.toggle("Show data", key="syco_scenario_table"):
@@ -1830,3 +1854,107 @@ def render_syco_scenario_effects(
                 }
             ).round(2)
             st.dataframe(table, use_container_width=True, hide_index=True)
+
+
+import pandas as pd
+
+
+def _latest_date(df: pd.DataFrame, cols: list[str]) -> str | None:
+    """Latest parsed date across the given columns, or None if unavailable."""
+    dates = []
+    for c in cols:
+        if c in df.columns:
+            dates.append(pd.to_datetime(df[c], errors="coerce", utc=True).max())
+    dates = [d for d in dates if pd.notna(d)]
+    return max(dates).strftime("%Y-%m-%d") if dates else None
+
+
+def render_sources(data_list: list[pd.DataFrame]) -> None:
+    """
+    Expects data_list in this order:
+      0 ai_reports, 1 ai_incidents, 2 human_validation, 3 ai_validation,
+      4 soft_eng_sat, 5 soft_eng_trust, 6 gmf_class, 7 frameworks,
+      8 classifications, 9 gov_trust_ipsos, 10 comp_trust_ipsos,
+      11 ai_env_trust_ipsos, 12 job_sec_trust_ipsos, 13 syco_study2, 14 syco_study3
+    """
+    (
+        ai_reports,
+        ai_inc,
+        _human,
+        _ai_val,
+        _sat,
+        _trust,
+        _gmf,
+        _frameworks,
+        _classifications,
+        _gov,
+        _comp,
+        _env,
+        _job,
+        _syco2,
+        _syco3,
+    ) = data_list
+
+    incidents_latest = _latest_date(ai_inc, ["date"]) or "n/a"
+    reports_latest = (
+        _latest_date(ai_reports, ["date_published", "date_submitted"]) or "n/a"
+    )
+
+    rows = [
+        {
+            "Dataset": "AI Incident Database: incidents",
+            "Latest observation": incidents_latest,
+            "License": "CC BY-SA 4.0",
+        },
+        {
+            "Dataset": "AI Incident Database: GMF classifications",
+            "Latest observation": incidents_latest,
+            "License": "CC BY-SA 4.0",
+        },
+        {
+            "Dataset": "AI Incident Database: reports (dates only)",
+            "Latest observation": reports_latest,
+            "License": "Not covered by AIID's CC BY-SA grant (text field excluded); contact RAIC",
+        },
+        {
+            "Dataset": "Scientometric LLM Ethics Benchmark: human validation + AI judge scores (universe-szw)",
+            "Latest observation": "2026 release",
+            "License": "MIT",
+        },
+        {
+            "Dataset": "Global AI Adoption & Workforce Impact Survey 24-26 (Kaggle, M. K. Suraj)",
+            "Latest observation": "2026-04-07 (last updated)",
+            "License": "Apache 2.0",
+        },
+        {
+            "Dataset": "Global Index on Responsible AI (GIRAI), 2nd edition",
+            "Latest observation": "Sep 2025 (evidence cut-off), published 2026",
+            "License": "CC BY 4.0",
+        },
+        {
+            "Dataset": "Ipsos AI Monitor 2025 (trust in government)",
+            "Latest observation": "2025-04-04",
+            "License": "Ipsos",
+        },
+        {
+            "Dataset": "Ipsos AI Monitor 2026 (trust in companies, environment, job security)",
+            "Latest observation": "2026-04-03",
+            "License": "Ipsos",
+        },
+        {
+            "Dataset": "Sycophancy studies 2 & 3 (Cheng et al., Science 2026; OSF)",
+            "Latest observation": "2026-03-26",
+            "License": "paper cited as CC BY 4.0",
+        },
+    ]
+
+    st.table(pd.DataFrame(rows))
+
+
+def render_data_limitations() -> None:
+    st.markdown("""
+    - Most data used involve surveys and may not reflect actual data or real events. This counts as self-reported and short-term.
+    - AIID reportings may not include incidents that are not reported such as attacks endured by firms not being disclosed publicly and that only incidents that editors classified under the GMF taxonomy appear in that chart.
+    - The trust maps use online surveys from different years. Ipsos surveyed adults under 75 online (30 countries in 2025, 32 in 2026). Online samples under-represent people with limited internet access, so results are not fully representative of each country. Government trust comes from the 2025 edition and the other questions from 2026.
+    - The ethics benchmark experiments on constructed prompts, but no connections to real incident data. Human validation covers a subset of items and the AI judges share a family with some of the models they score.
+    """)
