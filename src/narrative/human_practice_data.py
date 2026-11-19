@@ -2,12 +2,12 @@
 
 Every number shown on screen comes from a row of ``data/processed/*.csv``.
 Every processed row is derived from a verbatim copy of a source file in
-``data/wildai/`` (see ``data/wildai/SOURCE.md``), ``data/workforce/`` (see
-``data/workforce/SOURCE.md``) or the Schaeffer et al. table in ``data/schaeffer/``.  ``data/processed/MANIFEST.json`` records the
-SHA-256 of each input and the row count of each output.
+``data/raw/human_practice/wildai/`` (see ``data/raw/human_practice/wildai/SOURCE.md``), ``data/raw/human_practice/workforce/`` (see
+``data/raw/human_practice/workforce/SOURCE.md``), ``data/raw/human_practice/schaeffer/`` (see ``data/raw/human_practice/schaeffer/SOURCE.md``) 
+and ``data/processed/human_practice/MANIFEST.json`` records the SHA-256 of each input and the row count of each output.
 
-    python -m page2.src.data              # rebuild data/processed/* and validate
-    python -m page2.src.data --validate   # validate the existing processed files
+    uv run python -m narrative.human_practice_data              # rebuild the processed tables and validate
+    uv run python -m narrative.human_practice_data --validate   # validate the existing processed files
 """
 
 from __future__ import annotations
@@ -21,11 +21,11 @@ from pathlib import Path
 
 import pandas as pd
 
-ROOT = Path(__file__).resolve().parents[1]
-WILDAI = ROOT / "data" / "wildai"
-SCHAEFFER = ROOT / "data" / "schaeffer"
-WORKFORCE = ROOT / "data" / "workforce"
-PROCESSED = ROOT / "data" / "processed"
+from narrative import utils
+
+RAW = utils.get_raw_data_dir() / "human_practice"
+PROCESSED = utils.get_proc_data_dir() / "human_practice"
+WILDAI, SCHAEFFER, WORKFORCE = RAW / "wildai", RAW / "schaeffer", RAW / "workforce"
 
 WILDAI_COMMIT = "795a71852d569173fcdaca1db2a466109cd80814"  # origin/main of pangramlabs/WildAI
 WORKFORCE_COMMIT = "b33f3b25b7cce24833c857d242c90152c3b41571"  # karanmakhijauts/at-3-dvn, 26 Oct 2026
@@ -358,7 +358,7 @@ def write_tables(tables: dict[str, pd.DataFrame]) -> None:
         frame.to_csv(PROCESSED / f"{name}.csv", index=False)
         manifest["tables"][name] = {
             "rows": int(len(frame)),
-            "inputs": {str(p.relative_to(ROOT / "data")): _sha256(p) for p in INPUTS[name]},
+            "inputs": {str(p.relative_to(RAW)): _sha256(p) for p in INPUTS[name]},
         }
     (PROCESSED / "MANIFEST.json").write_text(json.dumps(manifest, indent=2) + "\n", encoding="utf-8")
 

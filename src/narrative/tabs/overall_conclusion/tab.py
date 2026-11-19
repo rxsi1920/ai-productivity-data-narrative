@@ -2,8 +2,8 @@ import streamlit as st
 
 from narrative.story import GROUP_QUESTION
 
-from ..human_practice.src import views_people
-from ..human_practice.src.page import load_tables
+from ..human_practice import views
+from ..human_practice.tab import load_tables
 
 
 def overall_conclusion_tab():
@@ -13,11 +13,11 @@ def overall_conclusion_tab():
     st.markdown(f"**Group question:** {GROUP_QUESTION}")
 
     st.caption("Feedback loop and cognition")
-    views_people.render_answer_text(tables)
-    # moral degradation summary goes here once it is written (Part 2)
+    views.render_answer_text(tables)
+    # moral degradation summary goes here once it is written
 
     st.header("Decision points: Feedback loop and cognition")
-    views_people.render_decision(tables)
+    views.render_decision(tables)
     st.divider()
-    views_people.render_rollout(tables)
-    views_people.render_questions_and_changes()
+    views.render_rollout(tables)
+    views.render_questions_and_changes()
