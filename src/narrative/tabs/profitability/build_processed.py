@@ -12,8 +12,9 @@ from pathlib import Path
 
 import pandas as pd
 
-ROOT = Path(__file__).resolve().parents[1]
-RAW, OUT = ROOT / "data" / "raw", ROOT / "data" / "processed"
+from narrative.utils import *
+
+RAW, OUT = get_raw_data_dir(), get_proc_data_dir()
 OUT.mkdir(parents=True, exist_ok=True)
 
 PROFIT_FILES = {

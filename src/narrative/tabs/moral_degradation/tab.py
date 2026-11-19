@@ -1,6 +1,7 @@
 from narrative.utils import *
 
 from .views import *
+from narrative.story import GROUP_QUESTION
 
 DATA_ROOT = get_proc_data_dir()
 
@@ -23,18 +24,9 @@ job_sec_trust_ipsos_data = pd.read_csv(DATA_ROOT / "Ipsos_job_sec_trust.csv")
 syco_study2_data = pd.read_csv(DATA_ROOT / "study2_responses.csv")
 syco_study3_data = pd.read_csv(DATA_ROOT / "study3_responses.redacted.csv")
 
-PAGE_TITLE = "A PACT WITH THE MACHINES: The Moral Price Paid for AI"
-PAGE_TITLE_CSS = '<div class="brand">A PACT WITH THE MACHINES:<br><span>The Moral Price Paid for AI</span></div>'
 PERSONA_STR = "<div style='font-size: 16px;'> <strong>Persona:</strong> C-suite of data center operators</div>"
 TQ_STR = """
-As AI becomes increasingly central to our everyday decision-making, who bears the costs of moral erosion?
-"""
-GQ_STR = """
-<div style="background-color: #171415; padding: 10px 15px; display: inline-block;">
-    <span style="color: #ffffff; font-size: 0.9rem; line-height: 1.5;">
-        <strong>Group Question: </strong>Do AI's measured productivity gains outweigh the hidden costs to how people think, learn, and work?
-    </span>
-</div>
+AI delivers substantial value, but what does it cost when AI shapes our judgement, responsibility and trust?
 """
 
 BG = "#404e51"
@@ -47,41 +39,14 @@ ALARM = "#ff4d5a"
 
 
 def moral_degradation_tab():
-    st.markdown(
-        f"""
-        <style>
-        header[data-testid="stHeader"] {{ background: transparent; }}
-        .block-container {{ padding-top: 1.5rem; max-width: 1600px; }}
-        div[data-testid="stVerticalBlockBorderWrapper"] {{
-            background: {PANEL}; border: 1px solid {LINE}; border-radius: 16px;
-            backdrop-filter: blur(8px);
-        }}
-        div[data-testid="stMetric"] label {{ color: {MUTED}; }}
-        .brand {{ font-size: 1.4rem; font-weight: 700; letter-spacing: .02em; }}
-        .brand span {{ font-weight: 300; }}
-        .muted {{ color: {MUTED}; font-size: .85rem; }}
-        .custom-tab-bar {{
-            display: flex;
-            justify-content: space-between;
-            border-bottom: 1px solid #3e444d; /* The long bottom line */
-            margin-bottom: 20px;
-            padding-bottom: 0;
-        }}
-    </style>
 
+    st.title(TQ_STR)
+    st.markdown(f"**Group question**: {GROUP_QUESTION}", unsafe_allow_html=True)
+    with st.container(key="answer", border=True):
+        st.markdown("""
+            **Our answer:** Early on, AI weakens our moral judgement and the safeguards are thin, but does not have a proveable cause. In controlled experiments, people who talked to a flattering AI felt more in the right and were less willing to repair the conflict, and this held in more than one study. Around that, the safety net is clean, in that reported AI incidents reached 1,536 in 2025 and are still accelerating, models differ widely in how closely their moral scores match human validation, and in most areas of responsible AI only a minority of countries have a binding national framework. The first is a single-conversation experiment, the second is a count of reports, and the third is a snapshot of policy status. The effect on judgement is measured in surveys, the failures and gaps are indicators, and more importantly lacks a time-series data that indicates people's moral judgement erodes over time.
+        """)
 
-    """,
-        unsafe_allow_html=True,
-    )
-
-    st.markdown(PAGE_TITLE_CSS, text_alignment="center", unsafe_allow_html=True)
-    st.space()
-    st.markdown(
-        f"**Question**: {TQ_STR}", text_alignment="center", unsafe_allow_html=True
-    )
-    st.markdown(GQ_STR, text_alignment="center", unsafe_allow_html=True)
-
-    st.space()
     st.header("1. A slow burning threat to humanity")
     render_reports_timeseries(ai_inc_data, ai_reports_data)
 
