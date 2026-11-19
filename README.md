@@ -6,7 +6,7 @@ The question is arguable. Firm and industry data show real gains in output and p
 
 ## Persona and decision
 
-**Persona:** a company's C-suite (CEO, CFO or COO) at a mid-to-large firm.
+**Persona:** a company's C-suite (i.e., CEO, CFO or COO) at a mid-to-large firm.
 
 **Decision:** whether to invest in adopting AI, and if so, how to roll it out. The choices are:
 - where to expect a return first,
@@ -15,22 +15,23 @@ The question is arguable. Firm and industry data show real gains in output and p
 
 ## Our answer
 
-**Not yet proven either way, and the gains are narrower than the hype suggests.**
-- **Gains:**
-  - AI-intensive industries grew productivity fastest.
-  - US corporate profits rose faster than pay.
-  - Controlled studies show 12–37% output gains on specific tasks.
-  - But economy-wide productivity growth slowed, and countries that use AI most did not grow faster.
-- **Costs:** these are early indicators, not proven harms.
-  - Early-career employment in AI-exposed jobs fell 11% while less-exposed peers grew 10%.
-  - The human-written share of new web text fell from 87% to 64% in two years.
-  - Flattering AI made people feel more in the right and less willing to repair a conflict.
+**Our answer: not clearly, so far.** The gains are real but narrower than the hype suggests, and the costs are early signals, not yet proven harm.
 
-The gains are measured; the costs are early signals. A firm adopting AI should therefore expect a narrow return and protect training pathways and human judgement as it scales.
+**Gains (measured):**
+  - AI-intensive industries grew productivity fastest, and US corporate profits rose faster than employee pay.
+  - Controlled studies show output gains of 14% to 37% on specific tasks.
+  - But economy-wide productivity growth slowed, and the countries that use AI most did not grow faster.
+
+**Costs (early indicators):**
+  - Since November 2022, employment of 22- to 25-year-olds fell 11% in the most AI-exposed jobs while it grew 10% in the least exposed.
+  - The human-written share of sampled web text fell from 87% to 64% in the two years to August 2026.
+  - A flattering AI left people feeling more in the right and less willing to repair a conflict.
+
+**For a firm adopting AI:** expect a narrow return, and protect training pathways and human judgement as you scale. Because the gains are measured and the costs are early indicators, a reader who weighs measured gains more heavily could reach the opposite answer.
 
 ## User stories
 
-**1. Profitability.** "As a C-suite executive deciding on AI investment (i.e., CEO or CFO), I want to see whether AI adoption has raised productivity and profits, so that I can judge the expected return."
+**1. Profitability.** As a C-suite executive deciding on AI investment (i.e., CEO or CFO), I want to see whether AI adoption has raised productivity and profits, so that I can judge the expected return.
 - Open **Profitability**. Read the KPI row and the answer box.
 - Go to **Evidence**. In the country chart, switch the **scope** (World / Europe) and **outcome** dropdowns. The "X of Y beat the median" count and r update.
 - Read **Who captures the gains?**: profits +49% vs employee pay +19%.
@@ -48,7 +49,7 @@ The gains are measured; the costs are early signals. A firm adopting AI should t
 - In section 3, pick a **Responsible AI dimension** and **country group** to see how many countries have binding rules.
 - In section 4, change **Select study** to compare the sycophancy experiments.
 
-Then open **Overall conclusion**, which puts the three parts side by side.
+Then open **Overall conclusion** for the group answer and decision points.
 
 ## Run it
 

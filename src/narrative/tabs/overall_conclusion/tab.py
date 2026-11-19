@@ -1,6 +1,6 @@
 import streamlit as st
 
-from narrative.story import GROUP_QUESTION, GROUP_ANSWER
+from narrative.story import GROUP_ANSWER, GROUP_QUESTION
 
 from ..human_practice import views
 from ..human_practice.tab import load_tables
@@ -12,7 +12,6 @@ def overall_conclusion_tab():
     st.title("Overall conclusion")
     st.markdown(f"**Group question:** {GROUP_QUESTION}")
 
-    st.markdown(f"**Group question:** {GROUP_QUESTION}")
     with st.container(border=True, key="group_answer"):
         st.markdown(GROUP_ANSWER)
 
