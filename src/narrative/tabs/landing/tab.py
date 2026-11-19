@@ -35,6 +35,15 @@ PAGE_BLURBS = {
     "overall-conclusion": "Weighing the measured gains against the hidden costs beyond financial and present impact.",
 }
 
+PAGE_CARD_CSS = """
+<style>
+div[class*="st-key-page_card_"] {
+    background-color: #EEF2FF;
+    border: 1px solid #6082FF !important;
+}
+</style>
+"""
+
 LIMITS = [
     (
         "**Cause and effect.** Every comparison is a before/after break or a correlation. Other forces, such as the 2022 "
@@ -160,30 +169,33 @@ def render_landing(pages):
     )
 
     st.markdown(
-        "We invite decision-makers to explore the gains and hidden costs of AI such that:"
+        "We invite decision-makers to explore the gains and hidden costs of AI from the following lenses:"
     )
     st.markdown("\n".join(f"- {s}" for s in STORIES))
 
     st.markdown(
         "Each page is a deep-dive on a part of the story. Start with profitability:"
     )
+    st.markdown(PAGE_CARD_CSS, unsafe_allow_html=True)
     cols = st.columns(len(pages))
     for col, page in zip(cols, pages):
-        with col, st.container(border=True):
+        with col, st.container(border=True, key=f"page_card_{page.url_path}"):
             st.page_link(page, label=page.title)
             st.caption(PAGE_BLURBS.get(page.url_path, ""))
 
-    st.subheader("What this data can't show")
-    st.markdown("\n".join(f"- {item}" for item in LIMITS))
+    st.divider()
 
-    st.subheader("Sources and last data refresh")
-    st.markdown(
-        "\n".join(
+    st.caption(
+        "**What this data can't show**\n\n"
+        + "\n".join(f"- {item}" for item in LIMITS)
+    )
+
+    st.caption(
+        "**Sources and last data refresh**\n\n"
+        + "\n".join(
             f"- **{page}** (last data refresh: {refresh}): {src}"
             for page, refresh, src in SOURCES
         )
-    )
-    st.caption(
-        "The figures above are computed from `data/processed/` each time the app loads. "
+        + "\n\nThe figures above are computed from `data/processed/` each time the app loads. "
         "Each page lists its full sources, transforms and limits."
     )
