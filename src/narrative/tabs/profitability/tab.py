@@ -667,41 +667,42 @@ BG, PANEL, EDGE, GRID, TEXT, SUB = "#FFFFFF", "#F8FAFC", "#E2E8F0", "#E2E8F0", "
 H = 400
 
 # deleted some formatting that is overruled by Manrope styling
-st.markdown(f"""
-<style>
-.block-container {{padding-top: 2.6rem; padding-bottom: 1.2rem; max-width: 1640px;}}
-div[data-testid="stVerticalBlock"] {{gap: 0.6rem;}}
-div[data-testid="stVerticalBlockBorderWrapper"] {{background: {PANEL}; border: 1px solid {EDGE} !important; border-radius: 8px;}}
-div[data-testid="stVerticalBlockBorderWrapper"] > div {{padding: 0.5rem 0.75rem 0.3rem 0.75rem;}}
-.banner {{background: {PANEL}; border: 1px solid {EDGE}; border-left: 4px solid {BLUE};
-          border-radius: 8px; padding: 14px 20px; margin-bottom: 8px;}}
-.banner .eyebrow {{color: {BLUE}; font-size: .72rem; font-weight: 600; letter-spacing: .14em; text-transform: uppercase;}}
-.banner .bt {{color: {TEXT}; font-size: 1.6rem; font-weight: 700; line-height: 1.25; margin-top: 2px;}}
-.banner p {{color: {SUB}; margin: 4px 0 0 0; font-size: .88rem;}}
-.banner b {{color: {TEXT};}}
-.sec {{margin: 18px 0 4px 0; display: flex; align-items: baseline; gap: 12px;}}
-.sec .q {{color: {TEXT}; font-size: 1.2rem; font-weight: 700;}}
-.sec .tag {{color: {BLUE}; font-size: .72rem; font-weight: 600; letter-spacing: .14em; text-transform: uppercase;}}
-.sec-line {{height: 1px; background: linear-gradient(90deg, {BLUE} 0%, rgba(59,130,246,0) 70%); margin-bottom: 6px;}}
-.ct {{font-weight: 600; font-size: 1rem; color: {TEXT}; line-height: 1.3;}}
-.cs {{font-size: .78rem; color: {SUB}; line-height: 1.3; margin-top: 1px;}}
-.kpi {{background: {PANEL}; border: 1px solid {EDGE}; border-radius: 8px; padding: 10px 14px; height: 100%;}}
-.kpi .kh {{color: {SUB}; font-size: .7rem; font-weight: 600; letter-spacing: .08em; text-transform: uppercase;}}
-.kpi .kv {{color: {TEXT}; font-size: 1.9rem; font-weight: 700; line-height: 1.2; margin-top: 4px;}}
-.kpi .kd {{font-size: .76rem; color: {SUB}; margin-top: 2px;}}
-.kpi .up {{color: #0369A1; font-weight: 600;}} .kpi .dn {{color: #C2410C; font-weight: 600;}} .kpi .nt {{color: #B45309; font-weight: 600;}}
-.imp {{background: {PANEL}; border: 1px solid {EDGE}; border-top: 3px solid {TEAL}; border-radius: 8px; padding: 12px 16px; height: 100%;}}
-.imp .ih {{color: {TEXT}; font-weight: 700; font-size: 1rem;}}
-.imp .ib {{color: {SUB}; font-size: .84rem; margin-top: 4px; line-height: 1.4;}}
-div[data-testid="stPopover"] button {{padding: 0 8px; min-height: 1.5rem; font-size: .75rem; border-color: {EDGE}; background: transparent;}}
-.answer {{background: #EFF6FF; border: 1px solid #BFDBFE; border-radius: 8px; padding: 12px 18px; color: {TEXT}; font-size: .98rem; line-height: 1.5;}}
-.answer b {{color: #1D4ED8;}}
-.limits {{background: {PANEL}; border: 1px dashed {EDGE}; border-radius: 8px; padding: 10px 16px; color: {SUB}; font-size: .84rem; line-height: 1.5;}}
-.limits b {{color: {TEXT};}}
-.foot {{color: {SUB}; font-size: .76rem; border-top: 1px solid {EDGE}; margin-top: 18px; padding-top: 8px; line-height: 1.5;}}
-.foot a {{color: #2563EB;}}
-</style>
-""", unsafe_allow_html=True)
+def inject_css():
+    st.markdown(f"""
+    <style>
+    .block-container {{padding-top: 2.6rem; padding-bottom: 1.2rem; max-width: 1640px;}}
+    div[data-testid="stVerticalBlock"] {{gap: 0.6rem;}}
+    div[data-testid="stVerticalBlockBorderWrapper"] {{background: {PANEL}; border: 1px solid {EDGE} !important; border-radius: 8px;}}
+    div[data-testid="stVerticalBlockBorderWrapper"] > div {{padding: 0.5rem 0.75rem 0.3rem 0.75rem;}}
+    .banner {{background: {PANEL}; border: 1px solid {EDGE}; border-left: 4px solid {BLUE};
+            border-radius: 8px; padding: 14px 20px; margin-bottom: 8px;}}
+    .banner .eyebrow {{color: {BLUE}; font-size: .72rem; font-weight: 600; letter-spacing: .14em; text-transform: uppercase;}}
+    .banner .bt {{color: {TEXT}; font-size: 1.6rem; font-weight: 700; line-height: 1.25; margin-top: 2px;}}
+    .banner p {{color: {SUB}; margin: 4px 0 0 0; font-size: .88rem;}}
+    .banner b {{color: {TEXT};}}
+    .sec {{margin: 18px 0 4px 0; display: flex; align-items: baseline; gap: 12px;}}
+    .sec .q {{color: {TEXT}; font-size: 1.2rem; font-weight: 700;}}
+    .sec .tag {{color: {BLUE}; font-size: .72rem; font-weight: 600; letter-spacing: .14em; text-transform: uppercase;}}
+    .sec-line {{height: 1px; background: linear-gradient(90deg, {BLUE} 0%, rgba(59,130,246,0) 70%); margin-bottom: 6px;}}
+    .ct {{font-weight: 600; font-size: 1rem; color: {TEXT}; line-height: 1.3;}}
+    .cs {{font-size: .78rem; color: {SUB}; line-height: 1.3; margin-top: 1px;}}
+    .kpi {{background: {PANEL}; border: 1px solid {EDGE}; border-radius: 8px; padding: 10px 14px; height: 100%;}}
+    .kpi .kh {{color: {SUB}; font-size: .7rem; font-weight: 600; letter-spacing: .08em; text-transform: uppercase;}}
+    .kpi .kv {{color: {TEXT}; font-size: 1.9rem; font-weight: 700; line-height: 1.2; margin-top: 4px;}}
+    .kpi .kd {{font-size: .76rem; color: {SUB}; margin-top: 2px;}}
+    .kpi .up {{color: #0369A1; font-weight: 600;}} .kpi .dn {{color: #C2410C; font-weight: 600;}} .kpi .nt {{color: #B45309; font-weight: 600;}}
+    .imp {{background: {PANEL}; border: 1px solid {EDGE}; border-top: 3px solid {TEAL}; border-radius: 8px; padding: 12px 16px; height: 100%;}}
+    .imp .ih {{color: {TEXT}; font-weight: 700; font-size: 1rem;}}
+    .imp .ib {{color: {SUB}; font-size: .84rem; margin-top: 4px; line-height: 1.4;}}
+    div[data-testid="stPopover"] button {{padding: 0 8px; min-height: 1.5rem; font-size: .75rem; border-color: {EDGE}; background: transparent;}}
+    .answer {{background: #EFF6FF; border: 1px solid #BFDBFE; border-radius: 8px; padding: 12px 18px; color: {TEXT}; font-size: .98rem; line-height: 1.5;}}
+    .answer b {{color: #1D4ED8;}}
+    .limits {{background: {PANEL}; border: 1px dashed {EDGE}; border-radius: 8px; padding: 10px 16px; color: {SUB}; font-size: .84rem; line-height: 1.5;}}
+    .limits b {{color: {TEXT};}}
+    .foot {{color: {SUB}; font-size: .76rem; border-top: 1px solid {EDGE}; margin-top: 18px; padding-top: 8px; line-height: 1.5;}}
+    .foot a {{color: #2563EB;}}
+    </style>
+    """, unsafe_allow_html=True)
 
 
 def mini(fig: go.Figure, h: int = H, ysuf: str = "", ypre: str = "", legend: bool = True, ytitle: str = "", xtitle: str = "") -> go.Figure:
@@ -767,6 +768,7 @@ def ilo(key: str) -> pd.DataFrame:  # not cached: cheap, and avoids a stale regi
     return d
 
 def profitability_tab():
+    inject_css()
     oph = ilo("ilo_oph").pivot(index="region", columns="year", values="value")
     lis = ilo("ilo_lis").pivot(index="region", columns="year", values="value")
     prod_reg = pd.DataFrame({"2015–19": ((oph[2019] / oph[2015]) ** (1 / 4) - 1) * 100,
