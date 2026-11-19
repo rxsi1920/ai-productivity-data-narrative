@@ -5,9 +5,9 @@ from narrative.story import GROUP_QUESTION
 # One line per page: what part of the group question it answers.
 PAGE_BLURBS = {
     "profitability": "Does AI pay for itself?",
-    "feedback-loop": "Is AI weakening the human practice and knowledge that both people and AI learn from?",
+    "feedback-loop": "What cost does the AI efficiency we are gaining now have on the expertise that tomorrow's workers and models need?",
     "moral-degradation": "What does AI cost in judgement, responsibility and trust?",
-    "overall-conclusion": "Weighing the measured gains against the hidden costs.",
+    "overall-conclusion": "Weighing the measured gains against the hidden costs beyond financial and present impact.",
 }
 
 

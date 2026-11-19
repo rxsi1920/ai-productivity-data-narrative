@@ -1,11 +1,11 @@
-# Is AI weakening the human practice and knowledge that both people and AI learn from?
+# What cost does the AI efficiency we are gaining now have on the expertise that tomorrow's workers and models need?
 
 One page of the Team 3 app for 36104 Assignment 3 (Data Narrative Studio). It merges Dominique Daval Santos's
 model-collapse dashboard (`../model_collapse_dashboard`, left untouched) with Karan Makhija's "Smarter, or slipping?"
 dashboard (`karanmakhijauts/at-3-dvn`, commit `b33f3b2`).
 
 - **Group question:** Do AI's measured productivity gains outweigh the hidden costs to how people think, learn, and work?
-- **This page's question:** Is AI weakening the human practice and knowledge that both people and AI learn from?
+- **This page's question:** What cost does the AI efficiency we are gaining now have on the expertise that tomorrow's workers and models need?
 - **Persona:** a C-suite executive deciding AI policy, who has to decide where to keep human skilled input and where to
   take AI-efficient output.
 - **User story:** As a C-suite executive deciding on AI policy, I want to see how AI use is affecting staff training and

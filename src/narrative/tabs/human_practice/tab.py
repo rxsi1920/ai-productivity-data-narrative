@@ -10,7 +10,7 @@ from narrative.story import GROUP_QUESTION
 
 from . import views
 
-PAGE_QUESTION = "Is AI weakening the human practice and knowledge that both people and AI learn from?"
+PAGE_QUESTION = "What cost does the AI efficiency we are gaining now have on the expertise that tomorrow's workers and models need?"
 USER_STORY = (
     "As a C-suite executive deciding on AI policy, I want to see how AI use is affecting staff training and model "
     "training, so that I can decide where to prioritise human skilled input vs. AI-efficient output for business continuity."
