@@ -18,7 +18,6 @@ def render_landing(pages):
 
     cols = st.columns(len(pages))
     for col, page in zip(cols, pages):
-        with col:
-            with st.container(border=True):
-                st.page_link(page, label=page.title)
-                st.caption(PAGE_BLURBS.get(page.url_path, ""))
+        with col, st.container(border=True):
+            st.page_link(page, label=page.title)
+            st.caption(PAGE_BLURBS.get(page.url_path, ""))

@@ -6,12 +6,12 @@ bs4==0.0.2
 certifi==2026.10.23
 cffi==2.1.1 ; platform_python_implementation != 'PyPy'
 charset-normalizer==3.5.2
-click==8.5.0
+click==8.5.1
 colorama==0.4.6 ; sys_platform == 'win32'
 countrycode==0.6.0
 cryptography==50.0.2
 et-xmlfile==2.0.0
-filelock==4.2.8
+filelock==4.2.12
 gdown==6.5.1
 h11==0.16.0
 idna==3.20
@@ -22,35 +22,35 @@ jsonschema-specifications==2025.9.1
 kagglehub==1.0.3
 kagglesdk==0.1.38
 markupsafe==3.0.4
-narwhals==2.28.0
-numpy==2.5.4
+narwhals==2.29.0
+numpy==2.5.5
 openpyxl==3.1.5
 packaging==26.3
-pandas==3.1.0
+pandas==3.1.1
 pdfminer-six==20260107
 pdfplumber==0.11.10
 pillow==13.0.0
 plotly==7.1.0
 protobuf==7.36.2
-pyarrow==26.0.0
+pyarrow==26.0.1
 pycountry==26.2.16
 pycparser==3.12 ; implementation_name != 'PyPy' and platform_python_implementation != 'PyPy'
 pydeck==0.9.3
 pypdfium2==5.15.2
 pysocks==1.7.1
 python-dateutil==4.0.0
-python-multipart==0.0.33
+python-multipart==0.0.34
 pyyaml==6.0.3
 referencing==0.37.0
 requests==2.34.2
 rpds-py==2026.9.1
 soupsieve==4.1.1
 starlette==1.10.0
-streamlit==1.66.1
+streamlit==1.67.0
 tqdm==4.70.1
 typing-extensions==4.16.0
 tzdata==2026.6
 urllib3==2.8.0
 uvicorn==0.54.0
-watchdog==6.0.0 ; sys_platform != 'darwin'
+watchdog==7.1.0 ; sys_platform != 'darwin'
 websockets==17.4
