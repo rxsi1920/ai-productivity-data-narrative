@@ -721,13 +721,13 @@ def _relative_gap(entry: pd.DataFrame) -> tuple[float, float, float]:
 
 
 # ----------------------------------------------------------------------------- answer
-def render_answer_text(tables: dict[str, pd.DataFrame]) -> None:
+def render_answer_text(tables: dict[str, pd.DataFrame], label: str = "Our answer") -> None:
     evidence = tables["evidence"]
     out = evidence[evidence["panel"] == "output"]
     gains = int((out["direction"] == "gain").sum())
     with st.container(key="answer", border=True):
         st.markdown(
-            "**Our answer: early signs of a real cost, but not yet a proven one.** "
+            f"**{label}: early signs of a real cost, but not yet a proven one.** "
             f"The efficiency is measured: AI is raising output today ({gains} of {len(out)} output findings show a gain). "
             "The cost falls on what tomorrow's workers and models learn from. For workers, early-career employment in "
             "AI-exposed occupations is thinning. For models, both the human-written share of web text and the value of "
