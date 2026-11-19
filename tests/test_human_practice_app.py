@@ -7,8 +7,18 @@ EMPTY = "No observations match the selected filters."
 GROUP_QUESTION = "Do AI's measured productivity gains outweigh the hidden costs to how people think, learn, and work?"
 
 
+def _feedback_loop_page():
+    import streamlit as st
+
+    from narrative.tabs.human_practice.tab import human_practice_tab
+
+    st.set_page_config(layout="wide")
+    human_practice_tab()
+
+
 def run() -> AppTest:
-    return AppTest.from_file(str(ROOT / "app.py"), default_timeout=120).run()  # page 2 is the default page
+    # Home is the default page in app.py, so test the feedback-loop page on its own
+    return AppTest.from_function(_feedback_loop_page, default_timeout=120).run()
 
 
 def infos(app: AppTest) -> list[str]:
@@ -24,7 +34,7 @@ def evidence_headline(app: AppTest) -> str:
 def test_opening_screen_states_question_answer_and_story():
     app = run()
     assert not app.exception
-    assert app.title[0].value == "Is AI weakening the human practice and knowledge that both people and AI learn from?"
+    assert app.title[0].value == "What cost does the AI efficiency we are gaining now have on the expertise that tomorrow's workers and models need?"
     text = " ".join(m.value for m in app.markdown)
     assert GROUP_QUESTION in text and "Our answer" in text
     assert [h.value[0] for h in app.header] == list("1234")

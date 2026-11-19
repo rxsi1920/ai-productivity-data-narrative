@@ -21,7 +21,8 @@ from narrative.utils import *
 DATA = get_proc_data_dir()
 LAST_REFRESH = "22 Oct 2026"  # date the source files in data/raw were downloaded
 
-st.set_page_config(page_title="AI, Productivity & Profitability", page_icon="📈", layout="wide", initial_sidebar_state="collapsed")
+# the line below was commented out during consolidation, but still kept here for reference.
+# st.set_page_config(page_title="AI, Productivity & Profitability", page_icon="📈", layout="wide", initial_sidebar_state="collapsed")
 
 
 # --------------------------------------------------------------------------------------
@@ -656,27 +657,23 @@ SOURCES.update({
 for _k in [k for k, v in SOURCES.items() if not (DATA / v["file"]).exists()]:
     SOURCES.pop(_k)
 
-# ======================================================================================
-# 9. THEME — professional dark "tech" style
-# ======================================================================================
+# ============================================================================================
+# 9. THEME — professional dark "tech" style was updated to light, matches the rest of the app
+# ============================================================================================
 BLUE, TEAL, AMBER, RED, VIOLET, GREEN, SLATE, MUTED = "#3B82F6", "#14B8A6", "#F59E0B", "#F97316", "#A78BFA", "#38BDF8", "#94A3B8", "#475569"  # RED/GREEN remapped to orange/sky: colour-vision safe
 PAL = [BLUE, TEAL, AMBER, VIOLET, "#F472B6", "#38BDF8", RED, GREEN]
-QUAL = ["#56B4E9", "#F59E0B", "#009E73", "#F0E442", "#CC79A7", "#E2E8F0"]  # Okabe-Ito based: min ΔE ≥ 11 under simulated CVD
-BG, PANEL, EDGE, GRID, TEXT, SUB = "#0B1220", "#0F172A", "#1E293B", "#1E293B", "#E2E8F0", "#94A3B8"
+QUAL = ["#0072B2", "#E69F00", "#009E73", "#D55E00", "#CC79A7", "#555555"]  # Okabe-Ito, light background
+BG, PANEL, EDGE, GRID, TEXT, SUB = "#FFFFFF", "#F8FAFC", "#E2E8F0", "#E2E8F0", "#1E293B", "#64748B"
 H = 400
 
+# deleted some formatting that is overruled by Manrope styling
 st.markdown(f"""
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
-html, body, [class*="css"] {{font-family: 'Inter', sans-serif;}}
-.stApp {{background-color: {BG};
-  background-image: linear-gradient(rgba(148,163,184,.045) 1px, transparent 1px), linear-gradient(90deg, rgba(148,163,184,.045) 1px, transparent 1px);
-  background-size: 32px 32px;}}
 .block-container {{padding-top: 2.6rem; padding-bottom: 1.2rem; max-width: 1640px;}}
 div[data-testid="stVerticalBlock"] {{gap: 0.6rem;}}
 div[data-testid="stVerticalBlockBorderWrapper"] {{background: {PANEL}; border: 1px solid {EDGE} !important; border-radius: 8px;}}
 div[data-testid="stVerticalBlockBorderWrapper"] > div {{padding: 0.5rem 0.75rem 0.3rem 0.75rem;}}
-.banner {{background: linear-gradient(90deg, #0F172A 0%, #111C33 100%); border: 1px solid {EDGE}; border-left: 4px solid {BLUE};
+.banner {{background: {PANEL}; border: 1px solid {EDGE}; border-left: 4px solid {BLUE};
           border-radius: 8px; padding: 14px 20px; margin-bottom: 8px;}}
 .banner .eyebrow {{color: {BLUE}; font-size: .72rem; font-weight: 600; letter-spacing: .14em; text-transform: uppercase;}}
 .banner .bt {{color: {TEXT}; font-size: 1.6rem; font-weight: 700; line-height: 1.25; margin-top: 2px;}}
@@ -692,28 +689,28 @@ div[data-testid="stVerticalBlockBorderWrapper"] > div {{padding: 0.5rem 0.75rem 
 .kpi .kh {{color: {SUB}; font-size: .7rem; font-weight: 600; letter-spacing: .08em; text-transform: uppercase;}}
 .kpi .kv {{color: {TEXT}; font-size: 1.9rem; font-weight: 700; line-height: 1.2; margin-top: 4px;}}
 .kpi .kd {{font-size: .76rem; color: {SUB}; margin-top: 2px;}}
-.kpi .up {{color: {GREEN}; font-weight: 600;}} .kpi .dn {{color: {RED}; font-weight: 600;}} .kpi .nt {{color: {AMBER}; font-weight: 600;}}
+.kpi .up {{color: #0369A1; font-weight: 600;}} .kpi .dn {{color: #C2410C; font-weight: 600;}} .kpi .nt {{color: #B45309; font-weight: 600;}}
 .imp {{background: {PANEL}; border: 1px solid {EDGE}; border-top: 3px solid {TEAL}; border-radius: 8px; padding: 12px 16px; height: 100%;}}
 .imp .ih {{color: {TEXT}; font-weight: 700; font-size: 1rem;}}
 .imp .ib {{color: {SUB}; font-size: .84rem; margin-top: 4px; line-height: 1.4;}}
 div[data-testid="stPopover"] button {{padding: 0 8px; min-height: 1.5rem; font-size: .75rem; border-color: {EDGE}; background: transparent;}}
-.answer {{background: #0F1B33; border: 1px solid #1E3A8A; border-radius: 8px; padding: 12px 18px; color: {TEXT}; font-size: .98rem; line-height: 1.5;}}
-.answer b {{color: #93C5FD;}}
-.limits {{background: {PANEL}; border: 1px dashed #334155; border-radius: 8px; padding: 10px 16px; color: {SUB}; font-size: .84rem; line-height: 1.5;}}
+.answer {{background: #EFF6FF; border: 1px solid #BFDBFE; border-radius: 8px; padding: 12px 18px; color: {TEXT}; font-size: .98rem; line-height: 1.5;}}
+.answer b {{color: #1D4ED8;}}
+.limits {{background: {PANEL}; border: 1px dashed {EDGE}; border-radius: 8px; padding: 10px 16px; color: {SUB}; font-size: .84rem; line-height: 1.5;}}
 .limits b {{color: {TEXT};}}
 .foot {{color: {SUB}; font-size: .76rem; border-top: 1px solid {EDGE}; margin-top: 18px; padding-top: 8px; line-height: 1.5;}}
-.foot a {{color: #38BDF8;}}
+.foot a {{color: #2563EB;}}
 </style>
 """, unsafe_allow_html=True)
 
 
 def mini(fig: go.Figure, h: int = H, ysuf: str = "", ypre: str = "", legend: bool = True, ytitle: str = "", xtitle: str = "") -> go.Figure:
-    fig.update_layout(height=h, margin=dict(l=4, r=8, t=8, b=4), font=dict(family="Inter, sans-serif", size=12, color="#CBD5E1"),
-                      hovermode="x unified", hoverlabel=dict(bgcolor="#1E293B", bordercolor="#334155", font=dict(color=TEXT)),
+    fig.update_layout(height=h, margin=dict(l=4, r=8, t=8, b=4), font=dict(family="Manrope, sans-serif", size=12, color=TEXT),
+                      hovermode="x unified", hoverlabel=dict(bgcolor="#FFFFFF", bordercolor=EDGE, font=dict(color=TEXT)),
                       showlegend=legend, legend=dict(orientation="h", yanchor="bottom", y=1.0, x=0, font=dict(size=11), bgcolor="rgba(0,0,0,0)"),
                       plot_bgcolor="rgba(0,0,0,0)", paper_bgcolor="rgba(0,0,0,0)",
                       yaxis=dict(ticksuffix=ysuf, tickprefix=ypre, gridcolor=GRID, zeroline=False, linecolor=GRID, title=dict(text=ytitle, font=dict(size=11))),
-                      xaxis=dict(showgrid=False, linecolor="#334155", title=dict(text=xtitle, font=dict(size=11))))
+                      xaxis=dict(showgrid=False, linecolor="#94A3B8", title=dict(text=xtitle, font=dict(size=11))))
     return fig
 
 
@@ -880,7 +877,7 @@ def profitability_tab():
             if reg not in sel_regs:
                 continue
             d = sc[sc["region"] == reg]
-            fig.add_scatter(x=d["gdppc"], y=d["share"], mode="markers", name=reg, marker=dict(size=9, color=cl, symbol=REG_SYM[reg], opacity=0.85, line=dict(color="#0B1220", width=0.6)),
+            fig.add_scatter(x=d["gdppc"], y=d["share"], mode="markers", name=reg, marker=dict(size=9, color=cl, symbol=REG_SYM[reg], opacity=0.85, line=dict(color="#FFFFFF", width=0.6)),
                             text=d["Entity"], hovertemplate="<b>%{text}</b><br>%{y:.1f}% use gen AI · GDP/person $%{x:,.0f}<extra></extra>")
         lab = sc[sc["Entity"].isin(top3 + ["United States", "China", "India", "Australia", "Germany", "Japan"])]
         fig.add_scatter(x=lab["gdppc"], y=lab["share"], mode="text", text=lab["Entity"], textposition=["bottom center" if e in ("Germany", "China") else ("middle right" if e == "United States" else "top center") for e in lab["Entity"]], textfont=dict(size=10, color=TEXT),
@@ -1006,14 +1003,14 @@ def profitability_tab():
     fig = go.Figure()
     for x0, x1, lab in [(2019.5, 2020.5, "COVID-19"), (2021.6, 2023.4, "War in Ukraine · energy shock · rate hikes")]:
         fig.add_vrect(x0=x0, x1=x1, fillcolor="rgba(249,115,22,.08)", line_width=0, layer="below",
-                    annotation_text=lab, annotation_position="top left", annotation_font=dict(size=11, color="#FDBA74"))
+                    annotation_text=lab, annotation_position="top left", annotation_font=dict(size=11, color="#C2410C"))
     style = {"World": (TEXT, 3, "dot"), "North America": (BLUE, 2.5, None), "EU-27": (TEAL, 2.5, None), "East Asia & Pacific": (AMBER, 2, None)}
     for reg in ["South Asia", "Latin America", "Sub-Saharan Africa", "East Asia & Pacific", "North America", "EU-27", "World"]:
         col, wid, dash = style.get(reg, (MUTED, 1.4, None))
         fig.add_scatter(x=gw.index, y=gw[reg], name=reg, mode="lines+markers+text" if reg == "World" else "lines+markers", line=dict(color=col, width=wid, dash=dash),
                         marker=dict(size=5 if reg in style else 3), text=[f"{v:.1f}" for v in gw[reg]] if reg == "World" else None, textposition="top center",
                         textfont=dict(size=9, color=TEXT), hovertemplate="%{y:.1f}%")
-    fig.add_hline(y=0, line_color="#334155")
+    fig.add_hline(y=0, line_color="#94A3B8")
     _regs = sorted(gw.columns, key=lambda r_: gw.loc[2025, r_]); _pos = {}
     for _r in _regs:  # nudge labels apart so they don't overlap (values unchanged)
         _y = gw.loc[2025, _r]; _prev = max(_pos.values()) if _pos else None
@@ -1045,7 +1042,7 @@ def profitability_tab():
         slower = [r for r in ["World", "EU-27", "East Asia"] if r in pr.index and pr.loc[r, "2022–25"] < pr.loc[r, "2015–19"]]
         card(f"Since 2022, productivity growth slowed for the {' and '.join([s_.replace('World', 'world') for s_ in slower[:2]])} — North America is the big-economy exception",
             "output per hour worked, average annual growth, 2015–19 vs 2022–25 · blue line = faster, orange line = slower · ILO modelled estimates (2025 nowcast)",
-            mini(fig, xtitle="average annual growth in output per hour (%)", ytitle="region").update_layout(hovermode="closest").update_xaxes(ticksuffix="%", showgrid=True, gridcolor=GRID, zeroline=True, zerolinecolor="#334155",
+            mini(fig, xtitle="average annual growth in output per hour (%)", ytitle="region").update_layout(hovermode="closest").update_xaxes(ticksuffix="%", showgrid=True, gridcolor=GRID, zeroline=True, zerolinecolor="#94A3B8",
                                                                                                                     range=[min(pr["2015–19"].min(), pr["2022–25"].min()) - 0.9, max(pr["2015–19"].max(), pr["2022–25"].max()) + 0.9]),
             prod_reg.reset_index(), ["ilo_oph"], "(2019 ÷ 2015)^(1/4) − 1 and (2025 ÷ 2022)^(1/3) − 1.", "dumbbell")
     with c2:
@@ -1063,7 +1060,7 @@ def profitability_tab():
             last = idx[c_].dropna()
             fig.add_annotation(x=last.index[-1], y=last.iloc[-1], text=f"{last.iloc[-1] - 100:+.0f}%", showarrow=False, xanchor="left", xshift=8,
                             font=dict(color=[BLUE, TEAL, AMBER][i], size=12))
-        fig.add_hline(y=100, line_color="#334155", line_dash="dot")
+        fig.add_hline(y=100, line_color="#94A3B8", line_dash="dot")
         card("Profit margins rose in the US — not in the EU or worldwide",
             "profit share indexed to 2019 = 100, annual 2019–2025 · BEA via FRED, Eurostat, ILO",
             mini(fig, ytitle="profit share, index 2019 = 100", xtitle="year").update_xaxes(dtick=1, range=[2018.7, 2025.7]), idx.reset_index(names="year"), ["cp", "gdp", "eu_profit", "ilo_lis"],
@@ -1076,10 +1073,10 @@ def profitability_tab():
         fig = go.Figure(go.Scatter(x=ind_b["AI adoption 2025 (%)"], y=ind_b["Productivity growth 2021→2025 (%)"], mode="markers+text", text=ind_b["label"],
                                 textposition=["middle left" if v > 50 else "top center" for v in ind_b["AI adoption 2025 (%)"]],
                                 marker=dict(size=ind_b["gva_2025_bn_eur"], sizemode="area", sizeref=2.0 * ind_b["gva_2025_bn_eur"].max() / (70 ** 2), sizemin=6,
-                                            color=[BLUE if l == "ICT" else TEAL for l in ind_b["label"]], opacity=0.85, line=dict(color="#0B1220", width=1)),
+                                            color=[BLUE if l == "ICT" else TEAL for l in ind_b["label"]], opacity=0.85, line=dict(color="#FFFFFF", width=1)),
                                 customdata=ind_b[["gva_2025_bn_eur"]], textfont=dict(size=12, color=TEXT),
                                 hovertemplate="<b>%{text}</b><br>AI use %{x:.0f}% · productivity %{y:+.1f}%<br>value added €%{customdata[0]:,.0f}bn<extra></extra>"))
-        fig.add_hline(y=0, line_color="#334155")
+        fig.add_hline(y=0, line_color="#94A3B8")
         card(f"Industries that use AI most grew productivity fastest — led by {ind_top['label']}",
             f"EU-27 · x: % firms using AI (2025) · y: productivity growth 2021–25 · bubble size = 2025 value added (€bn) · r = {c_ind['r']:+.2f}, {c_ind['n']} industries · Eurostat",
             mini(fig, ysuf="%", legend=False, xtitle="% of firms using AI, 2025", ytitle="productivity growth 2021–25 (%)").update_layout(hovermode="closest")
@@ -1127,12 +1124,12 @@ def profitability_tab():
         n_lead_good = int((lead & good).sum()); n_lead = int(lead.sum())
         fig = go.Figure()
         fig.add_shape(type="rect", xref="x", yref="paper", x0=mx, x1=qd["ai"].max() * 1.05, y0=0, y1=1, fillcolor="rgba(59,130,246,.07)", line_width=0, layer="below")
-        fig.add_vline(x=mx, line_color="#334155", line_dash="dot")
-        fig.add_hline(y=my, line_color="#334155", line_dash="dot")
+        fig.add_vline(x=mx, line_color="#94A3B8", line_dash="dot")
+        fig.add_hline(y=my, line_color="#94A3B8", line_dash="dot")
         show = qd["geo"].isin(label_set)
         fig.add_scatter(x=qd["ai"], y=qd["outcome"], mode="markers+text", text=[g if sh else "" for g, sh in zip(qd["geo"], show)],
                         textposition="top center", textfont=dict(size=9, color=SUB),
-                        marker=dict(size=9, color=[BLUE if l else MUTED for l in lead], opacity=0.85, line=dict(color="#0B1220", width=1)),
+                        marker=dict(size=9, color=[BLUE if l else MUTED for l in lead], opacity=0.85, line=dict(color="#FFFFFF", width=1)),
                         customdata=qd[["country"]], hovertemplate="<b>%{customdata[0]}</b><br>AI use %{x:.0f}% · %{y:+.2f}<extra></extra>", showlegend=False)
         ylo, yhi = qd["outcome"].quantile([0.01, 0.99])
         pad = (yhi - ylo) * 0.12
@@ -1174,8 +1171,8 @@ def profitability_tab():
                             textfont=dict(size=9, color=[BLUE, SLATE, AMBER][i]), marker=dict(size=5, color=[BLUE, SLATE, AMBER][i]), showlegend=False, hoverinfo="skip")
             fig.add_annotation(x=ix.index[-1], y=ix[c_].iloc[-1], text=f"{ix[c_].iloc[-1] - 100:+.0f}%", showarrow=False, xanchor="left", xshift=8,
                             font=dict(color=[BLUE, SLATE, AMBER][i], size=12))
-        fig.add_vline(x=b, line_color="#334155", line_dash="dot")
-        fig.add_hline(y=100, line_color="#334155")
+        fig.add_vline(x=b, line_color="#94A3B8", line_dash="dot")
+        fig.add_hline(y=100, line_color="#94A3B8")
         card(f"Since 2022, US profits grew {pg:.0f}% — employee pay only {wg:.0f}%",
             f"indexed, 2022Q4 = 100, quarterly {qlabel(ix.index[0])}–{qlabel(ix.index[-1])} · labels = each Q4 · BEA via FRED (CP, COE, GDP)",
             mini(fig, ytitle="index, 2022Q4 = 100", xtitle="quarter").update_xaxes(range=[ix.index[0], ix.index[-1] + pd.Timedelta(days=200)]),
@@ -1185,7 +1182,7 @@ def profitability_tab():
         lc = ls_chg.drop(index=["G7"]).sort_values()
         fig = go.Figure(go.Bar(x=lc.values, y=lc.index, orientation="h", marker_color=[RED if v < 0 else GREEN for v in lc.values],
                             text=[f"{v:+.1f} pp" for v in lc.values], textposition="outside", cliponaxis=False, hovertemplate="%{y}: %{x:+.2f} pp<extra></extra>"))
-        fig.add_vline(x=0, line_color="#334155")
+        fig.add_vline(x=0, line_color="#94A3B8")
         n_fell = int((lc < 0).sum())
         card(f"Workers' share of income fell in {n_fell} of {len(lc)} regions since 2019",
             "change in labour income share of GDP, 2019→2025, percentage points · ILO modelled estimates",
