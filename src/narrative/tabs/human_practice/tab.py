@@ -58,7 +58,9 @@ def human_practice_tab() -> None:
     views.render_evidence(tables["evidence"])
 
     st.header("2. People: the places where skills are practised are thinning")
-    st.markdown("People learn a job by doing its entry-level work. That work is where AI use is concentrated.")
+    st.markdown(
+        "People learn a job by doing its entry-level work. That work is where AI use is concentrated."
+    )
     views.render_entry_level(tables["entry_level"])
 
     part_heading("Part B", "Feedback-loop degradation", "Sections 3 and 4")
@@ -83,6 +85,8 @@ def human_practice_tab() -> None:
     views.render_cost(tables["cost"], tables["ai_share"])
 
     views.render_limits()
-    with st.expander('Reference: the eight meanings of "model collapse" (Schaeffer et al. 2025)'):
+    with st.expander(
+        'Reference: the eight meanings of "model collapse" (Schaeffer et al. 2025)'
+    ):
         views.render_definitions(tables["definitions"])
     views.render_sources(tables)

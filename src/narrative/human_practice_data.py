@@ -3,7 +3,7 @@
 Every number shown on screen comes from a row of ``data/processed/*.csv``.
 Every processed row is derived from a verbatim copy of a source file in
 ``data/raw/human_practice/wildai/`` (see ``data/raw/human_practice/wildai/SOURCE.md``), ``data/raw/human_practice/workforce/`` (see
-``data/raw/human_practice/workforce/SOURCE.md``), ``data/raw/human_practice/schaeffer/`` (see ``data/raw/human_practice/schaeffer/SOURCE.md``) 
+``data/raw/human_practice/workforce/SOURCE.md``), ``data/raw/human_practice/schaeffer/`` (see ``data/raw/human_practice/schaeffer/SOURCE.md``)
 and ``data/processed/human_practice/MANIFEST.json`` records the SHA-256 of each input and the row count of each output.
 
     uv run python -m narrative.human_practice_data              # rebuild the processed tables and validate
@@ -27,8 +27,12 @@ RAW = utils.get_raw_data_dir() / "human_practice"
 PROCESSED = utils.get_proc_data_dir() / "human_practice"
 WILDAI, SCHAEFFER, WORKFORCE = RAW / "wildai", RAW / "schaeffer", RAW / "workforce"
 
-WILDAI_COMMIT = "795a71852d569173fcdaca1db2a466109cd80814"  # origin/main of pangramlabs/WildAI
-WORKFORCE_COMMIT = "b33f3b25b7cce24833c857d242c90152c3b41571"  # karanmakhijauts/at-3-dvn, 26 Oct 2026
+WILDAI_COMMIT = (
+    "795a71852d569173fcdaca1db2a466109cd80814"  # origin/main of pangramlabs/WildAI
+)
+WORKFORCE_COMMIT = (
+    "b33f3b25b7cce24833c857d242c90152c3b41571"  # karanmakhijauts/at-3-dvn, 26 Oct 2026
+)
 
 # Figure 3 of Russell et al. (2026): matched human-token budgets (tokens per parameter),
 # drawn model sizes (depths 4-16, i.e. 19.9M-268M) and the matching tolerance.
@@ -36,7 +40,14 @@ MATCHED_BUDGETS = (4.72, 18.88, 37.76, 54.72, 72.97, 87.5)
 BUDGET_TOLERANCE = 0.015
 FITTED_DEPTHS = (4, 6, 9, 12, 16)
 SIZE_ORDER = ("19.9m", "35.8m", "86.2m", "135m", "268m")
-BUDGET_WORDS = {4.72: 5, 18.88: 20, 37.76: 40, 54.72: 55, 72.97: 73, 87.5: 88}  # the paper's labels
+BUDGET_WORDS = {
+    4.72: 5,
+    18.88: 20,
+    37.76: 40,
+    54.72: 55,
+    72.97: 73,
+    87.5: 88,
+}  # the paper's labels
 
 CSV_READ = dict(keep_default_na=False, na_values=[""])
 
@@ -131,21 +142,31 @@ def build_ai_share() -> pd.DataFrame:
             "ai_tokens": pd.NA,
         }
     )
-    return pd.concat([observed, forecast], ignore_index=True).sort_values("month").reset_index(drop=True)
+    return (
+        pd.concat([observed, forecast], ignore_index=True)
+        .sort_values("month")
+        .reset_index(drop=True)
+    )
 
 
 def build_web_composition() -> pd.DataFrame:
     """Monthly share of sampled web tokens and documents by Pangram label (Human, Mixed, AI)."""
     frame = pd.read_csv(WILDAI / "monthly_topic_format.csv", **CSV_READ)
     obs = pd.read_csv(WILDAI / "monthly_ai_share.csv", **CSV_READ).set_index("month")
-    totals = frame.groupby(["period", "label"], as_index=False)[["documents", "tokens"]].sum()
+    totals = frame.groupby(["period", "label"], as_index=False)[
+        ["documents", "tokens"]
+    ].sum()
     month_tokens = totals.groupby("period")["tokens"].transform("sum")
     month_docs = totals.groupby("period")["documents"].transform("sum")
     totals["token_share"] = totals["tokens"] / month_tokens
     totals["document_share"] = totals["documents"] / month_docs
     totals["sampling_source"] = totals["period"].map(obs["source"])
     totals.insert(0, "month", _month_start(totals["period"]))
-    return totals.drop(columns="period").sort_values(["month", "label"]).reset_index(drop=True)
+    return (
+        totals.drop(columns="period")
+        .sort_values(["month", "label"])
+        .reset_index(drop=True)
+    )
 
 
 def build_adoption() -> pd.DataFrame:
@@ -154,7 +175,9 @@ def build_adoption() -> pd.DataFrame:
     codes = sorted(raw["period_code"].unique())
     out = pd.DataFrame(
         {
-            "period_order": raw["period_code"].map({c: i + 1 for i, c in enumerate(codes)}),
+            "period_order": raw["period_code"].map(
+                {c: i + 1 for i, c in enumerate(codes)}
+            ),
             "period_code": raw["period_code"],
             "period_label": raw["period_label"],
             "question_id": raw["question_id"],
@@ -181,7 +204,9 @@ def build_entry_level() -> pd.DataFrame:
 
 
 def _snap_budget(tpp: float) -> float | None:
-    return next((b for b in MATCHED_BUDGETS if abs(tpp - b) <= BUDGET_TOLERANCE * b), None)
+    return next(
+        (b for b in MATCHED_BUDGETS if abs(tpp - b) <= BUDGET_TOLERANCE * b), None
+    )
 
 
 def build_fig3_points() -> pd.DataFrame:
@@ -198,7 +223,11 @@ def build_fig3_points() -> pd.DataFrame:
     runs["budget"] = runs["ctrl_tpp"].map(_snap_budget)
     runs = runs[runs["budget"].notna() & runs["ctrl_depth"].isin(FITTED_DEPTHS)].copy()
     runs["x"] = runs.apply(
-        lambda r: r.ai_tokens / r.human_tokens if r.arm == "ai" else r.human_tokens / r.ctrl_human_tokens - 1,
+        lambda r: (
+            r.ai_tokens / r.human_tokens
+            if r.arm == "ai"
+            else r.human_tokens / r.ctrl_human_tokens - 1
+        ),
         axis=1,
     )
     runs["change_pct"] = 100 * (runs["bpb"] / runs["ctrl_bpb"] - 1)
@@ -206,16 +235,32 @@ def build_fig3_points() -> pd.DataFrame:
     # fresh-human points use every group.  This follows the description of the authors' figure code.
     ai = runs[runs["arm"] == "ai"]
     counts = ai.groupby(["size", "budget", "group"]).size().reset_index(name="n")
-    best = counts.sort_values(["size", "budget", "n", "group"], ascending=[True, True, False, True]).drop_duplicates(
-        ["size", "budget"]
-    )
+    best = counts.sort_values(
+        ["size", "budget", "n", "group"], ascending=[True, True, False, True]
+    ).drop_duplicates(["size", "budget"])
     chosen = set(zip(best["size"], best["budget"], best["group"]))
     runs["in_figure"] = runs.apply(
         lambda r: r.arm == "human" or (r["size"], r.budget, r.group) in chosen, axis=1
     )
     runs["size_order"] = runs["size"].map({s: i for i, s in enumerate(SIZE_ORDER)})
-    out = runs[["name", "group", "size", "size_order", "budget", "arm", "x", "bpb", "ctrl_bpb", "change_pct", "in_figure"]]
-    return out.sort_values(["budget", "size_order", "arm", "x", "name"]).reset_index(drop=True)
+    out = runs[
+        [
+            "name",
+            "group",
+            "size",
+            "size_order",
+            "budget",
+            "arm",
+            "x",
+            "bpb",
+            "ctrl_bpb",
+            "change_pct",
+            "in_figure",
+        ]
+    ]
+    return out.sort_values(["budget", "size_order", "arm", "x", "name"]).reset_index(
+        drop=True
+    )
 
 
 def build_cost() -> pd.DataFrame:
@@ -224,7 +269,17 @@ def build_cost() -> pd.DataFrame:
     frame["model_size"] = frame["n_params"].map(lambda n: "268M" if n < 1e9 else "8B")
     frame["scenario"] = frame["label"].fillna("")
     return (
-        frame[["target", "model_size", "n_params", "human_tpp", "ai_share", "scenario", "cost"]]
+        frame[
+            [
+                "target",
+                "model_size",
+                "n_params",
+                "human_tpp",
+                "ai_share",
+                "scenario",
+                "cost",
+            ]
+        ]
         .sort_values(["target", "model_size", "ai_share"])
         .reset_index(drop=True)
     )
@@ -233,14 +288,32 @@ def build_cost() -> pd.DataFrame:
 # Which charts on the page bear on which definition. This mapping is my own judgement, not from either paper.
 # (label shown in the table, one-sentence reason shown in the detail panel)
 COVERAGE = {
-    1: ("Not covered", "No chart tests catastrophic degradation. The loss chart shows changes of a few per cent when AI text is mixed into human data, which is not recursive training."),
-    2: ("Loss chart (partly)", "The loss chart compares loss with added AI text against a human-only control, so a rise is an increase in risk by this definition. Loss is measured on C4 as a proxy for the real distribution, and with mixing, not recursion."),
-    3: ("Not covered", "This needs successive generations of models; the WildAI models are single-generation mixes of human and AI text."),
+    1: (
+        "Not covered",
+        "No chart tests catastrophic degradation. The loss chart shows changes of a few per cent when AI text is mixed into human data, which is not recursive training.",
+    ),
+    2: (
+        "Loss chart (partly)",
+        "The loss chart compares loss with added AI text against a human-only control, so a rise is an increase in risk by this definition. Loss is measured on C4 as a proxy for the real distribution, and with mixing, not recursion.",
+    ),
+    3: (
+        "Not covered",
+        "This needs successive generations of models; the WildAI models are single-generation mixes of human and AI text.",
+    ),
     4: ("Not covered", "No chart measures variance or diversity."),
-    5: ("Loss and compute charts", "Both are about the scaling law: what added AI text does to loss at a fixed human-token budget, and the compute multiplier that follows."),
-    6: ("Not covered", "No chart shows a model losing or merging modes. The web-composition chart describes what the web contains, not what a model has lost."),
+    5: (
+        "Loss and compute charts",
+        "Both are about the scaling law: what added AI text does to loss at a fixed human-token budget, and the compute multiplier that follows.",
+    ),
+    6: (
+        "Not covered",
+        "No chart shows a model losing or merging modes. The web-composition chart describes what the web contains, not what a model has lost.",
+    ),
     7: ("Not covered", "No chart measures how a model handles rare cases."),
-    8: ("Not covered", "No chart checks whether model output is supported by the real data."),
+    8: (
+        "Not covered",
+        "No chart checks whether model output is supported by the real data.",
+    ),
 }
 CONTEXT_NOTE = "The web-composition chart is context for every definition: it shows how much AI text is already in web data."
 
@@ -248,7 +321,14 @@ CONTEXT_NOTE = "The web-composition chart is context for every definition: it sh
 def build_definitions() -> pd.DataFrame:
     """The eight definitions of model collapse (Schaeffer et al. 2025) with their families."""
     raw = pd.read_csv(SCHAEFFER / "section_a_schaeffer_table.csv", **CSV_READ)
-    raw.columns = ["definition", "details", "realistic_condition", "mitigation", "rebuttal", "papers"]
+    raw.columns = [
+        "definition",
+        "details",
+        "realistic_condition",
+        "mitigation",
+        "rebuttal",
+        "papers",
+    ]
     raw.insert(0, "id", range(1, len(raw) + 1))
     if len(raw) != 8:
         raise ValueError("Expected eight definitions")
@@ -271,7 +351,10 @@ def validate(tables: dict[str, pd.DataFrame]) -> None:
     for col in ("share", "lo95", "hi95"):
         if not share[col].astype(float).between(0, 1).all():
             raise ValueError(f"ai_share: {col} outside [0, 1]")
-    if not ((share["lo95"].astype(float) <= share["share"] + 1e-9) & (share["share"] <= share["hi95"].astype(float) + 1e-9)).all():
+    if not (
+        (share["lo95"].astype(float) <= share["share"] + 1e-9)
+        & (share["share"] <= share["hi95"].astype(float) + 1e-9)
+    ).all():
         raise ValueError("ai_share: share outside its 95% interval")
     observed = share[share["kind"] == "observed"]
     forecast = share[share["kind"] == "forecast"]
@@ -282,8 +365,13 @@ def validate(tables: dict[str, pd.DataFrame]) -> None:
     if fig3["x"].le(0).any() or fig3["change_pct"].isna().any():
         raise ValueError("fig3_points: non-positive x or missing loss")
     worked = fig3[fig3["name"] == "268m-g075-ai-r1"]
-    if len(worked) != 1 or abs(float(worked["change_pct"].iloc[0]) - (-1.031081)) > 1e-3:
-        raise ValueError("fig3_points: worked example 268m-g075-ai-r1 does not reproduce (-1.03%)")
+    if (
+        len(worked) != 1
+        or abs(float(worked["change_pct"].iloc[0]) - (-1.031081)) > 1e-3
+    ):
+        raise ValueError(
+            "fig3_points: worked example 268m-g075-ai-r1 does not reproduce (-1.03%)"
+        )
 
     cost = tables["cost"]
     finite = cost[cost["cost"].map(math.isfinite)]
@@ -295,31 +383,54 @@ def validate(tables: dict[str, pd.DataFrame]) -> None:
         raise ValueError("definitions: expected ids 1-8")
 
     comp = tables["web_composition"]
-    if not set(comp["label"]) <= {"AI", "Human", "Mixed"} or comp.duplicated(["month", "label"]).any():
+    if (
+        not set(comp["label"]) <= {"AI", "Human", "Mixed"}
+        or comp.duplicated(["month", "label"]).any()
+    ):
         raise ValueError("web_composition: unexpected label or duplicate month/label")
     if (comp.groupby("month")["token_share"].sum() - 1).abs().max() > 1e-9:
         raise ValueError("web_composition: token shares must sum to 1 in every month")
     ai = comp[comp["label"] == "AI"].set_index("month")["token_share"]
     ref = observed.set_index("month")["share"].astype(float)
     if (ai.reindex(ref.index).fillna(0) - ref).abs().max() > 1e-9:
-        raise ValueError("web_composition: AI token share does not reproduce monthly_ai_share.csv")
+        raise ValueError(
+            "web_composition: AI token share does not reproduce monthly_ai_share.csv"
+        )
 
     adoption = tables["adoption"]
-    if adoption.duplicated(["period_code", "answer"]).any() or not adoption["share_pct"].between(0, 100).all():
+    if (
+        adoption.duplicated(["period_code", "answer"]).any()
+        or not adoption["share_pct"].between(0, 100).all()
+    ):
         raise ValueError("adoption: duplicate period/answer or share outside 0-100")
     if (adoption.groupby("period_code")["share_pct"].sum() - 100).abs().max() > 0.5:
         raise ValueError("adoption: answers should sum to about 100% in every period")
 
     evidence = tables["evidence"]
-    if evidence["id"].duplicated().any() or not set(evidence["panel"]) <= {"output", "skill"}:
+    if evidence["id"].duplicated().any() or not set(evidence["panel"]) <= {
+        "output",
+        "skill",
+    }:
         raise ValueError("evidence: duplicate id or unknown panel")
-    if not set(evidence["direction"]) <= {"gain", "loss"} or not set(evidence["evidence_strength"]) <= {"High", "Medium", "Low"}:
+    if not set(evidence["direction"]) <= {"gain", "loss"} or not set(
+        evidence["evidence_strength"]
+    ) <= {"High", "Medium", "Low"}:
         raise ValueError("evidence: unknown direction or evidence strength")
-    if evidence[["source_url", "location_in_source", "check_status"]].isna().any().any():
-        raise ValueError("evidence: every finding needs a source, a location and a check status")
+    if (
+        evidence[["source_url", "location_in_source", "check_status"]]
+        .isna()
+        .any()
+        .any()
+    ):
+        raise ValueError(
+            "evidence: every finding needs a source, a location and a check status"
+        )
 
     entry = tables["entry_level"]
-    if entry["id"].duplicated().any() or entry[["change_pct", "source_url", "location_in_source"]].isna().any().any():
+    if (
+        entry["id"].duplicated().any()
+        or entry[["change_pct", "source_url", "location_in_source"]].isna().any().any()
+    ):
         raise ValueError("entry_level: duplicate id or missing value/source")
 
 
@@ -338,7 +449,10 @@ INPUTS = {
     "adoption": [WORKFORCE / "btos_ai.csv"],
     "evidence": [WORKFORCE / "evidence.csv"],
     "entry_level": [WORKFORCE / "entry_level_employment.csv"],
-    "web_composition": [WILDAI / "monthly_topic_format.csv", WILDAI / "monthly_ai_share.csv"],
+    "web_composition": [
+        WILDAI / "monthly_topic_format.csv",
+        WILDAI / "monthly_ai_share.csv",
+    ],
     "ai_share": [WILDAI / "monthly_ai_share.csv", WILDAI / "ai_share_forecast.csv"],
     "fig3_points": [WILDAI / "models.csv", WILDAI / "losses.csv"],
     "cost": [WILDAI / "cost_of_not_filtering.csv"],
@@ -357,10 +471,12 @@ def write_tables(tables: dict[str, pd.DataFrame]) -> None:
     for name, frame in tables.items():
         frame.to_csv(PROCESSED / f"{name}.csv", index=False)
         manifest["tables"][name] = {
-            "rows": int(len(frame)),
+            "rows": len(frame),
             "inputs": {str(p.relative_to(RAW)): _sha256(p) for p in INPUTS[name]},
         }
-    (PROCESSED / "MANIFEST.json").write_text(json.dumps(manifest, indent=2) + "\n", encoding="utf-8")
+    (PROCESSED / "MANIFEST.json").write_text(
+        json.dumps(manifest, indent=2) + "\n", encoding="utf-8"
+    )
 
 
 def read_processed(name: str) -> pd.DataFrame:
@@ -368,8 +484,12 @@ def read_processed(name: str) -> pd.DataFrame:
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    parser.add_argument("--validate", action="store_true", help="validate data/processed/* and stop")
+    parser = argparse.ArgumentParser(
+        description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter
+    )
+    parser.add_argument(
+        "--validate", action="store_true", help="validate data/processed/* and stop"
+    )
     args = parser.parse_args()
     if args.validate:
         tables = {name: read_processed(name) for name in BUILDERS}

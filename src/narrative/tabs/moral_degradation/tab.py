@@ -1,7 +1,7 @@
+from narrative.story import GROUP_QUESTION
 from narrative.utils import *
 
 from .views import *
-from narrative.story import GROUP_QUESTION
 
 DATA_ROOT = get_proc_data_dir()
 
@@ -42,10 +42,8 @@ def moral_degradation_tab():
 
     st.title(TQ_STR)
     st.markdown(f"**Group question**: {GROUP_QUESTION}", unsafe_allow_html=True)
-    with st.container(key="answer", border=True):
-        st.markdown("""
-            **Our answer:** Early on, AI weakens our moral judgement and the safeguards are thin, but does not have a proveable cause. In controlled experiments, people who talked to a flattering AI felt more in the right and were less willing to repair the conflict, and this held in more than one study. Around that, the safety net is clean, in that reported AI incidents reached 1,536 in 2025 and are still accelerating, models differ widely in how closely their moral scores match human validation, and in most areas of responsible AI only a minority of countries have a binding national framework. The first is a single-conversation experiment, the second is a count of reports, and the third is a snapshot of policy status. The effect on judgement is measured in surveys, the failures and gaps are indicators, and more importantly lacks a time-series data that indicates people's moral judgement erodes over time.
-        """)
+
+    render_moral_summary(ai_reports_data)
 
     st.header("1. A slow burning threat to humanity")
     render_reports_timeseries(ai_inc_data, ai_reports_data)
@@ -64,13 +62,11 @@ def moral_degradation_tab():
 
     st.header("4. General sentiment of AI is uncertainty")
 
-    c1, c2, c3 = st.columns([1, 1, 1])
+    c1, c2 = st.columns([1, 1])
     with c1:
         render_trust_chart(soft_eng_trust_data)
     with c2:
         render_ai_replacement(soft_eng_sat_data)
-    with c3:
-        pass
 
     render_ai_trust_choropleth(
         trust_gov_df=gov_trust_ipsos_data,
@@ -83,4 +79,27 @@ def moral_degradation_tab():
     render_syco_rightness_distribution(syco_study2_data, syco_study3_data)
     render_syco_scenario_effects(syco_study2_data, syco_study3_data)
 
-    st.header("Data and Limitations")
+    st.header("Data")
+    st.subheader("Sources")
+    render_sources(
+        [
+            ai_reports_data,
+            ai_inc_data,
+            human_validation_data,
+            ai_validation_data,
+            soft_eng_sat_data,
+            soft_eng_trust_data,
+            gmf_class_data,
+            frameworks_data,
+            classifications_data,
+            gov_trust_ipsos_data,
+            comp_trust_ipsos_data,
+            ai_env_trust_ipsos_data,
+            job_sec_trust_ipsos_data,
+            syco_study2_data,
+            syco_study3_data,
+        ]
+    )
+
+    st.subheader("Data Limitations")
+    render_data_limitations()

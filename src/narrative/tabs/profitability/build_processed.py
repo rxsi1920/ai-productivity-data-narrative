@@ -8,7 +8,6 @@ columns. Column names are kept so every figure on screen can be traced back to t
 All further calculations (growth rates, indices, ratios) are done in app.py and shown in each
 chart's ⓘ table and in the Appendix. Re-running on unchanged raw files gives identical output.
 """
-from pathlib import Path
 
 import pandas as pd
 
@@ -33,8 +32,11 @@ PROFIT_FILES = {
     "ilo_output_per_hour.csv": ("year", 2015),
     "ilo_output_per_hour_countries.csv": ("year", 2015),
     "ilo_labour_income_share.csv": ("year", 2015),
-    "fred_CP.csv": (None, None), "fred_GDP.csv": (None, None), "fred_COE.csv": (None, None),
-    "fred_OPHNFB.csv": (None, None), "fred_ULCNFB.csv": (None, None),
+    "fred_CP.csv": (None, None),
+    "fred_GDP.csv": (None, None),
+    "fred_COE.csv": (None, None),
+    "fred_OPHNFB.csv": (None, None),
+    "fred_ULCNFB.csv": (None, None),
     "eurostat_nasa_10_ki_profit_share.csv": ("year", 2019),
     "eurostat_nasa_10_ki_consumption_growth.csv": ("year", 2019),
     "eurostat_nama_10_lp_ulc.csv": ("year", 2019),

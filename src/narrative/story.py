@@ -20,3 +20,17 @@ in the least exposed.
 Because the gains are measured and the costs are early indicators, a reader who weighs measured gains more heavily \
 could reach the opposite answer.
 """
+
+STORY = [
+    ("1", "Financial profitability", "Does AI pay for itself?"),
+    (
+        "2",
+        "Feedback-loop degradation and cognitive ability of employees",
+        "What cost does the AI efficiency we are gaining now have on the expertise that tomorrow's workers and models need?",
+    ),
+    (
+        "3",
+        "Moral degradation",
+        "What does AI cost in judgement, responsibility and trust?",
+    ),
+]
