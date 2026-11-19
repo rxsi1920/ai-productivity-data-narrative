@@ -477,13 +477,13 @@ def render_answer_text(tables: dict[str, pd.DataFrame]) -> None:
     gains = int((out["direction"] == "gain").sum())
     with st.container(key="answer", border=True):
         st.markdown(
-            "**Our answer: the early signs say yes, but it is not yet proven.** "
-            f"AI is raising measured output today ({gains} of {len(out)} output findings show a gain). "
-            "Over the same period three things that people and models learn from are thinning: early-career employment in "
-            "AI-exposed occupations, the human-written share of web text, and the value of that web text for training. "
-            "The first is a descriptive association, the second is a share of a sample, and the third is a prediction "
-            "from a fitted law on small models. A reader could weigh the same numbers the other way: the gains are "
-            "measured, the costs are early indicators."
+            "**Our answer: early signs of a real cost, but not yet a proven one.** "
+            f"The efficiency is measured: AI is raising output today ({gains} of {len(out)} output findings show a gain). "
+            "The cost falls on what tomorrow's workers and models learn from. For workers, early-career employment in "
+            "AI-exposed occupations is thinning. For models, both the human-written share of web text and the value of "
+            "that text for training are falling. The first is a descriptive association, the second is a share of a "
+            "sample, and the third is a prediction from a fitted law on small models. A reader could weigh the same "
+            "numbers the other way: the gains are measured, the costs are early indicators."
         )
 
 def render_answer(tables: dict[str, pd.DataFrame]) -> None:
