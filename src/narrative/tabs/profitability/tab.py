@@ -21,7 +21,8 @@ from narrative.utils import *
 DATA = get_proc_data_dir()
 LAST_REFRESH = "22 Oct 2026"  # date the source files in data/raw were downloaded
 
-st.set_page_config(page_title="AI, Productivity & Profitability", page_icon="📈", layout="wide", initial_sidebar_state="collapsed")
+# the line below was commented out during consolidation, but still kept here for reference.
+# st.set_page_config(page_title="AI, Productivity & Profitability", page_icon="📈", layout="wide", initial_sidebar_state="collapsed")
 
 
 # --------------------------------------------------------------------------------------
