@@ -7,7 +7,7 @@ import math
 import pandas as pd
 import pytest
 
-from page2.src.data import BUILDERS, PROCESSED, ROOT, read_processed
+from narrative.human_practice_data import BUILDERS, PROCESSED, RAW, read_processed
 
 
 @pytest.fixture(scope="module")
@@ -80,4 +80,4 @@ def test_manifest_hashes_match_the_copied_sources():
     assert set(manifest["tables"]) == set(BUILDERS)
     for table in manifest["tables"].values():
         for name, digest in table["inputs"].items():
-            assert hashlib.sha256((ROOT / "data" / name).read_bytes()).hexdigest() == digest
+            assert hashlib.sha256((RAW / name).read_bytes()).hexdigest() == digest

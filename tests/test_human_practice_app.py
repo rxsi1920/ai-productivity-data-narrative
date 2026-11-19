@@ -2,7 +2,7 @@ from pathlib import Path
 
 from streamlit.testing.v1 import AppTest
 
-ROOT = Path(__file__).resolve().parents[2]
+ROOT = Path(__file__).resolve().parents[1]
 EMPTY = "No observations match the selected filters."
 GROUP_QUESTION = "Do AI's measured productivity gains outweigh the hidden costs to how people think, learn, and work?"
 
@@ -14,6 +14,12 @@ def run() -> AppTest:
 def infos(app: AppTest) -> list[str]:
     return [i.value for i in app.info]
 
+def evidence_headline(app: AppTest) -> str:
+    return next(
+        m.value
+        for m in app.markdown
+        if "output findings show a gain" in m.value and "show a loss" in m.value
+    )
 
 def test_opening_screen_states_question_answer_and_story():
     app = run()
@@ -21,16 +27,16 @@ def test_opening_screen_states_question_answer_and_story():
     assert app.title[0].value == "Is AI weakening the human practice and knowledge that both people and AI learn from?"
     text = " ".join(m.value for m in app.markdown)
     assert GROUP_QUESTION in text and "Our answer" in text
-    assert [h.value[0] for h in app.header] == list("12345")
+    assert [h.value[0] for h in app.header] == list("1234")
     assert len(app.get("vega_lite_chart")) == 5  # evidence, entry level, web composition, loss, compute
 
 
 def test_evidence_filter_rewrites_headline_and_empty_state():
     app = run()
-    full = [m.value for m in app.markdown if "output findings show a gain" in m.value][0]
+    full = evidence_headline(app)
     assert "3 of 3 output findings" in full and "2 show a loss and 1 a gain" in full
     app.multiselect(key="evidence_strength").set_value(["High"]).run()
-    high = [m.value for m in app.markdown if "output findings show a gain" in m.value][0]
+    high = evidence_headline(app)
     assert "2 of 2 output findings" in high and "1 show a loss and 0 a gain" in high
     app.multiselect(key="evidence_strength").set_value([]).run()
     assert EMPTY in infos(app) and not app.exception
@@ -75,18 +81,3 @@ def test_cost_target_changes_headline():
     app.radio(key="cost_target").set_value("AI-written text (Cosmopedia)").run()
     ai_text = [m.value for m in app.metric if "AI)" in m.label]
     assert human != ai_text and not app.exception
-
-
-def test_rollout_options_table_uses_live_counts():
-    app = run()
-    assert not app.exception
-    tables = " ".join(t.value.to_string() for t in app.table)
-    assert "Roll out with training and guardrails" in tables and "3 findings show output gains" in tables
-
-
-def test_other_story_pages_are_stubs_and_page_2_is_default():
-    for page, number in (("app_pages/1_financial_profitability.py", "1"), ("app_pages/3_moral_degradation.py", "3")):
-        app = AppTest.from_file(str(ROOT / page), default_timeout=120).run()
-        assert not app.exception and app.title[0].value.startswith(f"Page {number}:") and app.info
-    default = AppTest.from_file(str(ROOT / "app.py"), default_timeout=120).run()
-    assert default.title[0].value.startswith("Is AI weakening")
