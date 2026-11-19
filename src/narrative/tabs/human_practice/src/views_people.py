@@ -8,7 +8,7 @@ import pandas as pd
 import streamlit as st
 
 from .charts import AI, HUMAN, INK, INK2, MIXED, NEUTRAL, STRENGTH_COLOURS, STRENGTH_ORDER, STRENGTH_SHAPES, style
-from .data import WILDAI_COMMIT, WORKFORCE_COMMIT
+from narrative.human_practice_data import WILDAI_COMMIT, WORKFORCE_COMMIT
 from .views import EMPTY, KPI_HEIGHT, WILDAI_CITE, _footer, _heading, _pct
 
 KARAN_REPO = "https://github.com/karanmakhijauts/at-3-dvn"

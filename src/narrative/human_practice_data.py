@@ -21,11 +21,11 @@ from pathlib import Path
 
 import pandas as pd
 
-ROOT = Path(__file__).resolve().parents[1]
-WILDAI = ROOT / "data" / "wildai"
-SCHAEFFER = ROOT / "data" / "schaeffer"
-WORKFORCE = ROOT / "data" / "workforce"
-PROCESSED = ROOT / "data" / "processed"
+from narrative import utils
+
+RAW = utils.get_raw_data_dir() / "human_practice"
+PROCESSED = utils.get_proc_data_dir() / "human_practice"
+WILDAI, SCHAEFFER, WORKFORCE = RAW / "wildai", RAW / "schaeffer", RAW / "workforce"
 
 WILDAI_COMMIT = "795a71852d569173fcdaca1db2a466109cd80814"  # origin/main of pangramlabs/WildAI
 WORKFORCE_COMMIT = "b33f3b25b7cce24833c857d242c90152c3b41571"  # karanmakhijauts/at-3-dvn, 26 Oct 2026

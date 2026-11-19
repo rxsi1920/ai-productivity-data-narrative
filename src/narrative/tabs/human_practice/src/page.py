@@ -6,7 +6,7 @@ import pandas as pd
 import streamlit as st
 
 from . import views, views_people
-from .data import BUILDERS, PROCESSED, read_processed, validate
+from narrative.human_practice_data import BUILDERS, PROCESSED, read_processed, validate
 
 from narrative.story import GROUP_QUESTION
 PAGE_QUESTION = "Is AI weakening the human practice and knowledge that both people and AI learn from?"

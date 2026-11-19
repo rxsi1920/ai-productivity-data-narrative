@@ -12,7 +12,7 @@ import pandas as pd
 import streamlit as st
 
 from .charts import AI, HUMAN, INK, INK2, NEUTRAL, style
-from .data import CONTEXT_NOTE, WILDAI_COMMIT
+from narrative.human_practice_data import CONTEXT_NOTE, WILDAI_COMMIT
 
 KPI_HEIGHT = 150  # pixels; one height so every key-figure box matches
 EMPTY = "No observations match the selected filters."
