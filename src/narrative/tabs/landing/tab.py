@@ -7,7 +7,9 @@ from narrative.utils import get_proc_data_dir
 DATA = get_proc_data_dir()
 
 INTRO = (
-    "Artificial Intelligence has become widely accessible, and that comes with implications on resources, "
+    "Our answer: not clearly, so far. The gains are measured but narrow, mostly showing up in AI-heavy industries and "
+    "in profits more than pay, while the costs to skills, training data and moral judgement are early indicators, not yet proven harm. "
+    "Regardless of proof, the use of Artificial Intelligence is spreading rapidly, and that comes with implications on resources, "
     "business continuity, and ethics. This dashboard brings the following to the attention of decision-makers:"
 )
 
