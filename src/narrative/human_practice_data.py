@@ -6,8 +6,8 @@ Every processed row is derived from a verbatim copy of a source file in
 ``data/workforce/SOURCE.md``) or the Schaeffer et al. table in ``data/schaeffer/``.  ``data/processed/MANIFEST.json`` records the
 SHA-256 of each input and the row count of each output.
 
-    python -m page2.src.data              # rebuild data/processed/* and validate
-    python -m page2.src.data --validate   # validate the existing processed files
+    uv run python -m narrative.human_practice_data              # rebuild the processed tables and validate
+    uv run python -m narrative.human_practice_data --validate   # validate the existing processed files
 """
 
 from __future__ import annotations
