@@ -18,7 +18,6 @@ repos:
           - --frozen
           - --no-dev
           - --no-hashes
-          - --no-emit-project
           - --no-header
           - --no-annotate
           - -o

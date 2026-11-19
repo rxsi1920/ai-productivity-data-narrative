@@ -29,6 +29,15 @@ def load_tables() -> dict[str, pd.DataFrame]:
     validate(tables)
     return tables
 
+def part_heading(label: str, title: str, sections: str) -> None:
+    """A part label that sits above the numbered section headers in the page's hierarchy."""
+    st.divider()
+    st.markdown(
+        f"<p style='font-size:2.5rem; font-weight:700; line-height:1.2; margin:0 0 0.25rem 0;'>"
+        f"<span style='color:#6082FF;'>{label}</span> · {title}</p>",
+        unsafe_allow_html=True,
+    )
+    st.caption(sections)
 
 def human_practice_tab() -> None:
     tables = load_tables()
@@ -41,7 +50,7 @@ def human_practice_tab() -> None:
     st.caption(f"User story: {USER_STORY}")
     views.render_answer(tables)
 
-    st.caption("PART A · COGNITIVE ABILITY OF EMPLOYEES: sections 1 and 2")
+    part_heading("Part A", "Cognitive ability of employees", "Sections 1 and 2")
     st.header("1. Today: measured output is rising")
     st.markdown(
         "The gain is real and measured. The same studies carry the first warnings about judgement and learning."
@@ -54,7 +63,7 @@ def human_practice_tab() -> None:
     )
     views.render_entry_level(tables["entry_level"])
 
-    st.caption("PART B · FEEDBACK-LOOP DEGRADATION: sections 3 and 4")
+    part_heading("Part B", "Feedback-loop degradation", "Sections 3 and 4")
     st.header("3. Knowledge: human writing is a falling share of the web")
     st.markdown(
         "What people write is also what models are trained on. As more text is produced with AI, less of what a crawler "
@@ -72,7 +81,7 @@ def human_practice_tab() -> None:
         float(latest["share"]),
         latest["month"],
     )
-    st.divider()
+    part_heading("Part C", "The cost to business", "What the feedback loop adds to the price of training a model")
     views.render_cost(tables["cost"], tables["ai_share"])
 
     views.render_limits()
