@@ -521,6 +521,11 @@ SALARY_SATISFACTION_PROC = PROC_ROOT / "salary_and_satisfaction.csv"
 
 
 def acquire5() -> None:
+    required = [SKILLS_TRAINING_RAW, AI_POLICY_RAW, SALARY_SATISFACTION_RAW]
+    if all(p.exists() for p in required):
+        print(f"Files already present in {RAW_ROOT}")
+        return
+
     cache_path = Path(kagglehub.dataset_download(GLOB_PROD_URL))
     RAW_ROOT.mkdir(parents=True, exist_ok=True)
 
@@ -528,10 +533,7 @@ def acquire5() -> None:
         target_path = RAW_ROOT / item.name
 
         if target_path.exists():
-            if target_path.is_dir():
-                shutil.rmtree(target_path)
-            else:
-                target_path.unlink()
+            continue
 
         if item.is_dir():
             shutil.copytree(item, target_path)
