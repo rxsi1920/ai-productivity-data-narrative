@@ -5,7 +5,7 @@ from narrative.story import GROUP_ANSWER, GROUP_QUESTION
 from ..human_practice import views
 from ..human_practice.tab import load_tables
 from ..moral_degradation.tab import ai_reports_data, human_validation_data, frameworks_data, gov_trust_ipsos_data, syco_study2_data, syco_study3_data
-from ..moral_degradation.views import render_moral_summary, render_moral_rollout, render_moral_decision
+from ..moral_degradation.views import render_moral_summary, render_moral_rollout, render_moral_decision, render_moral_questions_and_changes
 
 from ..profitability.tab import build_t_prod
 
@@ -45,5 +45,6 @@ def overall_conclusion_tab():
         ai_reports_data, human_validation_data, frameworks_data,
         gov_trust_ipsos_data, syco_study2_data, syco_study3_data,
     )
+    render_moral_questions_and_changes()
 
     st.header("Decision points: Profitability")

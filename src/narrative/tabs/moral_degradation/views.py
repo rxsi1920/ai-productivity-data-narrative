@@ -2044,7 +2044,7 @@ def render_moral_decision(
         },
         {
             "Area": "Compliance and governance",
-            "Lean towards": "Write internal rules where national rules are thin",
+            "Lean towards": "Write internal rules where national rules are thin; Lobby the government to make rule changes.",
             "Evidence on this page": safe(governance),
             "Not settled": "Rules on paper are not enforcement; state-level rules are not counted.",
         },
@@ -2148,7 +2148,7 @@ def render_moral_rollout(
             f"automated scoring that drifts from human judgement (GPT-5.5 is off by {gap:.1f} points on average)."
         )
 
-    st.subheader("Options for morally fixing AI usage")
+    st.subheader("Options to make moral fixes towards AI usage")
     st.caption(
         "The page does not make the decision. This shows what the evidence loaded so far "
         "says for and against each option. It is an interpretation, not a finding of any one source."
@@ -2179,3 +2179,22 @@ def render_moral_rollout(
         "Limits: the sycophancy studies are single conversations in a lab, the benchmarks use "
         "constructed scenarios, and a framework on paper is not enforcement."
     )
+
+
+def render_moral_questions_and_changes() -> None:
+    with st.container(key="moral_questions_and_change"):
+        with st.expander("Questions to take to your own organisation"):
+            st.markdown("""
+            - In what would ways should we test AI tools to ensure a moral balance, before outputs reach customers or staff members?
+            - What corporate governance should be put into place where national rules are thin or non-binding and protect moral
+            - How do we validate the AI tools we buy against human judgement? Should humans still stay in the loop or be replaced with advanced models?
+            - How should we use AI in the business automation, whilst considering the moral limitations?
+            - Which rules apply in each country we operate in, and are we meeting the strictest of them or only the minimum?
+            """)
+        with st.expander("What would change the answer"):
+            st.markdown("""
+            - **Better incident data:** Current reports available are either self-reported and media-driven, so it may consider the attention over actual harm, so better and standardised reporting should be mandated.
+            - **Evidence from real decisions:** Model benchmarks used throughout the studies use constructed scenarios but not results from live decision-making processes.
+            - **Better understanding of data:** Data needs clarification on the specific circumstances each incident took place in, or whether firms were ill-prepared or the situation was out of reach.
+            - **A change in the rules you operate under.** New binding national rules in your markets would shift how much your own internal governance needs to cover.
+            """)
