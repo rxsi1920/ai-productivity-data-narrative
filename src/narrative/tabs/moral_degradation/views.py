@@ -11,6 +11,17 @@ import pycountry
 import streamlit as st
 
 
+def _shares_line(counts) -> str:
+    """Every answer's share of respondents as visible text, e.g. "Low 33% · Moderate 34% · High 33% (n = 12,000)"."""
+    if counts is None or len(counts) == 0:
+        return ""
+    total = int(counts.sum())
+    parts = " · ".join(f"{k} {v / total:.0%}" for k, v in counts.items())
+    return f"{parts} (n = {total:,})"
+
+
+# Date the moral-degradation files in data/raw/ were downloaded (first committed 16 Nov 2026; latest report 15 Nov 2026).
+LAST_REFRESH = "16 Nov 2026"
 DATE_LABEL = "Latest observation"
 DOWNLOAD_LABEL = "Download CSV"
 EMPTY_TEXT = "No data matches the current selection."
@@ -288,9 +299,14 @@ def render_reports_timeseries(
         ],
     )
 
-    layers = [bars, line]
+    # The count above each bar, so values are readable without hovering.
+    bar_labels = base.mark_text(dy=-9, fontSize=10, color="#1f2d3d").encode(
+        text=alt.Text("count:Q", format=",")
+    )
+
+    layers = [bars, line, bar_labels]
     if show_fan:
-        layers = [band90, band50, bars, line, median_line]
+        layers = [band90, band50, bars, line, median_line, bar_labels]
 
     chart = (
         alt.layer(*layers)
@@ -303,6 +319,10 @@ def render_reports_timeseries(
         .configure(background="transparent")
     )
 
+    def _count_in(year: int) -> int:
+        hit = yearly_counts.loc[yearly_counts["year"].astype(int) == year, "count"]
+        return int(hit.iloc[0]) if len(hit) else 0
+
     with st.container():
         st.altair_chart(chart, use_container_width=True)
         fan_note = (
@@ -311,8 +331,9 @@ def render_reports_timeseries(
             else ""
         )
         st.caption(
-            f"The number of {label.lower()} has soared as AI has significantly progressed in its capabilities. These include automating "
-            "attack vectors and in their scale of reach. Examples include automated scam calls and large scale data breaches. "
+            f"{label} per year rose from {_count_in(2015):,} in 2015 to {_count_in(2025):,} in 2025. "
+            "A rising count can reflect more incidents, more media attention or more editors logging them, "
+            "so it is an indicator of harm, not a measure of it. "
             f"{fan_note}"
             + _source("aiid", url="https://incidentdatabase.ai/apps/incidents/"),
             text_alignment="center",
@@ -478,15 +499,16 @@ def render_() -> None:
     st.header("2. AI's Self-awareness of Morality")
 
 
-def render_moral_summary(data: pd.DataFrame) -> None:
+def render_moral_summary(data: pd.DataFrame, label: str = "Our answer") -> None:
 
-    last_year = date.today().year - 1
-    submitted_dates = pd.to_datetime(data["date_submitted"], errors="coerce")
-    total_last_year = (submitted_dates.dt.year == last_year).sum()
+    # Latest full year in the data. Counted by publication date, the same as the section 1 chart and Home.
+    last_year = 2025
+    published = pd.to_datetime(data["date_published"], errors="coerce", utc=True)
+    total_last_year = f"{(published.dt.year == last_year).sum():,}"
 
     with st.container(key="moral_answer", border=True):
         st.markdown(f"""
-            **Our answer: Early on, AI weakens moral judgement and safeguards are thin, but no proveable cause.** In controlled experiments, people who talked to a flattering AI felt more in the right and were less willing to repair the conflict. Around that, it was reported that AI incidents reached {total_last_year} in {last_year} and are still accelerating, models differ widely in how closely their moral scores match human validation, and only a minority of countries have a binding national framework. The effect on judgement is measured in surveys, the failures and gaps are indicators, and more importantly there is no time-series data available which indicates erosion of moral judgement.
+            **{label}: Early on, AI weakens moral judgement and safeguards are thin, but no provable cause.** In controlled experiments, people who talked to a flattering AI felt more in the right and were less willing to repair the conflict. Around that, it was reported that AI incidents reached {total_last_year} in {last_year} and are still accelerating, models differ widely in how closely their moral scores match human validation, and only a minority of countries have a binding national framework. The effect on judgement is measured in surveys, the failures and gaps are indicators, and more importantly there is no time-series data available which indicates erosion of moral judgement.
         """)
 
 
@@ -581,8 +603,12 @@ def render_human_validation_scores(data: pd.DataFrame) -> None:
     with st.container():
         st.altair_chart(chart, use_container_width=True)
         st.caption(
-            "This chart visualizes human validation and moral alignment scores across different LLM architectures. "
-            "Lower scores highlight severe ethical drift, prompt compliance failures, and moral degradation under complex testing scenarios. "
+            f"Each dot is one model: its mean score from human raters (x) and from GPT-5.5 as judge (y), on a 0–10 scale. "
+            f"Human means range from {agg_df['human_mean_score'].min():.2f} ({agg_df.loc[agg_df['human_mean_score'].idxmin(), 'evaluated_model_name']}) "
+            f"to {agg_df['human_mean_score'].max():.2f} ({agg_df.loc[agg_df['human_mean_score'].idxmax(), 'evaluated_model_name']}), "
+            f"and the two scores move together (r = {agg_df['human_mean_score'].corr(agg_df['gpt55_score']):+.2f}, {len(agg_df)} models). "
+            "A lower score means the model's answers were rated less safe or less aligned on the benchmark's test prompts; "
+            "it does not show that a model's behaviour gets worse over time. "
             + _source(
                 "ethics",
                 url="https://github.com/universe-szw/scientometric-llm-ethics-benchmark/blob/main/scoring_results/human_validation_scores_merged.csv",
@@ -871,7 +897,7 @@ def render_trust_chart(data: pd.DataFrame) -> None:
     )
 
     st.caption(
-        f"Average trust level: {trust_level}<br>(hover to see table)<br>{_source('kaggle')}",
+        f"Average trust level: {trust_level}<br>{_shares_line(counts)}<br>{_source('kaggle')}",
         text_alignment="center",
         unsafe_allow_html=True,
     )
@@ -986,7 +1012,7 @@ def render_ai_replacement(data: pd.DataFrame) -> None:
     )
 
     st.caption(
-        f"Average answer: {fear_level}<br>(hover to see table)<br>"
+        f"Average answer: {fear_level}<br>{_shares_line(counts)}<br>"
         + _source("kaggle"),
         text_alignment="center",
         unsafe_allow_html=True,
@@ -1077,7 +1103,8 @@ def render_ai_framework_coverage(
         return
 
     order = ["Binding", "Non-binding", "Draft only", "No framework"]
-    colors = ["#0e7490", "#67b7d1", "#f2b134", "#9aa5b1"]
+    # "No framework" is a light grey so it stays distinct from "Non-binding" under colour-vision deficiency.
+    colors = ["#0e7490", "#67b7d1", "#f2b134", "#d5d9de"]
     text_colors = ["#ffffff", "#0b1118", "#0b1118", "#0b1118"]
 
     n_countries = df["ISO3"].nunique()
@@ -1165,6 +1192,8 @@ def render_ai_framework_coverage(
 
     chart = (
         (bars + labels)
+        # Separate colour scales, so the % labels use text_colors instead of the bar colours (which hid them).
+        .resolve_scale(color="independent")
         .properties(
             title=alt.TitleParams(
                 f"National AI Frameworks by Responsible-AI Area ({selected_group})",
@@ -1301,6 +1330,16 @@ def render_ai_trust_choropleth(
         labels={"value": value_title},
         color_continuous_scale="Teal",
         range_color=(int(df["value"].min()), int(df["value"].max())),
+    )
+
+    # Print each surveyed country's value on the map, so it can be read without hovering.
+    fig.add_scattergeo(
+        locations=df["iso3"],
+        text=df["value"].astype(str),
+        mode="text",
+        textfont={"size": 10, "color": "#0b1118"},
+        hoverinfo="skip",
+        showlegend=False,
     )
 
     fig.update_geos(
@@ -2081,6 +2120,10 @@ def render_sources(data_list: list[pd.DataFrame]) -> None:
     ]
 
     st.table(pd.DataFrame(rows))
+    st.caption(
+        f"Last data refresh: {LAST_REFRESH}. Every number on this page is in, or computed from, "
+        "the files in data/processed/."
+    )
 
 
 def render_data_limitations() -> None:
