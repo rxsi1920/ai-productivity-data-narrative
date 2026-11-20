@@ -389,7 +389,7 @@ def render_moral_summary(data: pd.DataFrame) -> None:
 
     with st.container(key="moral_answer", border=True):
         st.markdown(f"""
-            **Our answer:** Early on, AI weakens our moral judgement and the safeguards are thin, but does not have a proveable cause. In controlled experiments, people who talked to a flattering AI felt more in the right and were less willing to repair the conflict, and this held in more than one study. Around that, the safety net is clean, in that reported AI incidents reached {total_last_year} in {last_year} and are still accelerating, models differ widely in how closely their moral scores match human validation, and in most areas of responsible AI only a minority of countries have a binding national framework. The first is a single-conversation experiment, the second is a count of reports, and the third is a snapshot of policy status. The effect on judgement is measured in surveys, the failures and gaps are indicators, and more importantly lacks a time-series data that indicates people's moral judgement erodes over time.
+            **Our answer: Early on, AI weakens moral judgement and safeguards are thin, but no proveable cause.** In controlled experiments, people who talked to a flattering AI felt more in the right and were less willing to repair the conflict. Around that, it was reported that AI incidents reached {total_last_year} in {last_year} and are still accelerating, models differ widely in how closely their moral scores match human validation, and only a minority of countries have a binding national framework. The effect on judgement is measured in surveys, the failures and gaps are indicators, and more importantly there is no time-series data available which indicates erosion of moral judgement.
         """)
 
 
@@ -1856,9 +1856,6 @@ def render_syco_scenario_effects(
             st.dataframe(table, use_container_width=True, hide_index=True)
 
 
-import pandas as pd
-
-
 def _latest_date(df: pd.DataFrame, cols: list[str]) -> str | None:
     """Latest parsed date across the given columns, or None if unavailable."""
     dates = []
@@ -1958,3 +1955,227 @@ def render_data_limitations() -> None:
     - The trust maps use online surveys from different years. Ipsos surveyed adults under 75 online (30 countries in 2025, 32 in 2026). Online samples under-represent people with limited internet access, so results are not fully representative of each country. Government trust comes from the 2025 edition and the other questions from 2026.
     - The ethics benchmark experiments on constructed prompts, but no connections to real incident data. Human validation covers a subset of items and the AI judges share a family with some of the models they score.
     """)
+
+
+def render_moral_decision(
+    ai_reports_data: pd.DataFrame,
+    human_validation_data: pd.DataFrame,
+    frameworks_data: pd.DataFrame,
+    gov_trust_ipsos_data: pd.DataFrame,
+    syco_study2_data: pd.DataFrame,
+    syco_study3_data: pd.DataFrame,
+) -> None:
+    FW_COUNTRY, FW_AREA, FW_STATUS, FW_BINDING = "country", "area", "status", "Binding"
+
+    def safe(fn) -> str:
+        try:
+            return fn()
+        except Exception:
+            return "data not available"
+
+    def syco() -> str:
+        s2 = syco_study2_data["is_syco"].astype(str).str.lower().isin(["true", "1", "1.0"])
+        cond = syco_study3_data["Condition"].astype(str).str.lower()
+        s3 = cond.str.contains("syco") & ~cond.str.contains("non")
+
+        def gap(df, mask, col):
+            return df.loc[mask, col].mean() - df.loc[~mask, col].mean()
+
+        right = [gap(syco_study2_data, s2, "rightorwrong"), gap(syco_study3_data, s3, "rightorwrong")]
+        repair = [gap(syco_study2_data, s2, "repair_score"), gap(syco_study3_data, s3, "repair_score")]
+        return (
+            f"After chatting with a flattering AI, people rated themselves "
+            f"{sum(right) / 2:+.2f} points more in the right and "
+            f"{sum(repair) / 2:+.2f} on willingness to repair "
+            f"(vs a non-sycophantic AI, averaged over 2 studies)."
+        )
+
+    def validation() -> str:
+        d = human_validation_data
+        m = d.groupby("evaluated_model_name")["human_mean_score"].mean().sort_values()
+        gap = (d["gpt55_score"] - d["human_mean_score"]).abs().mean()
+        return (
+            f"Mean human-validation score runs from {m.iloc[0]:.1f} ({m.index[0]}) "
+            f"to {m.iloc[-1]:.1f} ({m.index[-1]}) across {len(m)} models; "
+            f"GPT-5.5 as judge is off human scores by {gap:.1f} points on average."
+        )
+
+    def governance() -> str:
+        fw = frameworks_data
+        binding = fw["fr1_enforceability"].eq("Binding") | fw["fr2_enforceability"].eq("Binding")
+        share = binding.groupby(fw["indicator"]).mean().sort_values()
+        return (
+            f"Share of {fw['country'].nunique()} countries with a binding framework: "
+            f"{share.iloc[-1]:.0%} in {share.index[-1]} (best covered) "
+            f"down to {share.iloc[0]:.0%} in {share.index[0]}."
+        )
+
+    def incidents() -> str:
+        dates = pd.to_datetime(ai_reports_data["date_published"], errors="coerce").dropna()
+        per_year = dates.dt.year.value_counts().sort_index()
+        per_year = per_year[per_year.index < pd.Timestamp.now().year]
+        return (
+            f"{per_year.iloc[-1]:,} reports published in {per_year.index[-1]}, "
+            f"{per_year.iloc[-1] / per_year.iloc[-2] - 1:+.0%} on {per_year.index[-2]}."
+        )
+
+    def trust() -> str:
+        g = gov_trust_ipsos_data
+        g = g[~g["Country"].str.contains("average", case=False)]
+        s = g.set_index("Country")["Agree"].astype(float).sort_values()
+        return (
+            f"Agreement that government can implement guardrails runs from "
+            f"{s.iloc[-1]:.0f}% in {s.index[-1]} to {s.iloc[0]:.0f}% in {s.index[0]}."
+        )
+
+    st.subheader("Where to prioritise moral changes?")
+    df = pd.DataFrame([
+        {
+            "Area": "Assistants that talk to customers or staff",
+            "Lean towards": "Test for flattery before launch; keep human review on advice",
+            "Evidence on this page": safe(syco),
+            "Not settled": "One conversation, lab setting; lasting effects are untested.",
+        },
+        {
+            "Area": "Choosing and approving models",
+            "Lean towards": "Human-validated, independent testing, not a model grading itself",
+            "Evidence on this page": safe(validation),
+            "Not settled": "Constructed scenarios, not real decisions; AI-judge self-preference is suggestive only.",
+        },
+        {
+            "Area": "Compliance and governance",
+            "Lean towards": "Write internal rules where national rules are thin",
+            "Evidence on this page": safe(governance),
+            "Not settled": "Rules on paper are not enforcement; state-level rules are not counted.",
+        },
+        {
+            "Area": "Incident monitoring",
+            "Lean towards": "Log and review incidents, starting with the common failure types",
+            "Evidence on this page": safe(incidents),
+            "Not settled": "Self-reported and media-driven; more reports may mean more attention, not more harm.",
+        },
+        {
+            "Area": "Public trust and communication",
+            "Lean towards": "Show safeguards first, then ask for trust",
+            "Evidence on this page": safe(trust),
+            "Not settled": "Online samples under-represent people with less access; trust is not proof that safeguards work.",
+        },
+    ])
+    st.table(df)
+
+
+def render_moral_rollout(
+    ai_reports_data: pd.DataFrame,
+    human_validation_data: pd.DataFrame,
+    frameworks_data: pd.DataFrame,
+    gov_trust_ipsos_data: pd.DataFrame,
+    syco_study2_data: pd.DataFrame,
+    syco_study3_data: pd.DataFrame,
+) -> None:
+    def safe(fn) -> str:
+        try:
+            return fn()
+        except Exception as e:
+            return f"data not available ({type(e).__name__}: {e})"
+
+    def syco_gaps() -> tuple[float, float]:
+        s2 = syco_study2_data["is_syco"].astype(str).str.lower().isin(["true", "1", "1.0"])
+        cond = syco_study3_data["Condition"].astype(str).str.lower()
+        s3 = cond.str.contains("syco") & ~cond.str.contains("non")
+
+        def gap(df, mask, col):
+            return df.loc[mask, col].mean() - df.loc[~mask, col].mean()
+
+        right = (gap(syco_study2_data, s2, "rightorwrong") + gap(syco_study3_data, s3, "rightorwrong")) / 2
+        repair = (gap(syco_study2_data, s2, "repair_score") + gap(syco_study3_data, s3, "repair_score")) / 2
+        return right, repair
+
+    def binding_share() -> float:
+        fw = frameworks_data
+        return (fw["fr1_enforceability"].eq("Binding") | fw["fr2_enforceability"].eq("Binding")).mean()
+
+    def report_growth() -> tuple[int, int, float]:
+        dates = pd.to_datetime(ai_reports_data["date_published"], errors="coerce").dropna()
+        per_year = dates.dt.year.value_counts().sort_index()
+        per_year = per_year[per_year.index < pd.Timestamp.now().year]  # drop partial current year
+        return per_year.index[-1], per_year.iloc[-1], per_year.iloc[-1] / per_year.iloc[-2] - 1
+
+    def trust_series() -> pd.Series:
+        g = gov_trust_ipsos_data
+        g = g[~g["Country"].str.contains("average", case=False)]
+        return g.set_index("Country")["Agree"].astype(float)
+
+    def model_scores() -> pd.Series:
+        return human_validation_data.groupby("evaluated_model_name")["human_mean_score"].mean().sort_values()
+
+    # --- Option 1: leave it to national regulation ---
+    def reg_for() -> str:
+        s = trust_series()
+        return (
+            f"In {(s >= 50).sum()} of {len(s)} surveyed countries, most people agree "
+            f"their government can implement AI guardrails (median agreement {s.median():.0f}%)."
+        )
+
+    def reg_against() -> str:
+        year, n, g = report_growth()
+        return (
+            f"Only {binding_share():.0%} of country-by-area framework slots are legally binding, "
+            f"while reported incidents grew {g:+.0%} in {year}."
+        )
+
+    # --- Option 2: leave it to companies and voluntary safeguards ---
+    def self_for() -> str:
+        m = model_scores()
+        return (
+            f"Models already differ widely on human-validated moral scores "
+            f"({m.iloc[0]:.1f} for {m.index[0]} to {m.iloc[-1]:.1f} for {m.index[-1]}), "
+            f"so better-behaved options exist to buy or build."
+        )
+
+    def self_against() -> str:
+        right, repair = syco_gaps()
+        return (
+            f"A flattering AI moved people {right:+.2f} points toward feeling in the right and "
+            f"{repair:+.2f} on willingness to repair, an effect users may not notice themselves."
+        )
+
+    # --- Option 3: binding rules plus independent human-validated testing ---
+    def combo_for() -> str:
+        d = human_validation_data
+        gap = (d["gpt55_score"] - d["human_mean_score"]).abs().mean()
+        return (
+            f"Targets both gaps: thin binding rules ({binding_share():.0%} of slots) and "
+            f"automated scoring that drifts from human judgement (GPT-5.5 is off by {gap:.1f} points on average)."
+        )
+
+    st.subheader("Options for morally fixing AI usage")
+    st.caption(
+        "The page does not make the decision. This shows what the evidence loaded so far "
+        "says for and against each option. It is an interpretation, not a finding of any one source."
+    )
+
+    df = pd.DataFrame([
+        {
+            "Option": "Leave it to national regulation",
+            "What supports it": safe(reg_for),
+            "What argues against it": safe(reg_against),
+        },
+        {
+            "Option": "Leave it to companies and voluntary safeguards",
+            "What supports it": safe(self_for),
+            "What argues against it": safe(self_against),
+        },
+        {
+            "Option": "Binding rules plus independent, human-validated testing",
+            "What supports it": safe(combo_for),
+            "What argues against it": (
+                "This evidence does not test whether the combination works, "
+                "or what it costs. That is an open question."
+            ),
+        },
+    ])
+    st.table(df)
+    st.caption(
+        "Limits: the sycophancy studies are single conversations in a lab, the benchmarks use "
+        "constructed scenarios, and a framework on paper is not enforcement."
+    )

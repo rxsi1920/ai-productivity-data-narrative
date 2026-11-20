@@ -4,6 +4,7 @@ from narrative.utils import *
 from .views import *
 
 DATA_ROOT = get_proc_data_dir()
+RAW_ROOT = get_raw_data_dir()
 
 ai_reports_data = get_csv(DATA_ROOT / "ai_reports.csv")
 ai_inc_data = get_csv(DATA_ROOT / "ai_incidents.csv")
