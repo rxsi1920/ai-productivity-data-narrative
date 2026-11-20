@@ -18,6 +18,7 @@ import streamlit as st
 
 from narrative.utils import *
 
+
 DATA = get_proc_data_dir()
 LAST_REFRESH = "22 Oct 2026"  # date the source files in data/raw were downloaded
 
@@ -798,6 +799,29 @@ h_cind = record(
     ["ind_ai", "ind_gva", "ind_hours"],
     "Pearson r across 6 EU27 industries; productivity = real GVA ÷ hours worked, 2025 ÷ 2021 − 1.",
 )
+
+def build_t_prod() -> str:
+    oph = ilo("ilo_oph").pivot(index="region", columns="year", values="value")
+    w_pre = round(((oph.loc["World", 2019] / oph.loc["World", 2015]) ** (1 / 4) - 1) * 100, 2)
+    w_post = round(((oph.loc["World", 2025] / oph.loc["World", 2022]) ** (1 / 3) - 1) * 100, 2)
+
+    CPs, COE = fred("cp"), fred("coe")
+    base = pd.Timestamp(AI_ERA_START)
+    pg = (CPs.iloc[-1] / CPs[base] - 1) * 100
+    wg = (COE.iloc[-1] / COE[base] - 1) * 100
+
+    t_prod = (
+        f"<b>Our Answer: only partly, so far.</b> Productivity grew fastest in the industries that use AI most "
+        f"(EU, r = {c_ind['r']:+.2f}, {c_ind['n']} industries), and US corporate profits rose {pg:.0f}% from {qlabel(pd.Timestamp(base))} to {qlabel(CPs.index[-1])} while employee pay rose {wg:.0f}%. "
+        f"But economy-wide productivity growth slowed ({w_pre:.1f}% → {w_post:.1f}% a year worldwide, 2015–19 vs 2022–25), and countries that use AI most "
+        f"did not grow faster — so the measured gain is narrow and, in the US, goes more to profits than to pay."
+    )
+
+    with st.container(key="prof_answer", border=True):
+        st.markdown(
+            t_prod,
+            unsafe_allow_html=True
+        )
 
 # --------------------------------------------------------------------------------------
 # Shared chart helpers (bump chart, scatter with fit, correlation text)

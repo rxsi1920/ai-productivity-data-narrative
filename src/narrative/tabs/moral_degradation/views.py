@@ -1,5 +1,7 @@
 import ast
+import functools
 import re
+from datetime import date
 
 import altair as alt
 import numpy as np
@@ -9,6 +11,90 @@ import pycountry
 import streamlit as st
 
 
+DATE_LABEL = "Latest observation"
+DOWNLOAD_LABEL = "Download CSV"
+EMPTY_TEXT = "No data matches the current selection."
+_DATE_COLUMNS = ["date_published", "date", "date_submitted", "published_date"]
+
+SOURCES = {
+    "aiid": (
+        "AI Incident Database",
+        "Responsible AI Collaborative",
+        "https://incidentdatabase.ai/",
+    ),
+    "ethics": (
+        "Scientometric LLM Ethics Benchmark",
+        "universe-szw",
+        "https://github.com/universe-szw/scientometric-llm-ethics-benchmark",
+    ),
+    "kaggle": (
+        "Global AI Adoption & Workforce Impact Survey 24-26",
+        "M. K. Suraj (Kaggle)",
+        "https://www.kaggle.com/datasets/meruvakodandasuraj/global-ai-adoption-and-workforce-impact-survey-24-26",
+    ),
+    "girai": (
+        "Global Index on Responsible AI",
+        "Global Center on AI Governance",
+        "https://www.global-index.ai/",
+    ),
+    "ipsos": ("Ipsos AI Monitor", "Ipsos", "https://www.ipsos.com/"),
+    "cheng": (
+        "Sycophantic AI Decreases Prosocial Intentions and Promotes Dependence",
+        "Cheng et al. (Science, 2026)",
+        "https://arxiv.org/abs/2510.01395",
+    ),
+}
+
+
+def _view(view_id: str):
+    """Render the wrapped function inside a container keyed by the view id."""
+
+    def decorator(fn):
+        @functools.wraps(fn)
+        def wrapper(*args, **kwargs):
+            with st.container(key=view_id):
+                return fn(*args, **kwargs)
+
+        return wrapper
+
+    return decorator
+
+
+def _source(*ids: str, url: str | None = None) -> str:
+    parts = []
+    for i, sid in enumerate(ids):
+        title, publisher, default = SOURCES[sid]
+        parts.append(f"[{title}]({url if url and i == 0 else default}), {publisher}")
+    return "Source: " + "; ".join(parts) + "."
+
+
+def _footer(unit: str, frame=None) -> None:
+    st.caption(f"Unit: {unit}", text_alignment="center")
+    latest = _latest_date(frame, _DATE_COLUMNS) if isinstance(frame, pd.DataFrame) else None
+    st.caption(
+        f"{DATE_LABEL}: {latest}" if latest else f"{DATE_LABEL}: not applicable",
+        text_alignment="center",
+    )
+
+
+def _download(frame, key: str, file_name: str) -> None:
+    if not isinstance(frame, pd.DataFrame):
+        return
+    st.download_button(
+        DOWNLOAD_LABEL,
+        frame.to_csv(index=False).encode("utf-8"),
+        file_name=file_name,
+        mime="text/csv",
+        key=key,
+    )
+
+
+def _empty(frame, key: str, file_name: str) -> None:
+    st.info(EMPTY_TEXT)
+    _download(frame, key, file_name)
+
+
+@_view("reports_timeseries")
 def render_reports_timeseries(
     df_incidents: pd.DataFrame, df_reports: pd.DataFrame
 ) -> None:
@@ -22,7 +108,9 @@ def render_reports_timeseries(
 
     datasets = {"Reports": df_reports, "Incidents": df_incidents}
 
-    choice = st.selectbox("Select data", list(datasets.keys()), index=0)
+    choice = st.selectbox(
+        "Select data", list(datasets.keys()), index=0, key="reports_dataset"
+    )
     label = choice
     source_df = datasets[choice]
 
@@ -68,8 +156,9 @@ def render_reports_timeseries(
         max_year,
         min(max(2025, min_year), max_year),
         step=1,
+        key="reports_forecast_year",
     )
-    show_fan = st.toggle("Show fan", value=True)
+    show_fan = st.toggle("Show fan", value=True, key="reports_show_fan")
 
     hist = yearly_counts[yearly_counts["year"] <= sel_year]
     counts = hist["count"].tolist()
@@ -225,11 +314,18 @@ def render_reports_timeseries(
             f"The number of {label.lower()} has soared as AI has significantly progressed in its capabilities. These include automating "
             "attack vectors and in their scale of reach. Examples include automated scam calls and large scale data breaches. "
             f"{fan_note}"
-            "Source: [[AI Incidents Database]](https://incidentdatabase.ai/apps/incidents/) ",
+            + _source("aiid", url="https://incidentdatabase.ai/apps/incidents/"),
             text_alignment="center",
+        )
+        _footer(f"{unit} per year", source_df)
+        _download(
+            source_df.loc[df.index],
+            "reports_download",
+            f"ai_{unit}.csv",
         )
 
 
+@_view("gmf_failures")
 def render_gmf_failures(data: pd.DataFrame) -> None:
     st.subheader("What technically goes wrong?")
     st.markdown(
@@ -368,31 +464,35 @@ def render_gmf_failures(data: pd.DataFrame) -> None:
         f"({classified / total_incidents:.0%}) carry a technical-failure classification, and only those are counted. "
         f"The most frequent is {top['failure']}, recorded in {int(top['incidents']):,} incidents "
         f"({top['share']:.0%} of classified incidents). One incident can have several failures, so bars overlap "
-        "and shares do not sum to 100%. Source: [AI Incident Database, GMF taxonomy]"
-        "(https://incidentdatabase.ai/taxonomies/gmf/)."
+        "and shares do not sum to 100%. "
+        + _source("aiid", url="https://incidentdatabase.ai/taxonomies/gmf/")
     )
 
     st.altair_chart(chart, use_container_width=True, theme=None)
     st.caption(caption, text_alignment="center")
+    _footer("incidents", data)
+    _download(data, "gmf_download", "gmf_failures.csv")
 
 
 def render_() -> None:
     st.header("2. AI's Self-awareness of Morality")
 
 
-def render_moral_summary(data: pd.DataFrame, label: str = "Our answer") -> None:
+def render_moral_summary(data: pd.DataFrame) -> None:
 
-    last_year = 2025  # latest full year in the data; same count as the section 1 chart and Home
-    published = pd.to_datetime(data["date_published"], errors="coerce", utc=True)
-    total_last_year = f"{(published.dt.year == last_year).sum():,}"
+    last_year = date.today().year - 1
+    submitted_dates = pd.to_datetime(data["date_submitted"], errors="coerce")
+    total_last_year = (submitted_dates.dt.year == last_year).sum()
 
     with st.container(key="moral_answer", border=True):
         st.markdown(f"""
-            **{label}:** Early on, AI weakens our moral judgement and the safeguards are thin, but does not have a proveable cause. In controlled experiments, people who talked to a flattering AI felt more in the right and were less willing to repair the conflict, and this held in more than one study. Around that, the safety net is clean, in that reported AI incidents reached {total_last_year} in {last_year} and are still accelerating, models differ widely in how closely their moral scores match human validation, and in most areas of responsible AI only a minority of countries have a binding national framework. The first is a single-conversation experiment, the second is a count of reports, and the third is a snapshot of policy status. The effect on judgement is measured in surveys, the failures and gaps are indicators, and more importantly lacks a time-series data that indicates people's moral judgement erodes over time.
+            **Our answer: Early on, AI weakens moral judgement and safeguards are thin, but no proveable cause.** In controlled experiments, people who talked to a flattering AI felt more in the right and were less willing to repair the conflict. Around that, it was reported that AI incidents reached {total_last_year} in {last_year} and are still accelerating, models differ widely in how closely their moral scores match human validation, and only a minority of countries have a binding national framework. The effect on judgement is measured in surveys, the failures and gaps are indicators, and more importantly there is no time-series data available which indicates erosion of moral judgement.
         """)
 
 
+@_view("human_validation_scores")
 def render_human_validation_scores(data: pd.DataFrame) -> None:
+    st.subheader("Human validation of AI moral scores")
     st.markdown(
         "**Question:** How do models place themselves against human validation?"
     )
@@ -415,15 +515,18 @@ def render_human_validation_scores(data: pd.DataFrame) -> None:
     df = data.copy()
 
     dimensions = ["Overall"] + sorted(df["dimension"].dropna().unique().tolist())
-    selected_dimension = st.selectbox("Select Ethical/Safety Dimension", dimensions)
+    selected_dimension = st.selectbox(
+        "Select Ethical/Safety Dimension", dimensions, key="human_validation_dimension"
+    )
 
     if selected_dimension != "Overall":
         df = df[df["dimension"] == selected_dimension]
 
     if df.empty:
-        st.warning("No data matches the selected filters.")
+        _empty(df, "human_validation_download", "human_validation_scores.csv")
         return
 
+    selected_rows = df.copy()
     df["model_family"] = df["evaluated_model_name"].str.extract(r"^([A-Za-z]+)")[0]
 
     agg_df = (
@@ -480,11 +583,17 @@ def render_human_validation_scores(data: pd.DataFrame) -> None:
         st.caption(
             "This chart visualizes human validation and moral alignment scores across different LLM architectures. "
             "Lower scores highlight severe ethical drift, prompt compliance failures, and moral degradation under complex testing scenarios. "
-            "Source: [[Human Validation - Scientometric LLM Ethics Benchmark]](https://github.com/universe-szw/scientometric-llm-ethics-benchmark/blob/main/scoring_results/human_validation_scores_merged.csv).",
+            + _source(
+                "ethics",
+                url="https://github.com/universe-szw/scientometric-llm-ethics-benchmark/blob/main/scoring_results/human_validation_scores_merged.csv",
+            ),
             text_alignment="center",
         )
+        _footer("score (0-10)", data)
+        _download(selected_rows, "human_validation_download", "human_validation_scores.csv")
 
 
+@_view("judge_agreement_heatmap")
 def render_judge_agreement_heatmap(data: pd.DataFrame) -> None:
     def combine_judge_scores(*frames: pd.DataFrame) -> pd.DataFrame:
         cols = [
@@ -499,6 +608,7 @@ def render_judge_agreement_heatmap(data: pd.DataFrame) -> None:
         ]
         return pd.concat([f[cols] for f in frames], ignore_index=True)
 
+    st.subheader("Do AI judges agree on how ethically models behave?")
     st.markdown(
         "**Question:** Do different AI judges agree on how ethically other models behave, "
         "and does a judge treat models from its own family differently?"
@@ -532,8 +642,10 @@ def render_judge_agreement_heatmap(data: pd.DataFrame) -> None:
         df = df[df["dimension"] == selected_dimension]
 
     if df.empty:
-        st.warning("No data matches the selected filters.")
+        _empty(df, "judge_heatmap_download", "judge_agreement.csv")
         return
+
+    selected_rows = df.copy()
 
     judge_labels = {
         "gpt-5.5": "GPT-5.5",
@@ -646,16 +758,16 @@ def render_judge_agreement_heatmap(data: pd.DataFrame) -> None:
             f"{same_offset:+.2f} points from the model's all-judge average, versus "
             f"{other_offset:+.2f} elsewhere. With only a few same-family pairs, this is suggestive, not conclusive. "
         )
-    caption += (
-        "Source: [[Human Validation Benchmark Dataset]]"
-        "(https://github.com/universe-szw/scientometric-llm-ethics-benchmark)."
-    )
+    caption += _source("ethics")
 
     with st.container():
         st.altair_chart(chart, use_container_width=True)
         st.caption(caption, text_alignment="center")
+        _footer("mean score (0-10)", data)
+        _download(selected_rows, "judge_heatmap_download", "judge_agreement.csv")
 
 
+@_view("trust_chart")
 def render_trust_chart(data: pd.DataFrame) -> None:
     st.markdown("General trust in AI", unsafe_allow_html=True, text_alignment="center")
 
@@ -759,12 +871,15 @@ def render_trust_chart(data: pd.DataFrame) -> None:
     )
 
     st.caption(
-        f"Average trust level: {trust_level}<br>(hover to see table)<br>[Source](https://www.kaggle.com/datasets/meruvakodandasuraj/global-ai-adoption-and-workforce-impact-survey-24-26)",
+        f"Average trust level: {trust_level}<br>(hover to see table)<br>{_source('kaggle')}",
         text_alignment="center",
         unsafe_allow_html=True,
     )
+    _footer("respondents by trust level", data)
+    _download(data, "trust_download", "ai_trust.csv")
 
 
+@_view("ai_replacement")
 def render_ai_replacement(data: pd.DataFrame) -> None:
     st.markdown(
         "Fear of AI replacing my job", unsafe_allow_html=True, text_alignment="center"
@@ -872,12 +987,15 @@ def render_ai_replacement(data: pd.DataFrame) -> None:
 
     st.caption(
         f"Average answer: {fear_level}<br>(hover to see table)<br>"
-        "[Source](https://www.kaggle.com/datasets/meruvakodandasuraj/global-ai-adoption-and-workforce-impact-survey-24-26)",
+        + _source("kaggle"),
         text_alignment="center",
         unsafe_allow_html=True,
     )
+    _footer("respondents by answer", data)
+    _download(data, "ai_replacement_download", "ai_job_replacement_fear.csv")
 
 
+@_view("ai_framework_coverage")
 def render_ai_framework_coverage(
     frameworks: pd.DataFrame, classifications: pd.DataFrame | None = None
 ) -> None:
@@ -955,7 +1073,7 @@ def render_ai_framework_coverage(
         df = df[df[col] == value]
 
     if df.empty:
-        st.warning("No data matches the selected filters.")
+        _empty(df, "framework_download", "ai_frameworks.csv")
         return
 
     order = ["Binding", "Non-binding", "Draft only", "No framework"]
@@ -1069,12 +1187,14 @@ def render_ai_framework_coverage(
         f"Across the areas shown, {binding_share:.0%} of country-area pairs have a binding framework. "
         "Binding includes regional law applied to member states, such as the EU AI Act. "
         "Draft only means a framework exists but has not been adopted. "
-        "Source: [[Global Index on Responsible AI, Global Survey dataset]](https://www.global-index.ai/)."
+        + _source("girai")
     )
 
     with st.container():
         st.altair_chart(chart, use_container_width=True)
         st.caption(caption, text_alignment="center")
+        _footer("share of countries (%)", frameworks)
+        _download(df, "framework_download", "ai_frameworks.csv")
 
         if st.toggle("Show data", key="framework_table"):
             table = (
@@ -1091,6 +1211,7 @@ def render_ai_framework_coverage(
             st.dataframe(table, use_container_width=True, hide_index=True)
 
 
+@_view("ai_trust_choropleth")
 def render_ai_trust_choropleth(
     trust_gov_df: pd.DataFrame,
     trust_comp_df: pd.DataFrame,
@@ -1223,7 +1344,7 @@ def render_ai_trust_choropleth(
     )
     if average_value is not None:
         caption += f"The survey-wide average is {average_value}%. "
-    caption += "Countries in grey were not surveyed. Source: [Ipsos AI Monitor](https://www.ipsos.com/)."
+    caption += "Countries in grey were not surveyed. " + _source("ipsos")
 
     with st.container():
         st.plotly_chart(
@@ -1232,8 +1353,11 @@ def render_ai_trust_choropleth(
             config={"scrollZoom": True, "displaylogo": False},
         )
         st.caption(caption, text_alignment="center")
+        _footer("% of respondents who agree", source_df)
+        _download(source_df, "trust_choropleth_download", "ai_trust_by_country.csv")
 
 
+@_view("syco_effects")
 def render_syco_effects(study2_df: pd.DataFrame, study3_df: pd.DataFrame) -> None:
     st.subheader("What does flattering AI do to the people who use it?")
     st.markdown(
@@ -1446,13 +1570,15 @@ def render_syco_effects(study2_df: pd.DataFrame, study3_df: pd.DataFrame) -> Non
         f"willingness to repair the conflict by {phrase('Willing to repair the conflict')}; "
         f"trust in the AI by {phrase('Trust in the AI')} ({sizes}). "
         "The AI was instructed to be sycophantic or not, and outcomes are self-reported after a single interaction. "
-        "Source: [Cheng et al., 2025](https://arxiv.org/abs/2510.01395)."
+        + _source("cheng")
     )
 
     with st.container():
         for chart in charts:
             st.altair_chart(chart, use_container_width=True, theme=None)
         st.caption(caption, text_alignment="center")
+        _footer("points on a 1 to 7 scale", study2_df)
+        _download(effects, "syco_effects_download", "syco_effects.csv")
 
         if st.toggle("Show data", key="syco_effects_table"):
             table = effects.rename(
@@ -1470,6 +1596,7 @@ def render_syco_effects(study2_df: pd.DataFrame, study3_df: pd.DataFrame) -> Non
             st.dataframe(table, use_container_width=True, hide_index=True)
 
 
+@_view("syco_rightness_distribution")
 def render_syco_rightness_distribution(
     study2_df: pd.DataFrame, study3_df: pd.DataFrame
 ) -> None:
@@ -1611,12 +1738,18 @@ def render_syco_rightness_distribution(
         "Ratings run from 1 to 7, with higher meaning more convinced they were in the right. "
         f"Share rating themselves 6 or 7 — {comparisons}. "
         "The AI was instructed to be sycophantic or not, and ratings are self-reported after a single conversation. "
-        "Source: [Cheng et al., 2025](https://arxiv.org/abs/2510.01395)."
+        + _source("cheng")
     )
 
     with st.container():
         st.altair_chart(chart, use_container_width=True, theme=None)
         st.caption(caption, text_alignment="center")
+        _footer("share of participants (%)", study2_df)
+        _download(
+            shares[["group", "rating", "n", "share"]],
+            "syco_distribution_download",
+            "syco_rightness_distribution.csv",
+        )
 
         if st.toggle("Show data", key="syco_distribution_table"):
             table = shares[["group", "rating", "n", "share"]].rename(
@@ -1631,6 +1764,7 @@ def render_syco_rightness_distribution(
             st.dataframe(table, use_container_width=True, hide_index=True)
 
 
+@_view("syco_scenario_effects")
 def render_syco_scenario_effects(
     study2_df: pd.DataFrame, study3_df: pd.DataFrame
 ) -> None:
@@ -1830,7 +1964,7 @@ def render_syco_scenario_effects(
         caption += (
             "For willingness to repair, every scenario's interval excludes zero. "
         )
-    caption += "Source: [Cheng et al., 2025](https://arxiv.org/abs/2510.01395)."
+    caption += _source("cheng")
 
     with st.container():
         left, right = st.columns([1.5, 1], gap="small")
@@ -1840,6 +1974,8 @@ def render_syco_scenario_effects(
             st.altair_chart(panel("repair_score", False), use_container_width=True, theme=None)
 
         st.caption(caption, text_alignment="center")
+        _footer("points on a 1 to 7 scale", df)
+        _download(effects, "syco_scenario_download", "syco_scenario_effects.csv")
 
         if st.toggle("Show data", key="syco_scenario_table"):
             table = effects.rename(
@@ -1853,9 +1989,6 @@ def render_syco_scenario_effects(
                 }
             ).round(2)
             st.dataframe(table, use_container_width=True, hide_index=True)
-
-
-import pandas as pd
 
 
 def _latest_date(df: pd.DataFrame, cols: list[str]) -> str | None:
@@ -1957,3 +2090,246 @@ def render_data_limitations() -> None:
     - The trust maps use online surveys from different years. Ipsos surveyed adults under 75 online (30 countries in 2025, 32 in 2026). Online samples under-represent people with limited internet access, so results are not fully representative of each country. Government trust comes from the 2025 edition and the other questions from 2026.
     - The ethics benchmark experiments on constructed prompts, but no connections to real incident data. Human validation covers a subset of items and the AI judges share a family with some of the models they score.
     """)
+
+
+def render_moral_decision(
+    ai_reports_data: pd.DataFrame,
+    human_validation_data: pd.DataFrame,
+    frameworks_data: pd.DataFrame,
+    gov_trust_ipsos_data: pd.DataFrame,
+    syco_study2_data: pd.DataFrame,
+    syco_study3_data: pd.DataFrame,
+) -> None:
+    FW_COUNTRY, FW_AREA, FW_STATUS, FW_BINDING = "country", "area", "status", "Binding"
+
+    def safe(fn) -> str:
+        try:
+            return fn()
+        except Exception:
+            return "data not available"
+
+    def syco() -> str:
+        s2 = syco_study2_data["is_syco"].astype(str).str.lower().isin(["true", "1", "1.0"])
+        cond = syco_study3_data["Condition"].astype(str).str.lower()
+        s3 = cond.str.contains("syco") & ~cond.str.contains("non")
+
+        def gap(df, mask, col):
+            return df.loc[mask, col].mean() - df.loc[~mask, col].mean()
+
+        right = [gap(syco_study2_data, s2, "rightorwrong"), gap(syco_study3_data, s3, "rightorwrong")]
+        repair = [gap(syco_study2_data, s2, "repair_score"), gap(syco_study3_data, s3, "repair_score")]
+        return (
+            f"After chatting with a flattering AI, people rated themselves "
+            f"{sum(right) / 2:+.2f} points more in the right and "
+            f"{sum(repair) / 2:+.2f} on willingness to repair "
+            f"(vs a non-sycophantic AI, averaged over 2 studies)."
+        )
+
+    def validation() -> str:
+        d = human_validation_data
+        m = d.groupby("evaluated_model_name")["human_mean_score"].mean().sort_values()
+        gap = (d["gpt55_score"] - d["human_mean_score"]).abs().mean()
+        return (
+            f"Mean human-validation score runs from {m.iloc[0]:.1f} ({m.index[0]}) "
+            f"to {m.iloc[-1]:.1f} ({m.index[-1]}) across {len(m)} models; "
+            f"GPT-5.5 as judge is off human scores by {gap:.1f} points on average."
+        )
+
+    def governance() -> str:
+        fw = frameworks_data
+        binding = fw["fr1_enforceability"].eq("Binding") | fw["fr2_enforceability"].eq("Binding")
+        share = binding.groupby(fw["indicator"]).mean().sort_values()
+        return (
+            f"Share of {fw['country'].nunique()} countries with a binding framework: "
+            f"{share.iloc[-1]:.0%} in {share.index[-1]} (best covered) "
+            f"down to {share.iloc[0]:.0%} in {share.index[0]}."
+        )
+
+    def incidents() -> str:
+        dates = pd.to_datetime(ai_reports_data["date_published"], errors="coerce").dropna()
+        per_year = dates.dt.year.value_counts().sort_index()
+        per_year = per_year[per_year.index < pd.Timestamp.now().year]
+        return (
+            f"{per_year.iloc[-1]:,} reports published in {per_year.index[-1]}, "
+            f"{per_year.iloc[-1] / per_year.iloc[-2] - 1:+.0%} on {per_year.index[-2]}."
+        )
+
+    def trust() -> str:
+        g = gov_trust_ipsos_data
+        g = g[~g["Country"].str.contains("average", case=False)]
+        s = g.set_index("Country")["Agree"].astype(float).sort_values()
+        return (
+            f"Agreement that government can implement guardrails runs from "
+            f"{s.iloc[-1]:.0f}% in {s.index[-1]} to {s.iloc[0]:.0f}% in {s.index[0]}."
+        )
+
+    st.subheader("Where to prioritise moral changes?")
+    df = pd.DataFrame([
+        {
+            "Area": "Assistants that talk to customers or staff",
+            "Lean towards": "Test for flattery before launch; keep human review on advice",
+            "Evidence on this page": safe(syco),
+            "Not settled": "One conversation, lab setting; lasting effects are untested.",
+        },
+        {
+            "Area": "Choosing and approving models",
+            "Lean towards": "Human-validated, independent testing, not a model grading itself",
+            "Evidence on this page": safe(validation),
+            "Not settled": "Constructed scenarios, not real decisions; AI-judge self-preference is suggestive only.",
+        },
+        {
+            "Area": "Compliance and governance",
+            "Lean towards": "Write internal rules where national rules are thin; Lobby the government to make rule changes.",
+            "Evidence on this page": safe(governance),
+            "Not settled": "Rules on paper are not enforcement; state-level rules are not counted.",
+        },
+        {
+            "Area": "Incident monitoring",
+            "Lean towards": "Log and review incidents, starting with the common failure types",
+            "Evidence on this page": safe(incidents),
+            "Not settled": "Self-reported and media-driven; more reports may mean more attention, not more harm.",
+        },
+        {
+            "Area": "Public trust and communication",
+            "Lean towards": "Show safeguards first, then ask for trust",
+            "Evidence on this page": safe(trust),
+            "Not settled": "Online samples under-represent people with less access; trust is not proof that safeguards work.",
+        },
+    ])
+    st.table(df)
+
+
+def render_moral_rollout(
+    ai_reports_data: pd.DataFrame,
+    human_validation_data: pd.DataFrame,
+    frameworks_data: pd.DataFrame,
+    gov_trust_ipsos_data: pd.DataFrame,
+    syco_study2_data: pd.DataFrame,
+    syco_study3_data: pd.DataFrame,
+) -> None:
+    def safe(fn) -> str:
+        try:
+            return fn()
+        except Exception as e:
+            return f"data not available ({type(e).__name__}: {e})"
+
+    def syco_gaps() -> tuple[float, float]:
+        s2 = syco_study2_data["is_syco"].astype(str).str.lower().isin(["true", "1", "1.0"])
+        cond = syco_study3_data["Condition"].astype(str).str.lower()
+        s3 = cond.str.contains("syco") & ~cond.str.contains("non")
+
+        def gap(df, mask, col):
+            return df.loc[mask, col].mean() - df.loc[~mask, col].mean()
+
+        right = (gap(syco_study2_data, s2, "rightorwrong") + gap(syco_study3_data, s3, "rightorwrong")) / 2
+        repair = (gap(syco_study2_data, s2, "repair_score") + gap(syco_study3_data, s3, "repair_score")) / 2
+        return right, repair
+
+    def binding_share() -> float:
+        fw = frameworks_data
+        return (fw["fr1_enforceability"].eq("Binding") | fw["fr2_enforceability"].eq("Binding")).mean()
+
+    def report_growth() -> tuple[int, int, float]:
+        dates = pd.to_datetime(ai_reports_data["date_published"], errors="coerce").dropna()
+        per_year = dates.dt.year.value_counts().sort_index()
+        per_year = per_year[per_year.index < pd.Timestamp.now().year]  # drop partial current year
+        return per_year.index[-1], per_year.iloc[-1], per_year.iloc[-1] / per_year.iloc[-2] - 1
+
+    def trust_series() -> pd.Series:
+        g = gov_trust_ipsos_data
+        g = g[~g["Country"].str.contains("average", case=False)]
+        return g.set_index("Country")["Agree"].astype(float)
+
+    def model_scores() -> pd.Series:
+        return human_validation_data.groupby("evaluated_model_name")["human_mean_score"].mean().sort_values()
+
+    # --- Option 1: leave it to national regulation ---
+    def reg_for() -> str:
+        s = trust_series()
+        return (
+            f"In {(s >= 50).sum()} of {len(s)} surveyed countries, most people agree "
+            f"their government can implement AI guardrails (median agreement {s.median():.0f}%)."
+        )
+
+    def reg_against() -> str:
+        year, n, g = report_growth()
+        return (
+            f"Only {binding_share():.0%} of country-by-area framework slots are legally binding, "
+            f"while reported incidents grew {g:+.0%} in {year}."
+        )
+
+    # --- Option 2: leave it to companies and voluntary safeguards ---
+    def self_for() -> str:
+        m = model_scores()
+        return (
+            f"Models already differ widely on human-validated moral scores "
+            f"({m.iloc[0]:.1f} for {m.index[0]} to {m.iloc[-1]:.1f} for {m.index[-1]}), "
+            f"so better-behaved options exist to buy or build."
+        )
+
+    def self_against() -> str:
+        right, repair = syco_gaps()
+        return (
+            f"A flattering AI moved people {right:+.2f} points toward feeling in the right and "
+            f"{repair:+.2f} on willingness to repair, an effect users may not notice themselves."
+        )
+
+    # --- Option 3: binding rules plus independent human-validated testing ---
+    def combo_for() -> str:
+        d = human_validation_data
+        gap = (d["gpt55_score"] - d["human_mean_score"]).abs().mean()
+        return (
+            f"Targets both gaps: thin binding rules ({binding_share():.0%} of slots) and "
+            f"automated scoring that drifts from human judgement (GPT-5.5 is off by {gap:.1f} points on average)."
+        )
+
+    st.subheader("Options to make moral fixes towards AI usage")
+    st.caption(
+        "The page does not make the decision. This shows what the evidence loaded so far "
+        "says for and against each option. It is an interpretation, not a finding of any one source."
+    )
+
+    df = pd.DataFrame([
+        {
+            "Option": "Leave it to national regulation",
+            "What supports it": safe(reg_for),
+            "What argues against it": safe(reg_against),
+        },
+        {
+            "Option": "Leave it to companies and voluntary safeguards",
+            "What supports it": safe(self_for),
+            "What argues against it": safe(self_against),
+        },
+        {
+            "Option": "Binding rules plus independent, human-validated testing",
+            "What supports it": safe(combo_for),
+            "What argues against it": (
+                "This evidence does not test whether the combination works, "
+                "or what it costs. That is an open question."
+            ),
+        },
+    ])
+    st.table(df)
+    st.caption(
+        "Limits: the sycophancy studies are single conversations in a lab, the benchmarks use "
+        "constructed scenarios, and a framework on paper is not enforcement."
+    )
+
+
+def render_moral_questions_and_changes() -> None:
+    with st.container(key="moral_questions_and_change"):
+        with st.expander("Questions to take to your own organisation"):
+            st.markdown("""
+            - In what would ways should we test AI tools to ensure a moral balance, before outputs reach customers or staff members?
+            - What corporate governance should be put into place where national rules are thin or non-binding and protect moral
+            - How do we validate the AI tools we buy against human judgement? Should humans still stay in the loop or be replaced with advanced models?
+            - How should we use AI in the business automation, whilst considering the moral limitations?
+            - Which rules apply in each country we operate in, and are we meeting the strictest of them or only the minimum?
+            """)
+        with st.expander("What would change the answer"):
+            st.markdown("""
+            - **Better incident data:** Current reports available are either self-reported and media-driven, so it may consider the attention over actual harm, so better and standardised reporting should be mandated.
+            - **Evidence from real decisions:** Model benchmarks used throughout the studies use constructed scenarios but not results from live decision-making processes.
+            - **Better understanding of data:** Data needs clarification on the specific circumstances each incident took place in, or whether firms were ill-prepared or the situation was out of reach.
+            - **A change in the rules you operate under.** New binding national rules in your markets would shift how much your own internal governance needs to cover.
+            """)
