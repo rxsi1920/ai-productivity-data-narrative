@@ -2631,3 +2631,89 @@ def profitability_tab():
         "rebuilt from <code>data/raw/</code> by <code>scripts/build_processed.py</code>.</div>",
         unsafe_allow_html=True,
     )
+
+
+# ======================================================================================
+# 12. DECISION POINTS (shown on the Overall conclusion page)
+# ======================================================================================
+def render_decision_points() -> None:
+    """Profitability decision points for the Overall conclusion page.
+
+    Every figure is computed here from data/processed/, with the same formulas as the Profitability page.
+    """
+    oph = ilo("ilo_oph").pivot(index="region", columns="year", values="value")
+    # Rounded to 2 dp first, exactly as prod_reg is on the Profitability page, so the shown figures match.
+    w_pre = round(((oph.loc["World", 2019] / oph.loc["World", 2015]) ** (1 / 4) - 1) * 100, 2)
+    w_post = round(((oph.loc["World", 2025] / oph.loc["World", 2022]) ** (1 / 3) - 1) * 100, 2)
+
+    base = pd.Timestamp(AI_ERA_START)
+    CPs, COE = fred("cp"), fred("coe")
+    pg = (CPs.iloc[-1] / CPs[base] - 1) * 100
+    wg = (COE.iloc[-1] / COE[base] - 1) * 100
+
+    bar = load("eu_barriers").pivot(index="indic_is", columns="year", values="value")
+    considered = bar.loc["E_AI_EC", 2025]
+    expertise = bar.loc["E_AI_BLE", 2025] / considered * 100
+    cost = bar.loc["E_AI_BCST", 2025] / considered * 100
+
+    sz = load("eu_size").pivot(index="size_emp", columns="year", values="value")
+    large, small = sz.loc["GE250", 2025], sz.loc["10-49", 2025]
+
+    top = ind_summary.sort_values("AI adoption 2025 (%)").iloc[-1]
+    low = ind_summary.sort_values("AI adoption 2025 (%)").iloc[0]
+
+    st.subheader("Where AI investment is likely to pay back, and where to be cautious")
+    st.caption(
+        "This table is our reading of the Profitability page for a CEO or CFO. It is an interpretation, not a finding "
+        "of any one source, and the last column says what the data cannot settle."
+    )
+    rows = pd.DataFrame(
+        [
+            {
+                "Decision": "Where to invest first",
+                "Lean towards": "AI-intensive knowledge work, not a firm-wide rollout",
+                "Evidence on the Profitability page": (
+                    f"Across {c_ind['n']} EU industries, AI adoption and productivity growth move together "
+                    f"(r = {c_ind['r']:+.2f}). {top['industry']} uses AI most ({top['AI adoption 2025 (%)']:.0f}% of firms, 2025); "
+                    f"{low['industry']} least ({low['AI adoption 2025 (%)']:.0f}%)."
+                ),
+                "Not settled": "Six industries and a correlation; these industries were growing for other reasons too.",
+            },
+            {
+                "Decision": "What to budget for",
+                "Lean towards": "Skills and integration, not only licences",
+                "Evidence on the Profitability page": (
+                    f"Of EU firms that considered AI but did not adopt, {expertise:.0f}% cite lack of expertise and "
+                    f"{cost:.0f}% cite cost (2025)."
+                ),
+                "Not settled": "Self-reported barriers, EU firms only; says nothing about cost once AI is running.",
+            },
+            {
+                "Decision": "What return to expect",
+                "Lean towards": "Task-level targets and a multi-year payback, not an economy-wide lift",
+                "Evidence on the Profitability page": (
+                    f"World output per hour grew {w_post:.1f}% a year in 2022–25 against {w_pre:.1f}% in 2015–19, and "
+                    f"European countries that adopted AI fastest did not grow faster (r = {c_prod['r']:+.2f}, n = {c_prod['n']})."
+                ),
+                "Not settled": "Three years of data; gains from new technology often show up with a lag.",
+            },
+            {
+                "Decision": "Who the gains go to",
+                "Lean towards": "Plan how gains are shared with staff and reinvested in training",
+                "Evidence on the Profitability page": (
+                    f"US corporate profits rose {pg:.0f}% from {qlabel(base)} to {qlabel(CPs.index[-1])}; employee pay rose {wg:.0f}%."
+                ),
+                "Not settled": "US only, and profits rose for many reasons besides AI (prices, tax, recovery).",
+            },
+            {
+                "Decision": "Firm size",
+                "Lean towards": "Smaller firms: start with off-the-shelf tools before building in-house",
+                "Evidence on the Profitability page": (
+                    f"{large:.0f}% of large EU firms (250+ staff) use AI against {small:.0f}% of small firms (10–49), "
+                    f"{large / small:.1f}× as likely (2025)."
+                ),
+                "Not settled": "Adoption, not return: the data does not show whether small firms gain less when they adopt.",
+            },
+        ]
+    )
+    st.table(rows.set_index("Decision"))

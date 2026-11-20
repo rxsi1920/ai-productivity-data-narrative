@@ -1,4 +1,5 @@
 import ast
+import functools
 import re
 from datetime import date
 
@@ -10,6 +11,90 @@ import pycountry
 import streamlit as st
 
 
+DATE_LABEL = "Latest observation"
+DOWNLOAD_LABEL = "Download CSV"
+EMPTY_TEXT = "No data matches the current selection."
+_DATE_COLUMNS = ["date_published", "date", "date_submitted", "published_date"]
+
+SOURCES = {
+    "aiid": (
+        "AI Incident Database",
+        "Responsible AI Collaborative",
+        "https://incidentdatabase.ai/",
+    ),
+    "ethics": (
+        "Scientometric LLM Ethics Benchmark",
+        "universe-szw",
+        "https://github.com/universe-szw/scientometric-llm-ethics-benchmark",
+    ),
+    "kaggle": (
+        "Global AI Adoption & Workforce Impact Survey 24-26",
+        "M. K. Suraj (Kaggle)",
+        "https://www.kaggle.com/datasets/meruvakodandasuraj/global-ai-adoption-and-workforce-impact-survey-24-26",
+    ),
+    "girai": (
+        "Global Index on Responsible AI",
+        "Global Center on AI Governance",
+        "https://www.global-index.ai/",
+    ),
+    "ipsos": ("Ipsos AI Monitor", "Ipsos", "https://www.ipsos.com/"),
+    "cheng": (
+        "Sycophantic AI Decreases Prosocial Intentions and Promotes Dependence",
+        "Cheng et al. (Science, 2026)",
+        "https://arxiv.org/abs/2510.01395",
+    ),
+}
+
+
+def _view(view_id: str):
+    """Render the wrapped function inside a container keyed by the view id."""
+
+    def decorator(fn):
+        @functools.wraps(fn)
+        def wrapper(*args, **kwargs):
+            with st.container(key=view_id):
+                return fn(*args, **kwargs)
+
+        return wrapper
+
+    return decorator
+
+
+def _source(*ids: str, url: str | None = None) -> str:
+    parts = []
+    for i, sid in enumerate(ids):
+        title, publisher, default = SOURCES[sid]
+        parts.append(f"[{title}]({url if url and i == 0 else default}), {publisher}")
+    return "Source: " + "; ".join(parts) + "."
+
+
+def _footer(unit: str, frame=None) -> None:
+    st.caption(f"Unit: {unit}", text_alignment="center")
+    latest = _latest_date(frame, _DATE_COLUMNS) if isinstance(frame, pd.DataFrame) else None
+    st.caption(
+        f"{DATE_LABEL}: {latest}" if latest else f"{DATE_LABEL}: not applicable",
+        text_alignment="center",
+    )
+
+
+def _download(frame, key: str, file_name: str) -> None:
+    if not isinstance(frame, pd.DataFrame):
+        return
+    st.download_button(
+        DOWNLOAD_LABEL,
+        frame.to_csv(index=False).encode("utf-8"),
+        file_name=file_name,
+        mime="text/csv",
+        key=key,
+    )
+
+
+def _empty(frame, key: str, file_name: str) -> None:
+    st.info(EMPTY_TEXT)
+    _download(frame, key, file_name)
+
+
+@_view("reports_timeseries")
 def render_reports_timeseries(
     df_incidents: pd.DataFrame, df_reports: pd.DataFrame
 ) -> None:
@@ -23,7 +108,9 @@ def render_reports_timeseries(
 
     datasets = {"Reports": df_reports, "Incidents": df_incidents}
 
-    choice = st.selectbox("Select data", list(datasets.keys()), index=0)
+    choice = st.selectbox(
+        "Select data", list(datasets.keys()), index=0, key="reports_dataset"
+    )
     label = choice
     source_df = datasets[choice]
 
@@ -69,8 +156,9 @@ def render_reports_timeseries(
         max_year,
         min(max(2025, min_year), max_year),
         step=1,
+        key="reports_forecast_year",
     )
-    show_fan = st.toggle("Show fan", value=True)
+    show_fan = st.toggle("Show fan", value=True, key="reports_show_fan")
 
     hist = yearly_counts[yearly_counts["year"] <= sel_year]
     counts = hist["count"].tolist()
@@ -226,11 +314,18 @@ def render_reports_timeseries(
             f"The number of {label.lower()} has soared as AI has significantly progressed in its capabilities. These include automating "
             "attack vectors and in their scale of reach. Examples include automated scam calls and large scale data breaches. "
             f"{fan_note}"
-            "Source: [[AI Incidents Database]](https://incidentdatabase.ai/apps/incidents/) ",
+            + _source("aiid", url="https://incidentdatabase.ai/apps/incidents/"),
             text_alignment="center",
+        )
+        _footer(f"{unit} per year", source_df)
+        _download(
+            source_df.loc[df.index],
+            "reports_download",
+            f"ai_{unit}.csv",
         )
 
 
+@_view("gmf_failures")
 def render_gmf_failures(data: pd.DataFrame) -> None:
     st.subheader("What technically goes wrong?")
     st.markdown(
@@ -369,12 +464,14 @@ def render_gmf_failures(data: pd.DataFrame) -> None:
         f"({classified / total_incidents:.0%}) carry a technical-failure classification, and only those are counted. "
         f"The most frequent is {top['failure']}, recorded in {int(top['incidents']):,} incidents "
         f"({top['share']:.0%} of classified incidents). One incident can have several failures, so bars overlap "
-        "and shares do not sum to 100%. Source: [AI Incident Database, GMF taxonomy]"
-        "(https://incidentdatabase.ai/taxonomies/gmf/)."
+        "and shares do not sum to 100%. "
+        + _source("aiid", url="https://incidentdatabase.ai/taxonomies/gmf/")
     )
 
     st.altair_chart(chart, use_container_width=True, theme=None)
     st.caption(caption, text_alignment="center")
+    _footer("incidents", data)
+    _download(data, "gmf_download", "gmf_failures.csv")
 
 
 def render_() -> None:
@@ -393,7 +490,9 @@ def render_moral_summary(data: pd.DataFrame) -> None:
         """)
 
 
+@_view("human_validation_scores")
 def render_human_validation_scores(data: pd.DataFrame) -> None:
+    st.subheader("Human validation of AI moral scores")
     st.markdown(
         "**Question:** How do models place themselves against human validation?"
     )
@@ -416,15 +515,18 @@ def render_human_validation_scores(data: pd.DataFrame) -> None:
     df = data.copy()
 
     dimensions = ["Overall"] + sorted(df["dimension"].dropna().unique().tolist())
-    selected_dimension = st.selectbox("Select Ethical/Safety Dimension", dimensions)
+    selected_dimension = st.selectbox(
+        "Select Ethical/Safety Dimension", dimensions, key="human_validation_dimension"
+    )
 
     if selected_dimension != "Overall":
         df = df[df["dimension"] == selected_dimension]
 
     if df.empty:
-        st.warning("No data matches the selected filters.")
+        _empty(df, "human_validation_download", "human_validation_scores.csv")
         return
 
+    selected_rows = df.copy()
     df["model_family"] = df["evaluated_model_name"].str.extract(r"^([A-Za-z]+)")[0]
 
     agg_df = (
@@ -481,11 +583,17 @@ def render_human_validation_scores(data: pd.DataFrame) -> None:
         st.caption(
             "This chart visualizes human validation and moral alignment scores across different LLM architectures. "
             "Lower scores highlight severe ethical drift, prompt compliance failures, and moral degradation under complex testing scenarios. "
-            "Source: [[Human Validation - Scientometric LLM Ethics Benchmark]](https://github.com/universe-szw/scientometric-llm-ethics-benchmark/blob/main/scoring_results/human_validation_scores_merged.csv).",
+            + _source(
+                "ethics",
+                url="https://github.com/universe-szw/scientometric-llm-ethics-benchmark/blob/main/scoring_results/human_validation_scores_merged.csv",
+            ),
             text_alignment="center",
         )
+        _footer("score (0-10)", data)
+        _download(selected_rows, "human_validation_download", "human_validation_scores.csv")
 
 
+@_view("judge_agreement_heatmap")
 def render_judge_agreement_heatmap(data: pd.DataFrame) -> None:
     def combine_judge_scores(*frames: pd.DataFrame) -> pd.DataFrame:
         cols = [
@@ -500,6 +608,7 @@ def render_judge_agreement_heatmap(data: pd.DataFrame) -> None:
         ]
         return pd.concat([f[cols] for f in frames], ignore_index=True)
 
+    st.subheader("Do AI judges agree on how ethically models behave?")
     st.markdown(
         "**Question:** Do different AI judges agree on how ethically other models behave, "
         "and does a judge treat models from its own family differently?"
@@ -533,8 +642,10 @@ def render_judge_agreement_heatmap(data: pd.DataFrame) -> None:
         df = df[df["dimension"] == selected_dimension]
 
     if df.empty:
-        st.warning("No data matches the selected filters.")
+        _empty(df, "judge_heatmap_download", "judge_agreement.csv")
         return
+
+    selected_rows = df.copy()
 
     judge_labels = {
         "gpt-5.5": "GPT-5.5",
@@ -647,16 +758,16 @@ def render_judge_agreement_heatmap(data: pd.DataFrame) -> None:
             f"{same_offset:+.2f} points from the model's all-judge average, versus "
             f"{other_offset:+.2f} elsewhere. With only a few same-family pairs, this is suggestive, not conclusive. "
         )
-    caption += (
-        "Source: [[Human Validation Benchmark Dataset]]"
-        "(https://github.com/universe-szw/scientometric-llm-ethics-benchmark)."
-    )
+    caption += _source("ethics")
 
     with st.container():
         st.altair_chart(chart, use_container_width=True)
         st.caption(caption, text_alignment="center")
+        _footer("mean score (0-10)", data)
+        _download(selected_rows, "judge_heatmap_download", "judge_agreement.csv")
 
 
+@_view("trust_chart")
 def render_trust_chart(data: pd.DataFrame) -> None:
     st.markdown("General trust in AI", unsafe_allow_html=True, text_alignment="center")
 
@@ -760,12 +871,15 @@ def render_trust_chart(data: pd.DataFrame) -> None:
     )
 
     st.caption(
-        f"Average trust level: {trust_level}<br>(hover to see table)<br>[Source](https://www.kaggle.com/datasets/meruvakodandasuraj/global-ai-adoption-and-workforce-impact-survey-24-26)",
+        f"Average trust level: {trust_level}<br>(hover to see table)<br>{_source('kaggle')}",
         text_alignment="center",
         unsafe_allow_html=True,
     )
+    _footer("respondents by trust level", data)
+    _download(data, "trust_download", "ai_trust.csv")
 
 
+@_view("ai_replacement")
 def render_ai_replacement(data: pd.DataFrame) -> None:
     st.markdown(
         "Fear of AI replacing my job", unsafe_allow_html=True, text_alignment="center"
@@ -873,12 +987,15 @@ def render_ai_replacement(data: pd.DataFrame) -> None:
 
     st.caption(
         f"Average answer: {fear_level}<br>(hover to see table)<br>"
-        "[Source](https://www.kaggle.com/datasets/meruvakodandasuraj/global-ai-adoption-and-workforce-impact-survey-24-26)",
+        + _source("kaggle"),
         text_alignment="center",
         unsafe_allow_html=True,
     )
+    _footer("respondents by answer", data)
+    _download(data, "ai_replacement_download", "ai_job_replacement_fear.csv")
 
 
+@_view("ai_framework_coverage")
 def render_ai_framework_coverage(
     frameworks: pd.DataFrame, classifications: pd.DataFrame | None = None
 ) -> None:
@@ -956,7 +1073,7 @@ def render_ai_framework_coverage(
         df = df[df[col] == value]
 
     if df.empty:
-        st.warning("No data matches the selected filters.")
+        _empty(df, "framework_download", "ai_frameworks.csv")
         return
 
     order = ["Binding", "Non-binding", "Draft only", "No framework"]
@@ -1070,12 +1187,14 @@ def render_ai_framework_coverage(
         f"Across the areas shown, {binding_share:.0%} of country-area pairs have a binding framework. "
         "Binding includes regional law applied to member states, such as the EU AI Act. "
         "Draft only means a framework exists but has not been adopted. "
-        "Source: [[Global Index on Responsible AI, Global Survey dataset]](https://www.global-index.ai/)."
+        + _source("girai")
     )
 
     with st.container():
         st.altair_chart(chart, use_container_width=True)
         st.caption(caption, text_alignment="center")
+        _footer("share of countries (%)", frameworks)
+        _download(df, "framework_download", "ai_frameworks.csv")
 
         if st.toggle("Show data", key="framework_table"):
             table = (
@@ -1092,6 +1211,7 @@ def render_ai_framework_coverage(
             st.dataframe(table, use_container_width=True, hide_index=True)
 
 
+@_view("ai_trust_choropleth")
 def render_ai_trust_choropleth(
     trust_gov_df: pd.DataFrame,
     trust_comp_df: pd.DataFrame,
@@ -1224,7 +1344,7 @@ def render_ai_trust_choropleth(
     )
     if average_value is not None:
         caption += f"The survey-wide average is {average_value}%. "
-    caption += "Countries in grey were not surveyed. Source: [Ipsos AI Monitor](https://www.ipsos.com/)."
+    caption += "Countries in grey were not surveyed. " + _source("ipsos")
 
     with st.container():
         st.plotly_chart(
@@ -1233,8 +1353,11 @@ def render_ai_trust_choropleth(
             config={"scrollZoom": True, "displaylogo": False},
         )
         st.caption(caption, text_alignment="center")
+        _footer("% of respondents who agree", source_df)
+        _download(source_df, "trust_choropleth_download", "ai_trust_by_country.csv")
 
 
+@_view("syco_effects")
 def render_syco_effects(study2_df: pd.DataFrame, study3_df: pd.DataFrame) -> None:
     st.subheader("What does flattering AI do to the people who use it?")
     st.markdown(
@@ -1447,13 +1570,15 @@ def render_syco_effects(study2_df: pd.DataFrame, study3_df: pd.DataFrame) -> Non
         f"willingness to repair the conflict by {phrase('Willing to repair the conflict')}; "
         f"trust in the AI by {phrase('Trust in the AI')} ({sizes}). "
         "The AI was instructed to be sycophantic or not, and outcomes are self-reported after a single interaction. "
-        "Source: [Cheng et al., 2025](https://arxiv.org/abs/2510.01395)."
+        + _source("cheng")
     )
 
     with st.container():
         for chart in charts:
             st.altair_chart(chart, use_container_width=True, theme=None)
         st.caption(caption, text_alignment="center")
+        _footer("points on a 1 to 7 scale", study2_df)
+        _download(effects, "syco_effects_download", "syco_effects.csv")
 
         if st.toggle("Show data", key="syco_effects_table"):
             table = effects.rename(
@@ -1471,6 +1596,7 @@ def render_syco_effects(study2_df: pd.DataFrame, study3_df: pd.DataFrame) -> Non
             st.dataframe(table, use_container_width=True, hide_index=True)
 
 
+@_view("syco_rightness_distribution")
 def render_syco_rightness_distribution(
     study2_df: pd.DataFrame, study3_df: pd.DataFrame
 ) -> None:
@@ -1612,12 +1738,18 @@ def render_syco_rightness_distribution(
         "Ratings run from 1 to 7, with higher meaning more convinced they were in the right. "
         f"Share rating themselves 6 or 7 — {comparisons}. "
         "The AI was instructed to be sycophantic or not, and ratings are self-reported after a single conversation. "
-        "Source: [Cheng et al., 2025](https://arxiv.org/abs/2510.01395)."
+        + _source("cheng")
     )
 
     with st.container():
         st.altair_chart(chart, use_container_width=True, theme=None)
         st.caption(caption, text_alignment="center")
+        _footer("share of participants (%)", study2_df)
+        _download(
+            shares[["group", "rating", "n", "share"]],
+            "syco_distribution_download",
+            "syco_rightness_distribution.csv",
+        )
 
         if st.toggle("Show data", key="syco_distribution_table"):
             table = shares[["group", "rating", "n", "share"]].rename(
@@ -1632,6 +1764,7 @@ def render_syco_rightness_distribution(
             st.dataframe(table, use_container_width=True, hide_index=True)
 
 
+@_view("syco_scenario_effects")
 def render_syco_scenario_effects(
     study2_df: pd.DataFrame, study3_df: pd.DataFrame
 ) -> None:
@@ -1831,7 +1964,7 @@ def render_syco_scenario_effects(
         caption += (
             "For willingness to repair, every scenario's interval excludes zero. "
         )
-    caption += "Source: [Cheng et al., 2025](https://arxiv.org/abs/2510.01395)."
+    caption += _source("cheng")
 
     with st.container():
         left, right = st.columns([1.5, 1], gap="small")
@@ -1841,6 +1974,8 @@ def render_syco_scenario_effects(
             st.altair_chart(panel("repair_score", False), use_container_width=True, theme=None)
 
         st.caption(caption, text_alignment="center")
+        _footer("points on a 1 to 7 scale", df)
+        _download(effects, "syco_scenario_download", "syco_scenario_effects.csv")
 
         if st.toggle("Show data", key="syco_scenario_table"):
             table = effects.rename(

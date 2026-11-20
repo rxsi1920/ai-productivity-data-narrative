@@ -52,10 +52,8 @@ def moral_degradation_tab():
     render_gmf_failures(gmf_class_data)
 
     st.header("2. AI models vary in their ability to score moral behaviour reliably")
-    st.subheader("Human validation against AI")
     render_human_validation_scores(human_validation_data)
 
-    st.subheader("AI validation against AI")
     render_judge_agreement_heatmap(ai_validation_data)
 
     st.header("3. AI Guardrails")
