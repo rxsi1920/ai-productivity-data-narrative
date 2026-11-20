@@ -6,6 +6,7 @@ from ..human_practice import views
 from ..human_practice.tab import load_tables
 from ..moral_degradation.tab import ai_reports_data
 from ..moral_degradation.views import render_moral_summary
+from ..profitability.tab import render_decision_points as render_profitability_decision
 
 ANSWER_LABEL = "Elaborated answer"
 
@@ -40,7 +41,7 @@ def overall_conclusion_tab():
     st.title("So What?")
 
     st.header("Decision points: Profitability")
-    st.info("Placeholder: decision points for a CEO or CFO deciding on AI investment.")  # TODO: replace
+    render_profitability_decision()
 
     st.header("Decision points: Feedback loop and cognition")
     views.render_decision(tables)
