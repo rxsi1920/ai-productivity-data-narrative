@@ -67,7 +67,7 @@ LIMITS = [
     ),
 ]
 
-MORAL_REFRESH = "to be confirmed"  # replace with the date the moral-degradation files were downloaded
+from ..moral_degradation.views import LAST_REFRESH as MORAL_REFRESH  # same date as the Moral degradation page
 
 SOURCES = [
     (

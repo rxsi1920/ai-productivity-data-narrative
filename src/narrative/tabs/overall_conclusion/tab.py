@@ -4,8 +4,20 @@ from narrative.story import GROUP_ANSWER, GROUP_QUESTION
 
 from ..human_practice import views
 from ..human_practice.tab import load_tables
-from ..moral_degradation.tab import ai_reports_data
-from ..moral_degradation.views import render_moral_summary
+from ..moral_degradation.tab import (
+    ai_reports_data,
+    frameworks_data,
+    gov_trust_ipsos_data,
+    human_validation_data,
+    syco_study2_data,
+    syco_study3_data,
+)
+from ..moral_degradation.views import (
+    render_moral_decision,
+    render_moral_questions_and_changes,
+    render_moral_rollout,
+    render_moral_summary,
+)
 from ..profitability.tab import render_decision_points as render_profitability_decision
 
 ANSWER_LABEL = "Elaborated answer"

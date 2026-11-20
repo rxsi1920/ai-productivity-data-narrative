@@ -25,6 +25,10 @@ AI_INCIDENTS_INCIDENTS_RAW = AI_INCIDENTS_RAW / "incidents.csv"
 AI_INCIDENTS_REPORTS_RAW = AI_INCIDENTS_RAW / "reports.csv"
 AI_INCIDENTS_INCIDENTS_PROC = PROC_ROOT / "ai_incidents.csv"
 AI_INCIDENTS_REPORTS_PROC = PROC_ROOT / "ai_reports.csv"
+# GMF taxonomy classifications (AIID export, kept as downloaded). Not in every snapshot archive, so acquire1
+# only needs it when the raw copy is missing; it is then exported from https://incidentdatabase.ai/taxonomies/gmf/.
+AI_INCIDENTS_GMF_RAW = AI_INCIDENTS_RAW / "classifications_GMF.csv"
+AI_INCIDENTS_GMF_PROC = PROC_ROOT / "classifications_GMF.csv"
 
 
 def acquire1() -> None:
@@ -109,6 +113,12 @@ def transform1() -> Path:
         AI_INCIDENTS_REPORTS_RAW, usecols=["_id", "date_published", "date_submitted"]
     )
     df.to_csv(AI_INCIDENTS_REPORTS_PROC, index=False)
+
+    # GMF classifications are used unchanged.
+    if AI_INCIDENTS_GMF_RAW.exists():
+        shutil.copyfile(AI_INCIDENTS_GMF_RAW, AI_INCIDENTS_GMF_PROC)
+    else:
+        print(f"Missing file: {AI_INCIDENTS_GMF_RAW} (export it from https://incidentdatabase.ai/taxonomies/gmf/)")
 
 
 def validate1() -> Path:
@@ -515,12 +525,17 @@ GLOB_PROD_URL = (
 SKILLS_TRAINING_RAW = RAW_ROOT / "skills_and_training.csv"
 SKILLS_TRAINING_PROC = PROC_ROOT / "skills_and_training.csv"
 AI_POLICY_RAW = RAW_ROOT / "ai_policy_and_ethics.csv"
-AI_POLICY_PROC = PROC_ROOT / ""
+AI_POLICY_PROC = PROC_ROOT / "ai_policy_and_ethics.csv"
 SALARY_SATISFACTION_RAW = RAW_ROOT / "salary_and_satisfaction.csv"
 SALARY_SATISFACTION_PROC = PROC_ROOT / "salary_and_satisfaction.csv"
 
 
 def acquire5() -> None:
+    required = [SKILLS_TRAINING_RAW, AI_POLICY_RAW, SALARY_SATISFACTION_RAW]
+    if all(p.exists() for p in required):
+        print(f"Files already present in {RAW_ROOT}")
+        return
+
     cache_path = Path(kagglehub.dataset_download(GLOB_PROD_URL))
     RAW_ROOT.mkdir(parents=True, exist_ok=True)
 
@@ -528,10 +543,7 @@ def acquire5() -> None:
         target_path = RAW_ROOT / item.name
 
         if target_path.exists():
-            if target_path.is_dir():
-                shutil.rmtree(target_path)
-            else:
-                target_path.unlink()
+            continue
 
         if item.is_dir():
             shutil.copytree(item, target_path)
