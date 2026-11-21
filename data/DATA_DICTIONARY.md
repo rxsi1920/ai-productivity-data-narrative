@@ -7,6 +7,8 @@ This file covers every dataset the app reads, page by page:
 
 `data/raw/` holds the source samples, and `data/processed/` holds the only files the app reads.
 
+**Machine-readable version:** [`data/dictionary.yml`](dictionary.yml) lists the same 48 datasets and 34 sources in the Assignment 2 Part C standard: for each source its publisher, title, URL, licence, retrieval date, cadence and status; for each dataset its source sample, processed file, primary key, latest observation and every column's type, role, unit and range, plus the transform. It is built from the data by `python scripts/build_dictionary.py`, and `tests/test_dictionary.py` fails if it falls out of date.
+
 1. [Profitability](#1-profitability), owner Nhi Nguyen
 2. [Feedback loop and cognition](#2-feedback-loop-and-cognition), files under `human_practice/`
 3. [Moral degradation](#3-moral-degradation)
@@ -101,7 +103,7 @@ from the source copies and writes the SHA-256 of every input to `data/processed/
 
 
 
-## 4. Moral degradation
+## 3. Moral degradation
 
 ### Datasets
 
@@ -122,7 +124,7 @@ Built by `scripts/data.py` (`acquireN` downloads into `data/raw/` and skips file
 | `Ipsos_job_sec_trust.csv` | same PDF, p. 26 | same | same | same | same | `Country` | 2026 | 2026 | 33 | `transform4` |
 | `ai_policy_and_ethics.csv` | same name | Kaggle, "Global AI Adoption & Workforce Impact Survey 24–26" | https://www.kaggle.com/datasets/meruvakodandasuraj/global-ai-adoption-and-workforce-impact-survey-24-26 | Apache 2.0 | `respondent_id`; `company_has_ai_policy`; `ai_bias_concern_level`, `data_privacy_concern_level` (1–5); `supports_ai_regulation`; `has_experienced_ai_misuse`; `trust_in_ai_decisions` (Low/Moderate/High) | `respondent_id` | 2024–2026 | 2026-04-07 (last updated) | 12,000 | `acquire5` / `transform5`: copy. App: modal trust level |
 | `salary_and_satisfaction.csv` | same name | same | same | Apache 2.0 | `respondent_id`; `annual_salary_usd` (US$); `salary_change_yoy_pct` (%); `job_satisfaction_score`, `work_life_balance_score` (1–5); `ai_job_replacement_fear` (Likert); `burnout_level`; … | `respondent_id` | 2024–2026 | 2026-04-07 (last updated) | 12,000 | `transform5`: copy. App: modal `ai_job_replacement_fear` |
-| `study2_responses.csv` | same name | Cheng et al. (2025), sycophancy experiments, OSF project smvw7 | https://osf.io/smvw7/ · Cheng et al., *Science* (2026) | CC BY 4.0 (paper and OSF release) | `rightorwrong`, `repair_score`, `trust_score`, `response_quality`, `return_likelihood` (1–7 scale); `scenarioNum` (1–4); `is_syco` (True/False) | row (one participant) | one experiment | 2026-03-26 | 804 | `acquire6` / `transform6`: keep 9 columns. App: sycophantic minus non-sycophantic means, 95% CI |
-| `study3_responses.redacted.csv` | same name | same | same | CC BY 4.0 (paper and OSF release) | as Study 2, with `Condition` (syco / non-syco) and `scenarioNum` (text) | row | one experiment | 2026-03-26 | 800 | `transform6`: keep 9 columns |
+| `study2_responses.csv` | same name | Cheng et al. (2025), sycophancy experiments, OSF project smvw7 | https://osf.io/smvw7/ · Cheng et al., *Science* (2026) | CC BY 4.0 (paper and OSF release) | `response_id` (row number in the raw file); `rightorwrong`, `repair_score`, `trust_score`, `response_quality`, `return_likelihood` (1–7 scale); `scenarioNum` (1–4); `is_syco` (True/False) | `response_id` | one experiment | 2026-03-26 | 804 | `acquire6` / `transform6`: keep 9 columns, add `response_id`. App: sycophantic minus non-sycophantic means, 95% CI |
+| `study3_responses.redacted.csv` | same name | same | same | CC BY 4.0 (paper and OSF release) | as Study 2, with `Condition` (syco / non-syco) and `scenarioNum` (text) | `response_id` | one experiment | 2026-03-26 | 800 | `transform6`: keep 9 columns, add `response_id` |
 
 Not used by any page (can be deleted or documented): `data/raw/ai_tool_usage.csv`, `data/raw/respondents.csv`, `data/raw/skills_and_training.csv`.

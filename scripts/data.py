@@ -657,10 +657,14 @@ SYCO_STUDY3_COLS = ["Condition", "scenarioNum"] + SYCO_OUTCOME_COLS
 
 
 def transform6() -> None:
+    # response_id = the row's position in the raw file (1..n), used as the primary key.
+    # The raw files have no other usable key (Study 3's PROLIFIC_PID is a participant ID and is not copied).
     df = pd.read_csv(SYCO_STUDY2_RAW, usecols=SYCO_STUDY2_COLS)
+    df.insert(0, "response_id", range(1, len(df) + 1))
     df.to_csv(SYCO_STUDY2_PROC, index=False)
 
     df = pd.read_csv(SYCO_STUDY3_RAW, usecols=SYCO_STUDY3_COLS)
+    df.insert(0, "response_id", range(1, len(df) + 1))
     df.to_csv(SYCO_STUDY3_PROC, index=False)
 
 
