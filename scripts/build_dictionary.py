@@ -329,7 +329,7 @@ DATASETS = [
          primary_key=["validation_id"],
          units={c: "score (0-10)" for c in ["gpt55_score", "human_score_E1", "human_score_E2", "human_score_E3",
                                            "human_mean_score"]},
-         transform=f"{MORAL_BUILD} (acquire2): downloaded and copied unchanged."),
+         transform=f"{MORAL_BUILD} (acquire2, transform2): downloaded, then copied unchanged."),
     dict(id="ai_validation_scores", processed="ai_validation_scores_merged.csv", sample="gpt55_scores.csv",
          source_ids=["llm_ethics_benchmark"], primary_key=["judge_model_id", "evaluated_model_id", "run_id", "item_id"],
          units={"score": "score (0-10)"},

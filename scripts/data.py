@@ -139,6 +139,8 @@ GPT_EVAL_URL = "https://github.com/universe-szw/scientometric-llm-ethics-benchma
 GPT_EVAL_CSV = RAW_ROOT / "gpt55_scores.csv"
 
 COMBINED_AI_CSV = PROC_ROOT / "ai_validation_scores_merged.csv"
+HUMAN_VALID_RAW = RAW_ROOT / "human_validation_scores_merged.csv"
+HUMAN_VALID_PROC = PROC_ROOT / "human_validation_scores_merged.csv"
 
 
 def _to_raw_github_url(url: str) -> str:
@@ -198,6 +200,9 @@ def transform2():
         (pd.read_csv(filepath) for filepath in eval_sources.values()), ignore_index=True
     )
     df.to_csv(COMBINED_AI_CSV, index=False)
+
+    # The human-validation file is used unchanged.
+    shutil.copyfile(HUMAN_VALID_RAW, HUMAN_VALID_PROC)
 
 
 ### GIRAI COUNTRY CLASSIFICATION

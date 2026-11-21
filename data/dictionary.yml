@@ -3547,7 +3547,7 @@ transforms:
     in the source (e.g. {''$numberLong'': ...}), so they are kept as text and no date column is declared; the app parses them
     and drops the malformed ones. Latest: 2026-11-15.'
   classifications_gmf: 'python scripts/data.py (transform1): copied unchanged.'
-  human_validation_scores: 'python scripts/data.py (acquire2): downloaded and copied unchanged.'
+  human_validation_scores: 'python scripts/data.py (acquire2, transform2): downloaded, then copied unchanged.'
   ai_validation_scores: 'python scripts/data.py (transform2): stack gpt55_scores.csv, deepseek_v4_pro_scores.csv and qwen3_6_plus_scores.csv.'
   girai_frameworks: 'python scripts/data.py (transform3): sheet ''frameworks'' to CSV (adds the row-number column Unnamed:
     0).'
