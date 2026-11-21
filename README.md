@@ -66,7 +66,7 @@ pip install -r requirements.txt   # includes "-e ." so the narrative package is 
 streamlit run app.py
 ```
 
-**Deployed app:** <ADD STREAMLIT URL> · **Submitted commit:** <ADD TAG OR HASH>
+**Deployed app:** https://ai-work-output-data-narrative.streamlit.app/ · **Submitted commit:** tag `submission`
 
 ## Rebuild the processed data from raw
 
@@ -92,13 +92,14 @@ scripts/data.py                          acquire + transform for moral degradati
 data/raw/                                source samples as downloaded
 data/processed/                          the only files the app reads
 data/DATA_DICTIONARY.md                  every dataset: source, URL, licence, columns, key, coverage, transform
+data/dictionary.yml                      the same, machine-readable, in the Assignment 2 Part C standard
 PROVENANCE.md                            who made what, with which tool, and how it was checked
 DISCLOSURE.md                            data and AI disclosure
 ```
 
 ## Data and limits
 
-All datasets, their licences and transforms are listed in [`data/DATA_DICTIONARY.md`](data/DATA_DICTIONARY.md). Each page states what its data cannot show. The main limits across the app:
+All datasets, their licences and transforms are listed in [`data/DATA_DICTIONARY.md`](data/DATA_DICTIONARY.md), and in machine-readable form, in the Assignment 2 Part C standard, in [`data/dictionary.yml`](data/dictionary.yml) (rebuild with `python scripts/build_dictionary.py`). Each page states what its data cannot show. The main limits across the app:
 - **No causal claims.** Every comparison is a correlation or a before/after break.
 - **Early signals only.** The cost measures are early indicators (employment shifts, text shares, single-conversation experiments), not long-run tests of skill or judgement.
 - **Mixed geography.** The geographic coverage differs by dataset.

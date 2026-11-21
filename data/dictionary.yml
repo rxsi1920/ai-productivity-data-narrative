@@ -1,0 +1,3562 @@
+schema_version: 2
+title: 'AI: Gains vs Hidden Costs - data dictionary'
+description: 'Machine-readable data dictionary in the Assignment 2 Part C standard. `sources` and `datasets` follow the A2
+  manifest schema; `transforms` gives the step that produced each processed file. Built by scripts/build_dictionary.py from
+  the files in data/. Dates are read as the A2 checker reads them: a year such as 2025 is 2025-01-01 and a quarter such as
+  2026-Q3 is 2026-07-01.'
+pipelines:
+- part: Profitability
+  acquisition_method: manual download
+  acquisition_path: data/raw
+  transform_command:
+  - python
+  - src/narrative/tabs/profitability/build_processed.py
+- part: Feedback loop and cognition
+  acquisition_method: copy from cited repositories and papers
+  acquisition_path: src/narrative/human_practice_data.py
+  transform_command:
+  - python
+  - -m
+  - narrative.human_practice_data
+- part: Moral degradation
+  acquisition_method: script
+  acquisition_path: scripts/data.py
+  transform_command:
+  - python
+  - scripts/data.py
+sources:
+- id: owid_ai_adoption
+  publisher: Our World in Data
+  title: Share of companies using artificial intelligence
+  url: https://ourworldindata.org/grapher/share-companies-using-artificial-intelligence
+  licence: CC BY 4.0
+  retrieved: '2026-10-22'
+  cadence: Annual
+  status: snapshot
+  notes: 'Original source: McKinsey Global Survey on AI, via the Stanford AI Index.'
+- id: owid_genai_use
+  publisher: Our World in Data
+  title: Estimated share of working-age adults who use generative AI
+  url: https://ourworldindata.org/grapher/estimated-share-people-generative-ai
+  licence: CC BY 4.0
+  retrieved: '2026-10-22'
+  cadence: Irregular, about every 6 months
+  status: snapshot
+  notes: 'Original source: Microsoft AI Economy Institute. GDP per capita column from the World Bank via OWID.'
+- id: eurostat_isoc_eb_ai
+  publisher: Eurostat
+  title: Artificial intelligence by size class of enterprise (isoc_eb_ai)
+  url: https://ec.europa.eu/eurostat/databrowser/view/isoc_eb_ai/default/table
+  licence: CC BY 4.0 (Eurostat copyright notice)
+  retrieved: '2026-10-22'
+  cadence: Annual survey (AI module in 2021, 2023, 2024, 2025)
+  status: snapshot
+  notes: Used for AI adoption by country, by firm size and barriers to adoption.
+- id: eurostat_isoc_eb_ain2
+  publisher: Eurostat
+  title: Artificial intelligence by NACE Rev.2 activity (isoc_eb_ain2)
+  url: https://ec.europa.eu/eurostat/databrowser/view/isoc_eb_ain2/default/table
+  licence: CC BY 4.0 (Eurostat copyright notice)
+  retrieved: '2026-10-22'
+  cadence: Annual survey (AI module in 2021, 2023, 2024, 2025)
+  status: snapshot
+- id: owid_private_ai_investment
+  publisher: Our World in Data
+  title: Private investment in artificial intelligence (CSET)
+  url: https://ourworldindata.org/grapher/private-investment-in-artificial-intelligence-cset
+  licence: CC BY 4.0
+  retrieved: '2026-10-22'
+  cadence: Annual
+  status: snapshot
+  notes: 'Original source: Center for Security and Emerging Technology (CSET). Extract: 2022-2025.'
+- id: owid_genai_investment
+  publisher: Our World in Data
+  title: Global investment in generative AI
+  url: https://ourworldindata.org/grapher/global-investment-in-generative-ai
+  licence: CC BY 4.0
+  retrieved: '2026-10-22'
+  cadence: Annual
+  status: snapshot
+  notes: 'Original source: Quid, via the Stanford AI Index 2026.'
+- id: owid_nvidia_revenue
+  publisher: Our World in Data
+  title: NVIDIA quarterly revenue by segment
+  url: https://ourworldindata.org/grapher/nvidia-quarterly-revenue-segment
+  licence: CC BY 4.0
+  retrieved: '2026-10-22'
+  cadence: Quarterly
+  status: snapshot
+  notes: 'Original source: NVIDIA quarterly filings. Quarters are fiscal, as labelled by OWID.'
+- id: owid_datacentre_electricity
+  publisher: Our World in Data
+  title: Share of total electricity demand coming from data centers
+  url: https://ourworldindata.org/grapher/data-centers-share-electricity-demand
+  licence: CC BY 4.0
+  retrieved: '2026-10-22'
+  cadence: Annual
+  status: snapshot
+  notes: 'Original sources: IEA Energy and AI (numerator), Ember (denominator).'
+- id: owid_gdp_pc_growth
+  publisher: Our World in Data
+  title: GDP per capita growth (annual %)
+  url: https://ourworldindata.org/grapher/gdp-per-capita-growth
+  licence: CC BY 4.0
+  retrieved: '2026-10-22'
+  cadence: Annual
+  status: snapshot
+  notes: 'Original source: World Bank WDI NY.GDP.PCAP.KD.ZG. Extract: 7 regions.'
+- id: ilo_output_per_hour
+  publisher: International Labour Organization (ILO)
+  title: Output per hour worked, GDP constant 2021 international $ at PPP (DF_GDP_2HRW_NOC_NB)
+  url: https://sdmx.ilo.org/rest/data/ILO,DF_GDP_2HRW_NOC_NB
+  licence: CC BY 4.0
+  retrieved: '2026-10-22'
+  cadence: Annual, with projections
+  status: snapshot
+  notes: ILO modelled estimates. Values after 2025 are projections and are not used.
+- id: ilo_labour_income_share
+  publisher: International Labour Organization (ILO)
+  title: Labour income share as a percent of GDP (DF_LAP_2GDP_NOC_RT)
+  url: https://sdmx.ilo.org/rest/data/ILO,DF_LAP_2GDP_NOC_RT
+  licence: CC BY 4.0
+  retrieved: '2026-10-22'
+  cadence: Annual, with projections
+  status: snapshot
+- id: fred_cp
+  publisher: US Bureau of Economic Analysis via FRED
+  title: Corporate profits after tax (CP)
+  url: https://fred.stlouisfed.org/series/CP
+  licence: Public domain (US government work)
+  retrieved: '2026-10-22'
+  cadence: Quarterly, with revisions
+  status: snapshot
+- id: fred_gdp
+  publisher: US Bureau of Economic Analysis via FRED
+  title: Gross domestic product (GDP)
+  url: https://fred.stlouisfed.org/series/GDP
+  licence: Public domain (US government work)
+  retrieved: '2026-10-22'
+  cadence: Quarterly, with revisions
+  status: snapshot
+- id: fred_coe
+  publisher: US Bureau of Economic Analysis via FRED
+  title: Compensation of employees, paid (COE)
+  url: https://fred.stlouisfed.org/series/COE
+  licence: Public domain (US government work)
+  retrieved: '2026-10-22'
+  cadence: Quarterly, with revisions
+  status: snapshot
+- id: fred_ophnfb
+  publisher: US Bureau of Labor Statistics via FRED
+  title: 'Nonfarm business sector: labor productivity (output per hour) (OPHNFB)'
+  url: https://fred.stlouisfed.org/series/OPHNFB
+  licence: Public domain (US government work)
+  retrieved: '2026-10-22'
+  cadence: Quarterly, with revisions
+  status: snapshot
+- id: fred_ulcnfb
+  publisher: US Bureau of Labor Statistics via FRED
+  title: 'Nonfarm business sector: unit labor costs (ULCNFB)'
+  url: https://fred.stlouisfed.org/series/ULCNFB
+  licence: Public domain (US government work)
+  retrieved: '2026-10-22'
+  cadence: Quarterly, with revisions
+  status: snapshot
+- id: eurostat_nasa_10_ki
+  publisher: Eurostat
+  title: Key indicators, sectors (nasa_10_ki)
+  url: https://ec.europa.eu/eurostat/databrowser/view/nasa_10_ki/default/table
+  licence: CC BY 4.0 (Eurostat copyright notice)
+  retrieved: '2026-10-22'
+  cadence: Annual, with revisions
+  status: snapshot
+  notes: Indicators B2G_B3G_RAT_S11 (profit share) and P4_R_HAB_GR (consumption growth).
+- id: eurostat_nama_10_lp_ulc
+  publisher: Eurostat
+  title: Labour productivity and unit labour costs (nama_10_lp_ulc)
+  url: https://ec.europa.eu/eurostat/databrowser/view/nama_10_lp_ulc/default/table
+  licence: CC BY 4.0 (Eurostat copyright notice)
+  retrieved: '2026-10-22'
+  cadence: Annual, with revisions
+  status: snapshot
+- id: eurostat_nama_10_a10
+  publisher: Eurostat
+  title: Gross value added and income by A*10 industry breakdowns (nama_10_a10)
+  url: https://ec.europa.eu/eurostat/databrowser/view/nama_10_a10/default/table
+  licence: CC BY 4.0 (Eurostat copyright notice)
+  retrieved: '2026-10-22'
+  cadence: Annual, with revisions
+  status: snapshot
+- id: eurostat_nama_10_a10_e
+  publisher: Eurostat
+  title: Employment by A*10 industry breakdowns (nama_10_a10_e)
+  url: https://ec.europa.eu/eurostat/databrowser/view/nama_10_a10_e/default/table
+  licence: CC BY 4.0 (Eurostat copyright notice)
+  retrieved: '2026-10-22'
+  cadence: Annual, with revisions
+  status: snapshot
+- id: eurostat_une_rt_a
+  publisher: Eurostat
+  title: Unemployment by sex and age, annual data (une_rt_a)
+  url: https://ec.europa.eu/eurostat/databrowser/view/une_rt_a/default/table
+  licence: CC BY 4.0 (Eurostat copyright notice)
+  retrieved: '2026-10-22'
+  cadence: Annual
+  status: snapshot
+- id: census_btos
+  publisher: US Census Bureau
+  title: Business Trends and Outlook Survey (BTOS), AI use question
+  url: https://www.census.gov/hfp/btos
+  licence: Public domain (US government work)
+  retrieved: '2026-11-11'
+  cadence: Every two weeks
+  status: snapshot
+  notes: Copied from karanmakhijauts/at-3-dvn at commit b33f3b25b7cce24833c857d242c90152c3b41571.
+- id: workforce_evidence
+  publisher: Karan Makhija (group member), from five published studies
+  title: 'Evidence table: AI and output or skill (one finding per row)'
+  url: https://github.com/karanmakhijauts/at-3-dvn
+  licence: Cited facts; each row links to its paper
+  retrieved: '2026-11-11'
+  cadence: One-off compilation
+  status: archive
+  notes: Commit b33f3b25b7cce24833c857d242c90152c3b41571. The source_url column gives each finding's paper.
+- id: canaries_2026
+  publisher: Stanford Digital Economy Lab
+  title: Brynjolfsson, Chandar and Chen (Aug 2026), Canaries in the Coal Mine, update
+  url: https://digitaleconomy.stanford.edu/app/uploads/2026/08/Canaries_August2026.pdf
+  licence: Cited facts; the underlying ADP payroll microdata are proprietary
+  retrieved: '2026-11-11'
+  cadence: One-off paper
+  status: archive
+- id: wildai
+  publisher: Pangram Labs (Russell et al., 2026)
+  title: 'WildAI: AI-written share of web text and training-cost results (arXiv:2609.40295 v1)'
+  url: https://github.com/pangramlabs/WildAI
+  licence: CC BY-NC-SA 4.0
+  retrieved: '2026-11-11'
+  cadence: One-off release
+  status: archive
+  notes: Commit 795a71852d569173fcdaca1db2a466109cd80814. Used non-commercially, with credit.
+- id: schaeffer_2025
+  publisher: Schaeffer et al. (2025)
+  title: 'Position: Model collapse does not mean what you think (arXiv:2503.03150 v2), Appendix A Table 1'
+  url: https://arxiv.org/abs/2503.03150
+  licence: Cited facts
+  retrieved: '2026-11-11'
+  cadence: One-off paper
+  status: archive
+- id: aiid_snapshot
+  publisher: Responsible AI Collaborative
+  title: AI Incident Database (AIID), full database snapshot
+  url: https://incidentdatabase.ai/research/snapshots/
+  licence: CC BY-SA 4.0
+  retrieved: '2026-11-16'
+  cadence: Continuously updated; weekly snapshots
+  status: snapshot
+  notes: 'Report text is excluded from AIID''s CC BY-SA grant; only report ids and dates are used. ai_reports.csv latest observation:
+    2026-11-15 (date_submitted).'
+- id: aiid_gmf
+  publisher: Responsible AI Collaborative
+  title: AI Incident Database, Goals-Methods-Failures (GMF) taxonomy classifications
+  url: https://incidentdatabase.ai/taxonomies/gmf/
+  licence: CC BY-SA 4.0
+  retrieved: '2026-11-16'
+  cadence: Continuously updated
+  status: snapshot
+- id: llm_ethics_benchmark
+  publisher: universe-szw (GitHub)
+  title: 'Scientometric LLM Ethics Benchmark: human validation and AI-judge scores (scoring_results/)'
+  url: https://github.com/universe-szw/scientometric-llm-ethics-benchmark
+  licence: MIT
+  retrieved: '2026-11-16'
+  cadence: One-off release
+  status: archive
+  notes: 2026 release, GPT-5.5 as one of three judges.
+- id: girai
+  publisher: Global Center on AI Governance
+  title: 'Global Index on Responsible AI (GIRAI), 2nd edition: Global Survey dataset'
+  url: https://www.global-index.ai/
+  licence: CC BY 4.0
+  retrieved: '2026-11-16'
+  cadence: About every two years
+  status: archive
+  notes: Evidence cut-off September 2025, published 2026. No observation date per row.
+- id: ipsos_ai_monitor_2025
+  publisher: Ipsos
+  title: Ipsos AI Monitor 2025
+  url: https://www.ipsos.com/sites/default/files/ct/publication/documents/2025-06/Ipsos-AI-Monitor-2025.pdf
+  licence: Copyright Ipsos; published figures, cited
+  retrieved: '2026-11-16'
+  cadence: Annual
+  status: archive
+  notes: Page 23 (trust in government to regulate AI). Fieldwork ended 2025-04-04.
+- id: ipsos_ai_monitor_2026
+  publisher: Ipsos
+  title: Ipsos AI Monitor 2026
+  url: https://www.ipsos.com/sites/default/files/ct/news/documents/2026-06/Ipsos-AI-Monitor-2026.pdf
+  licence: Copyright Ipsos; published figures, cited
+  retrieved: '2026-11-16'
+  cadence: Annual
+  status: archive
+  notes: Pages 17, 21 and 26. Fieldwork ended 2026-04-03.
+- id: kaggle_ai_workforce
+  publisher: Kaggle (M. K. Suraj)
+  title: Global AI Adoption & Workforce Impact Survey 24-26
+  url: https://www.kaggle.com/datasets/meruvakodandasuraj/global-ai-adoption-and-workforce-impact-survey-24-26
+  licence: Apache 2.0
+  retrieved: '2026-11-16'
+  cadence: One-off (last updated 2026-04-07)
+  status: snapshot
+  notes: Survey responses 2024-2026; no observation date per row.
+- id: cheng_sycophancy
+  publisher: Cheng et al. (Science, 2026), OSF project smvw7
+  title: 'Sycophantic AI and moral judgement: Study 2 and Study 3 response data'
+  url: https://osf.io/smvw7/
+  licence: CC BY 4.0
+  retrieved: '2026-11-16'
+  cadence: One-off release
+  status: archive
+  notes: Released 2026-03-26. No observation date per row.
+datasets:
+- id: owid_share_companies_using_artificial_intelligence
+  source_ids:
+  - owid_ai_adoption
+  sample: data/raw/owid_share-companies-using-artificial-intelligence.csv
+  processed_output: data/processed/owid_share-companies-using-artificial-intelligence.csv
+  format: csv
+  date_column: Year
+  latest_observation: '2025-01-01'
+  primary_key:
+  - Entity
+  - Year
+  minimum_rows: 30
+  columns:
+    Entity:
+      type: string
+      role: geography
+      nullable: false
+      allowed_values:
+      - All geographies
+      - Asia-Pacific
+      - Developing markets
+      - Europe
+      - Greater China
+      - North America
+    Code:
+      type: string
+      role: geography
+      nullable: true
+      allowed_values:
+      - OWID_EUR
+      - OWID_NAM
+    Year:
+      type: date
+      role: time
+      nullable: false
+      date_minimum: '2021-01-01'
+      date_maximum: '2025-01-01'
+    Organizations reporting having adopted AI:
+      type: number
+      role: measure
+      nullable: false
+      unit: '% of organisations using AI in at least one business function'
+      minimum: 41.0
+      maximum: 91.0
+- id: owid_estimated_share_people_generative_ai
+  source_ids:
+  - owid_genai_use
+  sample: data/raw/owid_estimated-share-people-generative-ai.csv
+  processed_output: data/processed/owid_estimated-share-people-generative-ai.csv
+  format: csv
+  date_column: Day
+  latest_observation: '2026-03-31'
+  primary_key:
+  - Code
+  - Day
+  minimum_rows: 444
+  columns:
+    Entity:
+      type: string
+      role: geography
+      nullable: false
+    Code:
+      type: string
+      role: geography
+      nullable: false
+    Day:
+      type: date
+      role: time
+      nullable: false
+      date_minimum: '2025-06-30'
+      date_maximum: '2026-03-31'
+    Estimated share of working-age adults who use generative AI:
+      type: number
+      role: measure
+      nullable: false
+      unit: '% of adults aged 15-64'
+      minimum: 4.6
+      maximum: 70.1
+    GDP per capita:
+      type: number
+      role: measure
+      nullable: true
+      unit: international $ (2021 prices, PPP)
+      minimum: 1066.513
+      maximum: 139592.61
+    World region according to OWID:
+      type: string
+      role: geography
+      nullable: true
+      allowed_values:
+      - Africa
+      - Asia
+      - Europe
+      - North America
+      - Oceania
+      - South America
+- id: eurostat_isoc_eb_ai
+  source_ids:
+  - eurostat_isoc_eb_ai
+  sample: data/raw/eurostat_isoc_eb_ai.csv
+  processed_output: data/processed/eurostat_isoc_eb_ai.csv
+  format: csv
+  date_column: year
+  latest_observation: '2025-01-01'
+  primary_key:
+  - indic_is
+  - geo
+  - year
+  minimum_rows: 235
+  columns:
+    indic_is:
+      type: string
+      role: identifier
+      nullable: false
+    geo:
+      type: string
+      role: geography
+      nullable: false
+    year:
+      type: date
+      role: time
+      nullable: false
+      date_minimum: '2021-01-01'
+      date_maximum: '2025-01-01'
+    value:
+      type: number
+      role: measure
+      nullable: true
+      unit: '% of enterprises with 10+ employees'
+      minimum: 0.9
+      maximum: 42.03
+    flag:
+      type: string
+      role: dimension
+      nullable: true
+      allowed_values:
+      - b
+      - u
+- id: eurostat_isoc_eb_ain2_industry
+  source_ids:
+  - eurostat_isoc_eb_ain2
+  sample: data/raw/eurostat_isoc_eb_ain2_industry.csv
+  processed_output: data/processed/eurostat_isoc_eb_ain2_industry.csv
+  format: csv
+  date_column: year
+  latest_observation: '2025-01-01'
+  primary_key:
+  - nace_r2
+  - year
+  minimum_rows: 36
+  columns:
+    nace_r2:
+      type: string
+      role: identifier
+      nullable: false
+    geo:
+      type: string
+      role: geography
+      nullable: false
+      allowed_values:
+      - EU27_2020
+    year:
+      type: date
+      role: time
+      nullable: false
+      date_minimum: '2021-01-01'
+      date_maximum: '2025-01-01'
+    value:
+      type: number
+      role: measure
+      nullable: false
+      unit: '% of enterprises with 10+ employees'
+      minimum: 3.2
+      maximum: 62.52
+    flag:
+      type: string
+      role: dimension
+      nullable: true
+- id: eurostat_isoc_eb_ai_size
+  source_ids:
+  - eurostat_isoc_eb_ai
+  sample: data/raw/eurostat_isoc_eb_ai_size.csv
+  processed_output: data/processed/eurostat_isoc_eb_ai_size.csv
+  format: csv
+  date_column: year
+  latest_observation: '2025-01-01'
+  primary_key:
+  - size_emp
+  - year
+  minimum_rows: 16
+  columns:
+    size_emp:
+      type: string
+      role: identifier
+      nullable: false
+    geo:
+      type: string
+      role: geography
+      nullable: false
+      allowed_values:
+      - EU27_2020
+    year:
+      type: date
+      role: time
+      nullable: false
+      date_minimum: '2021-01-01'
+      date_maximum: '2025-01-01'
+    value:
+      type: number
+      role: measure
+      nullable: false
+      unit: '% of enterprises in the size class'
+      minimum: 6.12
+      maximum: 55.03
+    flag:
+      type: string
+      role: dimension
+      nullable: true
+- id: eurostat_isoc_eb_ai_barriers
+  source_ids:
+  - eurostat_isoc_eb_ai
+  sample: data/raw/eurostat_isoc_eb_ai_barriers.csv
+  processed_output: data/processed/eurostat_isoc_eb_ai_barriers.csv
+  format: csv
+  date_column: year
+  latest_observation: '2025-01-01'
+  primary_key:
+  - indic_is
+  - year
+  minimum_rows: 27
+  columns:
+    indic_is:
+      type: string
+      role: identifier
+      nullable: false
+    geo:
+      type: string
+      role: geography
+      nullable: false
+      allowed_values:
+      - EU27_2020
+    year:
+      type: date
+      role: time
+      nullable: false
+      date_minimum: '2023-01-01'
+      date_maximum: '2025-01-01'
+    value:
+      type: number
+      role: measure
+      nullable: false
+      unit: '% of all enterprises with 10+ employees'
+      minimum: 1.29
+      maximum: 11.1
+    flag:
+      type: string
+      role: dimension
+      nullable: true
+- id: owid_private_investment_in_artificial_intelligence_cset
+  source_ids:
+  - owid_private_ai_investment
+  sample: data/raw/owid_private-investment-in-artificial-intelligence-cset.csv
+  processed_output: data/processed/owid_private-investment-in-artificial-intelligence-cset.csv
+  format: csv
+  date_column: Year
+  latest_observation: '2025-01-01'
+  primary_key:
+  - Code
+  - Year
+  minimum_rows: 392
+  columns:
+    Entity:
+      type: string
+      role: geography
+      nullable: false
+    Code:
+      type: string
+      role: geography
+      nullable: false
+    Year:
+      type: date
+      role: time
+      nullable: false
+      date_minimum: '2022-01-01'
+      date_maximum: '2025-01-01'
+    'Estimated funding raised by privately held AI companies - Field: All':
+      type: integer
+      role: measure
+      nullable: false
+      unit: US$ (constant 2021)
+      minimum: 0
+      maximum: 429661135606
+- id: owid_global_investment_in_generative_ai
+  source_ids:
+  - owid_genai_investment
+  sample: data/raw/owid_global-investment-in-generative-ai.csv
+  processed_output: data/processed/owid_global-investment-in-generative-ai.csv
+  format: csv
+  date_column: Year
+  latest_observation: '2025-01-01'
+  primary_key:
+  - Year
+  minimum_rows: 7
+  columns:
+    Entity:
+      type: string
+      role: geography
+      nullable: false
+      allowed_values:
+      - World
+    Code:
+      type: string
+      role: geography
+      nullable: false
+      allowed_values:
+      - OWID_WRL
+    Year:
+      type: date
+      role: time
+      nullable: false
+      date_minimum: '2019-01-01'
+      date_maximum: '2025-01-01'
+    Global investment in generative AI:
+      type: integer
+      role: measure
+      nullable: false
+      unit: US$ (constant 2021)
+      minimum: 889295685
+      maximum: 143815532431
+- id: owid_nvidia_quarterly_revenue_segment
+  source_ids:
+  - owid_nvidia_revenue
+  sample: data/raw/owid_nvidia-quarterly-revenue-segment.csv
+  processed_output: data/processed/owid_nvidia-quarterly-revenue-segment.csv
+  format: csv
+  date_column: Quarter
+  latest_observation: '2026-07-01'
+  primary_key:
+  - Entity
+  - Quarter
+  minimum_rows: 93
+  columns:
+    Entity:
+      type: string
+      role: dimension
+      nullable: false
+      allowed_values:
+      - Data centers and AI
+      - Gaming, devices, automotive
+      - Total
+    Quarter:
+      type: date
+      role: time
+      nullable: false
+      date_minimum: '2019-01-01'
+      date_maximum: '2026-07-01'
+    NVIDIA’s quarterly revenue:
+      type: integer
+      role: measure
+      nullable: false
+      unit: US$ (nominal)
+      minimum: 634000000
+      maximum: 96221000000
+- id: owid_data_centers_share_electricity_demand
+  source_ids:
+  - owid_datacentre_electricity
+  sample: data/raw/owid_data-centers-share-electricity-demand.csv
+  processed_output: data/processed/owid_data-centers-share-electricity-demand.csv
+  format: csv
+  date_column: Year
+  latest_observation: '2025-01-01'
+  primary_key:
+  - Entity
+  - Year
+  minimum_rows: 40
+  columns:
+    Entity:
+      type: string
+      role: geography
+      nullable: false
+      allowed_values:
+      - Africa (IEA)
+      - Asia Pacific (IEA)
+      - Central and South America (IEA)
+      - China
+      - Europe (IEA)
+      - Middle East (IEA)
+      - North America (IEA)
+      - United States
+      - World
+      - World excl. United States and China
+    Code:
+      type: string
+      role: geography
+      nullable: true
+      allowed_values:
+      - CHN
+      - OWID_WRL
+      - USA
+    Year:
+      type: date
+      role: time
+      nullable: false
+      date_minimum: '2020-01-01'
+      date_maximum: '2025-01-01'
+    Share of total electricity demand coming from data centers:
+      type: number
+      role: measure
+      nullable: false
+      unit: '% of electricity demand'
+      minimum: 0.08527997
+      maximum: 4.9384785
+- id: owid_gdp_per_capita_growth
+  source_ids:
+  - owid_gdp_pc_growth
+  sample: data/raw/owid_gdp-per-capita-growth.csv
+  processed_output: data/processed/owid_gdp-per-capita-growth.csv
+  format: csv
+  date_column: Year
+  latest_observation: '2025-01-01'
+  primary_key:
+  - Entity
+  - Year
+  minimum_rows: 77
+  columns:
+    Entity:
+      type: string
+      role: geography
+      nullable: false
+      allowed_values:
+      - East Asia and Pacific (WB)
+      - European Union (27)
+      - Latin America and Caribbean (WB)
+      - North America (WB)
+      - South Asia (WB)
+      - Sub-Saharan Africa (WB)
+      - World
+    Code:
+      type: string
+      role: geography
+      nullable: false
+      allowed_values:
+      - OWID_EU27
+      - OWID_WRL
+      - WB_EAP
+      - WB_LAC
+      - WB_NA
+      - WB_SA
+      - WB_SSA
+    Year:
+      type: date
+      role: time
+      nullable: false
+      date_minimum: '2015-01-01'
+      date_maximum: '2025-01-01'
+    GDP per capita growth (annual %):
+      type: number
+      role: measure
+      nullable: false
+      unit: '% change in real GDP per person on previous year'
+      minimum: -7.513922
+      maximum: 8.330282
+- id: ilo_output_per_hour
+  source_ids:
+  - ilo_output_per_hour
+  sample: data/raw/ilo_output_per_hour.csv
+  processed_output: data/processed/ilo_output_per_hour.csv
+  format: csv
+  date_column: year
+  latest_observation: '2027-01-01'
+  primary_key:
+  - ref_area
+  - year
+  minimum_rows: 104
+  columns:
+    ref_area:
+      type: string
+      role: geography
+      nullable: false
+      allowed_values:
+      - X01
+      - X13
+      - X26
+      - X34
+      - X45
+      - X56
+      - X88
+      - X92
+    year:
+      type: date
+      role: time
+      nullable: false
+      date_minimum: '2015-01-01'
+      date_maximum: '2027-01-01'
+    value:
+      type: number
+      role: measure
+      nullable: false
+      unit: GDP per hour worked, international $ (2021 prices, PPP)
+      minimum: 5.61
+      maximum: 83.58
+    obs_status:
+      type: string
+      role: dimension
+      nullable: true
+- id: ilo_output_per_hour_countries
+  source_ids:
+  - ilo_output_per_hour
+  sample: data/raw/ilo_output_per_hour_countries.csv
+  processed_output: data/processed/ilo_output_per_hour_countries.csv
+  format: csv
+  date_column: year
+  latest_observation: '2025-01-01'
+  primary_key:
+  - ref_area
+  - year
+  minimum_rows: 750
+  columns:
+    ref_area:
+      type: string
+      role: geography
+      nullable: false
+    year:
+      type: date
+      role: time
+      nullable: false
+      date_minimum: '2015-01-01'
+      date_maximum: '2025-01-01'
+    value:
+      type: number
+      role: measure
+      nullable: false
+      unit: GDP per hour worked, international $ (2021 prices, PPP)
+      minimum: 0.92
+      maximum: 164.65
+- id: ilo_labour_income_share
+  source_ids:
+  - ilo_labour_income_share
+  sample: data/raw/ilo_labour_income_share.csv
+  processed_output: data/processed/ilo_labour_income_share.csv
+  format: csv
+  date_column: year
+  latest_observation: '2026-01-01'
+  primary_key:
+  - ref_area
+  - year
+  minimum_rows: 96
+  columns:
+    ref_area:
+      type: string
+      role: geography
+      nullable: false
+      allowed_values:
+      - X01
+      - X13
+      - X26
+      - X34
+      - X45
+      - X56
+      - X88
+      - X92
+    year:
+      type: date
+      role: time
+      nullable: false
+      date_minimum: '2015-01-01'
+      date_maximum: '2026-01-01'
+    value:
+      type: number
+      role: measure
+      nullable: false
+      unit: '% of GDP'
+      minimum: 47.8
+      maximum: 59.3
+    obs_status:
+      type: string
+      role: dimension
+      nullable: true
+- id: fred_cp
+  source_ids:
+  - fred_cp
+  sample: data/raw/fred_CP.csv
+  processed_output: data/processed/fred_CP.csv
+  format: csv
+  date_column: observation_date
+  latest_observation: '2026-04-01'
+  primary_key:
+  - observation_date
+  minimum_rows: 46
+  columns:
+    observation_date:
+      type: date
+      role: time
+      nullable: false
+      date_minimum: '2015-01-01'
+      date_maximum: '2026-04-01'
+    CP:
+      type: number
+      role: measure
+      nullable: false
+      unit: US$ billion, seasonally adjusted annual rate
+      minimum: 1746.728
+      maximum: 4279.937
+- id: fred_gdp
+  source_ids:
+  - fred_gdp
+  sample: data/raw/fred_GDP.csv
+  processed_output: data/processed/fred_GDP.csv
+  format: csv
+  date_column: observation_date
+  latest_observation: '2026-04-01'
+  primary_key:
+  - observation_date
+  minimum_rows: 46
+  columns:
+    observation_date:
+      type: date
+      role: time
+      nullable: false
+      date_minimum: '2015-01-01'
+      date_maximum: '2026-04-01'
+    GDP:
+      type: number
+      role: measure
+      nullable: false
+      unit: US$ billion, seasonally adjusted annual rate
+      minimum: 18063.529
+      maximum: 32563.03
+- id: fred_coe
+  source_ids:
+  - fred_coe
+  sample: data/raw/fred_COE.csv
+  processed_output: data/processed/fred_COE.csv
+  format: csv
+  date_column: observation_date
+  latest_observation: '2026-04-01'
+  primary_key:
+  - observation_date
+  minimum_rows: 46
+  columns:
+    observation_date:
+      type: date
+      role: time
+      nullable: false
+      date_minimum: '2015-01-01'
+      date_maximum: '2026-04-01'
+    COE:
+      type: number
+      role: measure
+      nullable: false
+      unit: US$ billion, seasonally adjusted annual rate
+      minimum: 9563.849
+      maximum: 16349.724
+- id: fred_ophnfb
+  source_ids:
+  - fred_ophnfb
+  sample: data/raw/fred_OPHNFB.csv
+  processed_output: data/processed/fred_OPHNFB.csv
+  format: csv
+  date_column: observation_date
+  latest_observation: '2026-04-01'
+  primary_key:
+  - observation_date
+  minimum_rows: 46
+  columns:
+    observation_date:
+      type: date
+      role: time
+      nullable: false
+      date_minimum: '2015-01-01'
+      date_maximum: '2026-04-01'
+    OPHNFB:
+      type: number
+      role: measure
+      nullable: false
+      unit: index, 2017 = 100
+      minimum: 97.637
+      maximum: 120.017
+- id: fred_ulcnfb
+  source_ids:
+  - fred_ulcnfb
+  sample: data/raw/fred_ULCNFB.csv
+  processed_output: data/processed/fred_ULCNFB.csv
+  format: csv
+  date_column: observation_date
+  latest_observation: '2026-04-01'
+  primary_key:
+  - observation_date
+  minimum_rows: 46
+  columns:
+    observation_date:
+      type: date
+      role: time
+      nullable: false
+      date_minimum: '2015-01-01'
+      date_maximum: '2026-04-01'
+    ULCNFB:
+      type: number
+      role: measure
+      nullable: false
+      unit: index, 2017 = 100
+      minimum: 96.861
+      maximum: 123.979
+- id: eurostat_nasa_10_ki_profit_share
+  source_ids:
+  - eurostat_nasa_10_ki
+  sample: data/raw/eurostat_nasa_10_ki_profit_share.csv
+  processed_output: data/processed/eurostat_nasa_10_ki_profit_share.csv
+  format: csv
+  date_column: year
+  latest_observation: '2025-01-01'
+  primary_key:
+  - geo
+  - year
+  minimum_rows: 204
+  columns:
+    geo:
+      type: string
+      role: geography
+      nullable: false
+    year:
+      type: date
+      role: time
+      nullable: false
+      date_minimum: '2019-01-01'
+      date_maximum: '2025-01-01'
+    value:
+      type: number
+      role: measure
+      nullable: false
+      unit: '% (gross operating surplus share of non-financial corporations'' value added)'
+      minimum: 30.73
+      maximum: 78.46
+    flag:
+      type: string
+      role: dimension
+      nullable: true
+      allowed_values:
+      - p
+- id: eurostat_nasa_10_ki_consumption_growth
+  source_ids:
+  - eurostat_nasa_10_ki
+  sample: data/raw/eurostat_nasa_10_ki_consumption_growth.csv
+  processed_output: data/processed/eurostat_nasa_10_ki_consumption_growth.csv
+  format: csv
+  date_column: year
+  latest_observation: '2025-01-01'
+  primary_key:
+  - geo
+  - year
+  minimum_rows: 204
+  columns:
+    geo:
+      type: string
+      role: geography
+      nullable: false
+    year:
+      type: date
+      role: time
+      nullable: false
+      date_minimum: '2019-01-01'
+      date_maximum: '2025-01-01'
+    value:
+      type: number
+      role: measure
+      nullable: false
+      unit: '% change on previous year (real household consumption per person)'
+      minimum: -9.77
+      maximum: 15.37
+    flag:
+      type: string
+      role: dimension
+      nullable: true
+      allowed_values:
+      - b
+      - e
+      - p
+- id: eurostat_nama_10_lp_ulc
+  source_ids:
+  - eurostat_nama_10_lp_ulc
+  sample: data/raw/eurostat_nama_10_lp_ulc.csv
+  processed_output: data/processed/eurostat_nama_10_lp_ulc.csv
+  format: csv
+  date_column: year
+  latest_observation: '2025-01-01'
+  primary_key:
+  - na_item
+  - geo
+  - year
+  minimum_rows: 476
+  columns:
+    na_item:
+      type: string
+      role: identifier
+      nullable: false
+    geo:
+      type: string
+      role: geography
+      nullable: false
+    year:
+      type: date
+      role: time
+      nullable: false
+      date_minimum: '2019-01-01'
+      date_maximum: '2025-01-01'
+    value:
+      type: number
+      role: measure
+      nullable: false
+      unit: index, 2015 = 100
+      minimum: 89.482
+      maximum: 214.719
+    flag:
+      type: string
+      role: dimension
+      nullable: true
+      allowed_values:
+      - b
+      - p
+- id: eurostat_nama_10_a10_industry
+  source_ids:
+  - eurostat_nama_10_a10
+  sample: data/raw/eurostat_nama_10_a10_industry.csv
+  processed_output: data/processed/eurostat_nama_10_a10_industry.csv
+  format: csv
+  date_column: year
+  latest_observation: '2025-01-01'
+  primary_key:
+  - unit
+  - nace_r2
+  - na_item
+  - year
+  minimum_rows: 168
+  columns:
+    unit:
+      type: string
+      role: identifier
+      nullable: false
+    nace_r2:
+      type: string
+      role: identifier
+      nullable: false
+    na_item:
+      type: string
+      role: identifier
+      nullable: false
+    geo:
+      type: string
+      role: geography
+      nullable: false
+      allowed_values:
+      - EU27_2020
+    year:
+      type: date
+      role: time
+      nullable: false
+      date_minimum: '2019-01-01'
+      date_maximum: '2025-01-01'
+    value:
+      type: number
+      role: measure
+      nullable: false
+      unit: '€ million (unit column: CLV20_MEUR = 2020 prices, CP_MEUR = current prices)'
+      minimum: 68834.4
+      maximum: 16949508.2
+    flag:
+      type: string
+      role: dimension
+      nullable: true
+- id: eurostat_nama_10_a10_e_hours
+  source_ids:
+  - eurostat_nama_10_a10_e
+  sample: data/raw/eurostat_nama_10_a10_e_hours.csv
+  processed_output: data/processed/eurostat_nama_10_a10_e_hours.csv
+  format: csv
+  date_column: year
+  latest_observation: '2025-01-01'
+  primary_key:
+  - nace_r2
+  - year
+  minimum_rows: 56
+  columns:
+    nace_r2:
+      type: string
+      role: identifier
+      nullable: false
+    geo:
+      type: string
+      role: geography
+      nullable: false
+      allowed_values:
+      - EU27_2020
+    year:
+      type: date
+      role: time
+      nullable: false
+      date_minimum: '2019-01-01'
+      date_maximum: '2025-01-01'
+    value:
+      type: integer
+      role: measure
+      nullable: false
+      unit: thousand hours worked
+      minimum: 3345320
+      maximum: 353951715
+    flag:
+      type: string
+      role: dimension
+      nullable: true
+- id: eurostat_une_rt_a
+  source_ids:
+  - eurostat_une_rt_a
+  sample: data/raw/eurostat_une_rt_a.csv
+  processed_output: data/processed/eurostat_une_rt_a.csv
+  format: csv
+  date_column: year
+  latest_observation: '2025-01-01'
+  primary_key:
+  - age
+  - geo
+  - year
+  minimum_rows: 490
+  columns:
+    age:
+      type: string
+      role: identifier
+      nullable: false
+    geo:
+      type: string
+      role: geography
+      nullable: false
+    year:
+      type: date
+      role: time
+      nullable: false
+      date_minimum: '2019-01-01'
+      date_maximum: '2025-01-01'
+    value:
+      type: number
+      role: measure
+      nullable: true
+      unit: '% of labour force'
+      minimum: 2.0
+      maximum: 38.3
+    flag:
+      type: string
+      role: dimension
+      nullable: true
+      allowed_values:
+      - b
+      - d
+      - u
+- id: hp_adoption
+  source_ids:
+  - census_btos
+  sample: data/raw/human_practice/workforce/btos_ai.csv
+  processed_output: data/processed/human_practice/adoption.csv
+  format: csv
+  primary_key:
+  - period_code
+  - answer
+  minimum_rows: 72
+  columns:
+    period_order:
+      type: integer
+      role: time
+      nullable: false
+      unit: rank (1 = first two-week period)
+    period_code:
+      type: integer
+      role: time
+      nullable: false
+    period_label:
+      type: string
+      role: time
+      nullable: false
+    question_id:
+      type: integer
+      role: identifier
+      nullable: false
+    answer:
+      type: string
+      role: identifier
+      nullable: false
+    share_pct:
+      type: number
+      role: measure
+      nullable: false
+      unit: '% of US firms'
+      minimum: 9.1
+      maximum: 73.1
+- id: hp_evidence
+  source_ids:
+  - workforce_evidence
+  sample: data/raw/human_practice/workforce/evidence.csv
+  processed_output: data/processed/human_practice/evidence.csv
+  format: csv
+  date_column: year
+  latest_observation: '2025-01-01'
+  primary_key:
+  - id
+  minimum_rows: 6
+  columns:
+    id:
+      type: string
+      role: identifier
+      nullable: false
+    panel:
+      type: string
+      role: dimension
+      nullable: false
+      allowed_values:
+      - output
+      - skill
+    panel_title:
+      type: string
+      role: dimension
+      nullable: false
+      allowed_values:
+      - Output gains
+      - Skill and learning signals
+    label:
+      type: string
+      role: dimension
+      nullable: false
+      allowed_values:
+      - Brynjolfsson et al. 2023
+      - Brynjolfsson et al. 2023 (learning)
+      - Dell'Acqua et al. 2023 (inside the frontier)
+      - Dell'Acqua et al. 2023 (outside the frontier)
+      - Lee et al. 2025
+      - Noy & Zhang 2023
+    short_label:
+      type: string
+      role: dimension
+      nullable: false
+      allowed_values:
+      - +12.2% tasks
+      - +14% issues/hr
+      - 84% vs 60-70% correct
+      - Less critical thinking
+      - Possible learning
+      - ~37% faster
+    year:
+      type: date
+      role: time
+      nullable: false
+      date_minimum: '2023-01-01'
+      date_maximum: '2025-01-01'
+    design:
+      type: string
+      role: dimension
+      nullable: false
+      allowed_values:
+      - Pre-registered randomised field experiment
+      - Randomised online experiment
+      - Self-reported survey
+      - Staggered rollout at one firm
+    sample_size:
+      type: integer
+      role: measure
+      nullable: false
+      unit: people (see sample_unit)
+      minimum: 319
+      maximum: 5179
+    sample_unit:
+      type: string
+      role: dimension
+      nullable: false
+      allowed_values:
+      - college-educated professionals
+      - consultants
+      - customer support agents
+      - knowledge workers (936 task examples)
+    measure:
+      type: string
+      role: dimension
+      nullable: false
+      allowed_values:
+      - Issues resolved per hour
+      - Self-reported critical thinking per task
+      - Share of correct answers on a task built so AI gives a convincing wrong answer
+      - Tasks completed, speed, quality (tasks AI handles well)
+      - Time to complete a writing task; graded quality
+      - Worker learning (as described in the abstract)
+    finding:
+      type: string
+      role: dimension
+      nullable: false
+      allowed_values:
+      - Access to the AI assistant raised issues resolved per hour by 14% on average, including 34% for novice and low-skilled
+        workers, with minimal impact on experienced workers.
+      - Consultants with AI finished 12.2% more tasks, 25.1% more quickly, with output quality scored 40% higher. The lowest-scoring
+        consultants at baseline improved most.
+      - Higher confidence in GenAI was associated with less perceived critical thinking (beta = -0.69, p < .001). Higher self-confidence
+        was associated with more perceived critical thinking (beta = 0.26, p = .026).
+      - On a task designed so that AI would give a convincing wrong answer, unaided consultants were correct 84% of the time,
+        versus 60 to 70% for those using AI.
+      - The authors report evidence of possible worker learning alongside the productivity gains. This is a hint in the abstract,
+        so read the paper before relying on it.
+      - Treated workers finished about 37% faster (about 10 minutes less than a 27-minute control average), and output grades
+        rose by about 0.4 to 0.45 standard deviations. Gaps between workers narrowed.
+    direction:
+      type: string
+      role: dimension
+      nullable: false
+      allowed_values:
+      - gain
+      - loss
+    evidence_strength:
+      type: string
+      role: dimension
+      nullable: false
+      allowed_values:
+      - High
+      - Low
+      - Medium
+    strength_rationale:
+      type: string
+      role: dimension
+      nullable: false
+      allowed_values:
+      - Described as 'possible' in the abstract, and I have not read the underlying analysis.
+      - Large sample and real workplace data, but a single firm and a single job.
+      - Randomised assignment, but a short, writing-only task done in an online setting.
+      - Randomised, pre-registered, and run with real consultants, but one firm.
+      - Same randomised design, but this is one task built to trip the AI up, so it shows a risk and not a typical effect.
+      - Self-reported perceptions from a recruited sample. It shows association only, not measured skill.
+    source_url:
+      type: string
+      role: dimension
+      nullable: false
+      allowed_values:
+      - https://advait.org/files/lee_2025_ai_critical_thinking_survey.pdf
+      - https://economics.mit.edu/sites/default/files/inline-files/Noy_Zhang_1_0.pdf
+      - https://papers.ssrn.com/abstract=4573321
+      - https://www.nber.org/papers/w31161
+    location_in_source:
+      type: string
+      role: dimension
+      nullable: false
+      allowed_values:
+      - Abstract
+      - Abstract (NBER WP 31161; later published in QJE 2025)
+      - Abstract and results (MIT working paper version; the published Science version may report slightly different figures)
+      - Section 4.2.1 (Table 4); interpretation in Section 6.1.1
+      - Working paper (SSRN 4573321)
+    check_status:
+      type: string
+      role: dimension
+      nullable: false
+      allowed_values:
+      - Read a summary of the paper only. Open the paper and confirm figures before presenting
+      - Read the NBER abstract page
+      - Read the NBER abstract page only. Open the paper to see the evidence
+      - Read the paper PDF (page numbers not checked)
+      - Read the working paper PDF
+- id: hp_entry_level
+  source_ids:
+  - canaries_2026
+  sample: data/raw/human_practice/workforce/entry_level_employment.csv
+  processed_output: data/processed/human_practice/entry_level.csv
+  format: csv
+  date_column: period_end
+  latest_observation: '2026-06-01'
+  primary_key:
+  - id
+  minimum_rows: 4
+  columns:
+    id:
+      type: string
+      role: identifier
+      nullable: false
+    group:
+      type: string
+      role: dimension
+      nullable: false
+      allowed_values:
+      - Ages 22-25, least AI-exposed occupations
+      - Ages 22-25, most AI-exposed occupations
+      - All ages, all occupations
+      - All ages, most AI-exposed occupations
+    age_group:
+      type: string
+      role: dimension
+      nullable: false
+      allowed_values:
+      - 22-25
+      - All ages
+    exposure_group:
+      type: string
+      role: dimension
+      nullable: false
+      allowed_values:
+      - All occupations
+      - Most exposed quintile
+      - Three least exposed quintiles
+      - Two most exposed quintiles
+    change_pct:
+      type: integer
+      role: measure
+      nullable: false
+      unit: '% change in employment since November 2022'
+      minimum: -11
+      maximum: 10
+    period_start:
+      type: string
+      role: time
+      nullable: false
+    period_end:
+      type: date
+      role: time
+      nullable: false
+      date_minimum: '2026-06-01'
+      date_maximum: '2026-06-01'
+    measure:
+      type: string
+      role: dimension
+      nullable: false
+      allowed_values:
+      - Change in employment (headcount index)
+    highlight:
+      type: boolean
+      role: dimension
+      nullable: false
+      allowed_values:
+      - false
+      - true
+    source:
+      type: string
+      role: dimension
+      nullable: false
+      allowed_values:
+      - Brynjolfsson, Chandar and Chen (August 2026)
+    source_url:
+      type: string
+      role: dimension
+      nullable: false
+      allowed_values:
+      - https://digitaleconomy.stanford.edu/app/uploads/2026/08/Canaries_August2026.pdf
+    location_in_source:
+      type: string
+      role: dimension
+      nullable: false
+      allowed_values:
+      - 'p. 3 and pp. 10-11: "employment of 22-25-year-olds in the two most exposed quintiles fell about 11%"'
+      - 'p. 3 and pp. 10-11: "employment of the same age group in the three least-exposed quintiles grew about 10%"'
+      - 'p. 8: "Average employment in the ADP sample rose by about 6% between November 2022 and June 2026"'
+      - 'p. 8: "employment for the most exposed quintile grew by about 4%"'
+    check_status:
+      type: string
+      role: dimension
+      nullable: false
+      allowed_values:
+      - Read through an automated page summary on 10 Nov 2026. Open the PDF and confirm before presenting
+- id: hp_web_composition
+  source_ids:
+  - wildai
+  sample: data/raw/human_practice/wildai/monthly_topic_format.csv
+  processed_output: data/processed/human_practice/web_composition.csv
+  format: csv
+  date_column: month
+  latest_observation: '2026-08-01'
+  primary_key:
+  - month
+  - label
+  minimum_rows: 183
+  columns:
+    month:
+      type: date
+      role: time
+      nullable: false
+      date_minimum: '2021-01-01'
+      date_maximum: '2026-08-01'
+    label:
+      type: string
+      role: identifier
+      nullable: false
+    documents:
+      type: integer
+      role: measure
+      nullable: false
+      unit: documents in the month's sample
+      minimum: 1
+      maximum: 4999
+    tokens:
+      type: integer
+      role: measure
+      nullable: false
+      unit: tokens in the month's sample
+      minimum: 149
+      maximum: 4013029
+    token_share:
+      type: number
+      role: measure
+      nullable: false
+      unit: fraction of the month's sampled tokens (0-1)
+      minimum: 4.403198199476108e-05
+      maximum: 0.999777975434529
+    document_share:
+      type: number
+      role: measure
+      nullable: false
+      unit: fraction of the month's sampled documents (0-1)
+      minimum: 0.0002
+      maximum: 0.9998
+    sampling_source:
+      type: string
+      role: dimension
+      nullable: false
+      allowed_values:
+      - common_crawl_random_warc
+      - fineweb
+- id: hp_ai_share
+  source_ids:
+  - wildai
+  sample: data/raw/human_practice/wildai/monthly_ai_share.csv
+  processed_output: data/processed/human_practice/ai_share.csv
+  format: csv
+  date_column: month
+  latest_observation: '2030-12-01'
+  primary_key:
+  - month
+  - kind
+  minimum_rows: 114
+  columns:
+    month:
+      type: date
+      role: time
+      nullable: false
+      date_minimum: '2021-01-01'
+      date_maximum: '2030-12-01'
+    kind:
+      type: string
+      role: identifier
+      nullable: false
+    share:
+      type: number
+      role: measure
+      nullable: false
+      unit: fraction of tokens labelled AI (0-1)
+      minimum: 0.0
+      maximum: 0.6745325911225041
+    lo80:
+      type: number
+      role: measure
+      nullable: true
+      unit: fraction (0-1), 80% interval lower bound
+      minimum: 0.2980093935258714
+      maximum: 0.47483314393366904
+    hi80:
+      type: number
+      role: measure
+      nullable: true
+      unit: fraction (0-1), 80% interval upper bound
+      minimum: 0.33709170972885455
+      maximum: 0.8742320383113391
+    lo95:
+      type: number
+      role: measure
+      nullable: false
+      unit: fraction (0-1), 95% interval lower bound
+      minimum: 0.0
+      maximum: 0.36479830690378956
+    hi95:
+      type: number
+      role: measure
+      nullable: false
+      unit: fraction (0-1), 95% interval upper bound
+      minimum: 0.0
+      maximum: 0.9842668753412186
+    sampling_source:
+      type: string
+      role: dimension
+      nullable: false
+      allowed_values:
+      - common_crawl_random_warc
+      - fineweb
+      - random walk with drift
+    documents:
+      type: integer
+      role: measure
+      nullable: true
+      unit: documents
+      minimum: 5000
+      maximum: 5000
+    tokens:
+      type: integer
+      role: measure
+      nullable: true
+      unit: tokens
+      minimum: 3191614
+      maximum: 4122545
+    ai_tokens:
+      type: integer
+      role: measure
+      nullable: true
+      unit: tokens labelled AI
+      minimum: 0
+      maximum: 1155972
+- id: hp_fig3_points
+  source_ids:
+  - wildai
+  sample: data/raw/human_practice/wildai/losses.csv
+  processed_output: data/processed/human_practice/fig3_points.csv
+  format: csv
+  primary_key:
+  - name
+  minimum_rows: 287
+  columns:
+    name:
+      type: string
+      role: identifier
+      nullable: false
+    group:
+      type: string
+      role: dimension
+      nullable: false
+    size:
+      type: string
+      role: dimension
+      nullable: false
+      allowed_values:
+      - 135m
+      - 19.9m
+      - 268m
+      - 35.8m
+      - 86.2m
+    size_order:
+      type: integer
+      role: identifier
+      nullable: false
+    budget:
+      type: number
+      role: measure
+      nullable: false
+      unit: human tokens per parameter
+      minimum: 4.72
+      maximum: 87.5
+    arm:
+      type: string
+      role: dimension
+      nullable: false
+      allowed_values:
+      - ai
+      - human
+    x:
+      type: number
+      role: measure
+      nullable: false
+      unit: AI tokens added per human token
+      minimum: 0.0024630541871921707
+      maximum: 70.11166090163724
+    bpb:
+      type: number
+      role: measure
+      nullable: false
+      unit: bits per byte on C4
+      minimum: 0.9072296611801489
+      maximum: 1.3485901193082626
+    ctrl_bpb:
+      type: number
+      role: measure
+      nullable: false
+      unit: bits per byte on C4 (human-only control)
+      minimum: 0.9087194104704734
+      maximum: 1.3543884620424604
+    change_pct:
+      type: number
+      role: measure
+      nullable: false
+      unit: '% vs human-only control'
+      minimum: -8.338757866022872
+      maximum: 6.543311464441559
+    in_figure:
+      type: boolean
+      role: dimension
+      nullable: false
+      allowed_values:
+      - true
+- id: hp_cost
+  source_ids:
+  - wildai
+  sample: data/raw/human_practice/wildai/cost_of_not_filtering.csv
+  processed_output: data/processed/human_practice/cost.csv
+  format: csv
+  primary_key:
+  - target
+  - model_size
+  - ai_share
+  minimum_rows: 462
+  columns:
+    target:
+      type: string
+      role: identifier
+      nullable: false
+    model_size:
+      type: string
+      role: identifier
+      nullable: false
+    n_params:
+      type: number
+      role: measure
+      nullable: false
+      unit: parameters
+      minimum: 268436282.0
+      maximum: 8000000000.0
+    human_tpp:
+      type: number
+      role: measure
+      nullable: false
+      unit: human tokens per parameter
+      minimum: 20.0
+      maximum: 20.0
+    ai_share:
+      type: number
+      role: identifier
+      nullable: false
+      unit: fraction of training tokens written by AI (0-1)
+    scenario:
+      type: string
+      role: dimension
+      nullable: true
+      allowed_values:
+      - 2026 crawl
+      - August 2026
+      - end of 2027
+      - end of 2028
+    cost:
+      type: number
+      role: measure
+      nullable: false
+      unit: compute multiplier (1 = human-only); prediction from a fitted law
+      minimum: 0.06422948682283325
+      maximum: .inf
+- id: hp_definitions
+  source_ids:
+  - schaeffer_2025
+  sample: data/raw/human_practice/schaeffer/section_a_schaeffer_table.csv
+  processed_output: data/processed/human_practice/definitions.csv
+  format: csv
+  primary_key:
+  - id
+  minimum_rows: 8
+  columns:
+    id:
+      type: integer
+      role: identifier
+      nullable: false
+    definition:
+      type: string
+      role: dimension
+      nullable: false
+      allowed_values:
+      - Any Increase of Population Risk
+      - Appearance of Hallucinated Data
+      - Asymptotically Diverging Population Risk
+      - Catastrophic Increase of Population Risk
+      - Change in Scaling Law
+      - Collapsing Variance
+      - Disappearance of Real Tail Data
+      - Disappearance of or Entanglement of Real Data Mode(s)
+    details:
+      type: string
+      role: dimension
+      nullable: false
+      allowed_values:
+      - Collapse if the link between performance and training data size deviates from the scaling seen with real data. (Sec.
+        2)
+      - Critical, rapid degradation in performance from synthetic data, measured by population risk (expected loss over the
+        real data distribution). "Catastrophic" is often undefined. (Sec. 2)
+      - Models begin producing fully synthetic data not supported by the original real data's distribution. (Sec. 2)
+      - Population risk grows without bound over successive model-fitting iterations. (Sec. 2)
+      - 'Strict: collapse if there is any increase in population risk when training with synthetic data versus real data alone.
+        (Sec. 2)'
+      - Synthetic data stops the model learning some modes of the real distribution, or blurs modes together ("mode collapse").
+        (Sec. 2)
+      - Synthetic data under-represents the tail of the distribution ("coverage collapse"), so models handle common cases
+        but fail on rare ones. Can be subtler than Def. 4. (Sec. 2)
+      - Variance or diversity trends to 0, and learned distributions become delta-like over iterations. (Sec. 2)
+    realistic_condition:
+      type: string
+      role: dimension
+      nullable: false
+      allowed_values:
+      - Not tied to a specific condition in the paper.
+      - 'Not tied to a specific condition. Example: Shumailov et al.''s OPT-125M result counted as Def. 8; perplexity plateaued
+        12.5% to 50% above the first model. (Sec. 2.1)'
+      - 'Not tied to a specific condition. Listed in two families: "distributions deforming" and "decreasing value from additional
+        data". (Sec. 2)'
+      - Not tied to a specific condition. Real share of data is expected to approach zero, but whether it reaches zero is
+        unclear. (Sec. 3, 4.2, 5)
+      - 'Replace paradigm (old data deleted, next model trained only on the newest synthetic data) is "highly unrealistic".
+        Realistic: more compute, more and higher-quality data, synthetic data accumulating beside real data. (Sec. 3, 4.1)'
+      - Replace paradigm is unrealistic, but "very real threats to tails" remain. (Sec. 1, 3)
+      - Replace paradigm is unrealistic. Schaeffer et al. cite about 1 quadrillion available pre-training tokens (attributed
+        to Villalobos et al. 2024). (Sec. 3, 4.1, 4.4)
+      - 'Replace paradigm is unrealistic; real data is not deleted after each model. Realistic: synthetic data accumulates,
+        and real data''s share falls. (Sec. 3, 4.1)'
+    mitigation:
+      type: string
+      role: dimension
+      nullable: false
+      allowed_values:
+      - 'Accumulate data (shown empirically and mathematically). Accumulate-subsample: loss appears to stabilise, but no theory
+        yet. A real-data share above zero is sufficient, not necessary. Iterative retraining is not used in frontier models.
+        (Sec. 4.1 to 4.3)'
+      - Accumulate real and synthetic data instead of replacing it. Population risk diverges under replace, not under accumulate.
+        (Sec. 4.1)
+      - Further research on how synthetic data affects scaling behaviour. (Sec. 5)
+      - 'More research on coverage and mode-collapse prevention for realistic settings. Possible idea: sequester real data
+        for later use (labs have already collected it). (Sec. 4.2, 5)'
+      - Not given for this definition. (Alemohammad et al. saw FID rise 2x by iteration 5, then plateau; Gerstgrasser et al.
+        questioned calling it collapse. Sec. 2.2)
+      - Not given. Search providers may pay a high penalty if trained on hallucinated facts. (Sec. 2.3)
+      - Research on coverage and mode-collapse prevention. Harms can fall disproportionately on marginalised groups. (Sec.
+        2.3, 5)
+      - 'Timescale matters: expected iterations before total collapse scale with data size times entropy. At face value, trillions
+        of models could be trained before onset. (Sec. 4.4)'
+    rebuttal:
+      type: string
+      role: dimension
+      nullable: false
+      allowed_values:
+      - 'In that simple model, total collapse poses "virtually no present threat". Regression case (App. A, Table 1): no collapse
+        under either paradigm. Authors note the model is simple.'
+      - 'Not addressed in the Sec. 5 forecast. Regression case (App. A, Table 1): no collapse under either paradigm.'
+      - 'Not rebutted. Regression case (App. A, Table 1): collapse occurs under both accumulate and replace. The Sec. 5 forecast
+        covers catastrophic and diverging risk, not any increase.'
+      - 'Not rebutted: exact changes under realistic conditions "remain to be determined". Synthetic data could ease a data
+        bottleneck but may alter scaling-law parameters. Regression case (App. A, Table 1): collapse under both.'
+      - 'Not rebutted: loss of diversity is "a real issue"; how much tail is lost is unclear. Regression case (App. A, Table
+        1): no collapse under either paradigm.'
+      - 'Not rebutted: real tail data and modes will be lost, but how many and how quickly is unclear. Regression case (App.
+        A, Table 1): no collapse under either paradigm.'
+      - 'Sec. 5: population risk will not diverge asymptotically under accumulating data. Regression case (App. A, Table 1):
+        no collapse under accumulate; collapse under replace.'
+      - 'Sec. 5: with accumulating data and larger, higher-quality datasets, population risk will not increase catastrophically.
+        Regression case (App. A, Table 1): no collapse under accumulate; collapse under replace.'
+    papers:
+      type: string
+      role: dimension
+      nullable: false
+      allowed_values:
+      - Alemohammad et al. 2023
+      - Alemohammad et al. 2023; Dohmatob et al. 2024b
+      - Alemohammad et al. 2023; Shumailov et al. 2023; Bertrand et al. 2023
+      - Dohmatob et al. 2024b; Bertrand et al. 2023; Kazdan et al. 2024b
+      - Dohmatob et al. 2024c
+      - Gerstgrasser et al. 2024; Kazdan et al. 2024b; Dey & Donoho 2024
+      - Shumailov et al. 2023; Alemohammad et al. 2023; Bohacek & Farid 2023
+      - Shumailov et al. 2023; Wyllie et al. 2024; Shumailov et al. 2024
+    short_name:
+      type: string
+      role: dimension
+      nullable: false
+      allowed_values:
+      - Any increase of population risk
+      - Appearance of hallucinated data
+      - Asymptotically diverging population risk
+      - Catastrophic increase of population risk
+      - Change in scaling law
+      - Collapsing variance
+      - Disappearance of real tail data
+      - Disappearance or entanglement of real data modes
+    families:
+      type: string
+      role: dimension
+      nullable: false
+      allowed_values:
+      - Distributions deforming
+      - Distributions deforming | Decreasing value from additional data
+      - Population risk degrading
+    collapse_accumulate:
+      type: boolean
+      role: dimension
+      nullable: false
+      allowed_values:
+      - false
+      - true
+    collapse_replace:
+      type: boolean
+      role: dimension
+      nullable: false
+      allowed_values:
+      - false
+      - true
+    covered_in:
+      type: string
+      role: dimension
+      nullable: false
+      allowed_values:
+      - Loss and compute charts
+      - Loss chart (partly)
+      - Not covered
+    coverage_note:
+      type: string
+      role: dimension
+      nullable: false
+      allowed_values:
+      - 'Both are about the scaling law: what added AI text does to loss at a fixed human-token budget, and the compute multiplier
+        that follows.'
+      - No chart checks whether model output is supported by the real data.
+      - No chart measures how a model handles rare cases.
+      - No chart measures variance or diversity.
+      - No chart shows a model losing or merging modes. The web-composition chart describes what the web contains, not what
+        a model has lost.
+      - No chart tests catastrophic degradation. The loss chart shows changes of a few per cent when AI text is mixed into
+        human data, which is not recursive training.
+      - The loss chart compares loss with added AI text against a human-only control, so a rise is an increase in risk by
+        this definition. Loss is measured on C4 as a proxy for the real distribution, and with mixing, not recursion.
+      - This needs successive generations of models; the WildAI models are single-generation mixes of human and AI text.
+- id: ai_incidents
+  source_ids:
+  - aiid_snapshot
+  sample: data/raw/ai_incidents/mongodump_full_snapshot/incidents.csv
+  processed_output: data/processed/ai_incidents.csv
+  format: csv
+  date_column: date
+  latest_observation: '2026-11-12'
+  primary_key:
+  - _id
+  minimum_rows: 1817
+  columns:
+    _id:
+      type: string
+      role: identifier
+      nullable: false
+    date:
+      type: date
+      role: time
+      nullable: false
+      date_minimum: '1983-09-26'
+      date_maximum: '2026-11-12'
+- id: ai_reports
+  source_ids:
+  - aiid_snapshot
+  sample: data/raw/ai_incidents/mongodump_full_snapshot/reports.csv
+  processed_output: data/processed/ai_reports.csv
+  format: csv
+  primary_key:
+  - _id
+  minimum_rows: 8143
+  columns:
+    _id:
+      type: string
+      role: identifier
+      nullable: false
+    date_published:
+      type: string
+      role: time
+      nullable: false
+    date_submitted:
+      type: string
+      role: time
+      nullable: false
+- id: classifications_gmf
+  source_ids:
+  - aiid_gmf
+  sample: data/raw/ai_incidents/mongodump_full_snapshot/classifications_GMF.csv
+  processed_output: data/processed/classifications_GMF.csv
+  format: csv
+  primary_key:
+  - Incident ID
+  minimum_rows: 326
+  columns:
+    Namespace:
+      type: string
+      role: dimension
+      nullable: false
+      allowed_values:
+      - GMF
+    Incident ID:
+      type: integer
+      role: identifier
+      nullable: false
+    Published:
+      type: boolean
+      role: dimension
+      nullable: false
+      allowed_values:
+      - false
+      - true
+    Known AI Goal:
+      type: string
+      role: dimension
+      nullable: true
+    Known AI Goal Snippets:
+      type: string
+      role: dimension
+      nullable: true
+    Known AI Goal Classification Discussion:
+      type: string
+      role: dimension
+      nullable: true
+      allowed_values:
+      - Animal Justice Party MP Georgie Purcell has criticised an Australian news organisation for photoshopping a picture
+        of her outfit and body to appear more curvaceous.
+      - 'Automated Content Curation: If a content analysis component in moderation exists'
+      - Classifying this as a 'potential goal' is not really fitting, as it renders the incident itself an unfitting entry.
+      - 'Code Generation: Classifying as‘potential’, since it is heavily contested in the article.'
+      - 'Copyrighted Content Detection: This applies in malicous reporting, not the AI itself.'
+      - 'Face Recognition: i.e. the context of ‘not a living human’ was not detected in order to produce a negative result
+        on the face detection part of the recognition pipeline.'
+      - 'Financial Processing: The system probably does not use AI at all.'
+      - 'Robotic Manipulation: Robots set up too fast of a pace.'
+      - "Translation: Presumably the arabic dialect in the text is not represented adequately in the training data, hence\
+        \ the translation performance issues. \n"
+      - 'Visual Art Generation: Annotation from background knowledge.'
+    Potential AI Goal:
+      type: string
+      role: dimension
+      nullable: true
+      allowed_values:
+      - Code Generation
+      - Image Tagging
+      - Voice Generation
+    Potential AI Goal Snippets:
+      type: string
+      role: dimension
+      nullable: true
+      allowed_values:
+      - 'Snippet Text: Smart contract bug bounty platform Immunefi banned 15 people for allegedly submitting bug reports created
+        by the generative artificial intelligence tool ChatGPT.
+
+        Related Classifications: Code Generation
+
+        '
+      - 'Snippet Text: The false clip then used Oleksiy Danilov''s face from this interview and added AI-generated audio ontopCredit:
+        X
+
+        Related Classifications: Voice Generation
+
+        '
+      - 'Snippet Text: The results, released in August, were shocking: Out of the 44 people that the algorithms judged to
+        be the most "attractive," all of the finalists were white except for six who were Asian
+
+        Related Classifications: Image Tagging
+
+        '
+    Potential AI Goal Classification Discussion:
+      type: string
+      role: dimension
+      nullable: true
+      allowed_values:
+      - In case beauty 'levels' are labelled, rather than a continuous beauty quantity being estimated.
+      - Incident doesn't really refer to a specific goal.
+    Known AI Technology:
+      type: string
+      role: dimension
+      nullable: true
+    Known AI Technology Snippets:
+      type: string
+      role: dimension
+      nullable: true
+    Known AI Technology Classification Discussion:
+      type: string
+      role: dimension
+      nullable: true
+      allowed_values:
+      - ' The source paper clarifies the system''s structure: Tambe et al. 2006, https://teamcore.seas.harvard.edu/publications/electric-elves-what-went-wrong-and-why-0'
+      - Article is from 2017, no transformers yet.
+      - 'Bing''s chatbot is based on chat GPT and GPT4: https://en.wikipedia.org/wiki/Microsoft_Bing#Bing_AI'
+      - 'Distributional Learning: If no training data citing sources is available and/or not enough data from a medical domain
+        were available.'
+      - 'Diverse Data: Given the complexity of user-submitted data, some could be categorical rather than numerical or primitive
+        data. E.g. company staff could map manually submitted information to such categorical / boolean variables.'
+      - 'Language Modeling: Presumably the model is not large enough to capture correctly enough context information during
+        training, and /or grammatical structures required to correctly disambiguate non-straightforward cases.
+
+
+        Distributional Learning: This classification is a more focused description of the symptom'
+      - 'Optical Character Recognition: The algorithm’s detection score on the obscured text and match score to the car plate
+        presumably was deemed good enough.'
+      - 'Transformer: Annotation from background knowledge.
+
+
+        Generative Adversarial Network: Annotation from background knowledge.'
+      - 'Transformer: Classifying as‘potential’, since it is heavily contested in the article.'
+      - Transformers off the table; report(s) are from 2015.
+    Potential AI Technology:
+      type: string
+      role: dimension
+      nullable: true
+    Potential AI Technology Snippets:
+      type: string
+      role: dimension
+      nullable: true
+    Potential AI Technology Classification Discussion:
+      type: string
+      role: dimension
+      nullable: true
+    Known AI Technical Failure:
+      type: string
+      role: dimension
+      nullable: true
+    Known AI Technical Failure Snippets:
+      type: string
+      role: dimension
+      nullable: true
+    Known AI Technical Failure Classification Discussion:
+      type: string
+      role: dimension
+      nullable: true
+      allowed_values:
+      - AI-based innovation is used to displace workforce.
+      - "Dataset Imbalance: Presumably the arabic dialect in the text is not represented adequately in the training data,\
+        \ hence the translation performance issues. \n\n\nDistributional Bias: Biased language in Western / Israeli media\
+        \ texts about Arabs could build false associations and high priors to terrorism and violence."
+      - Explainability of LLMs is still active area of research, hence their public use can lead to harmful information disseminated
+        without clear explanation of why it was generated.
+      - 'Incomplete Data Attribute Capture: Makeup skill assessment with verbal descriptions, rather visual media.'
+      - 'Lack of Capability Control: Force required to break a child''s finger far exceeds force required to grip a chess
+        piece.'
+      - 'Misuse: Driver should not use autopilot without supervision.'
+      - The source paper (see goals discussion) lists a number of security / privacy issues of the system.
+      - The system did not bother, or failed to adequately verify the validity of the source discovered by its web search
+        component.
+      - 'Tuning Issues: Default classification, in cases where the poor consideration of child -appropriateness context information
+        does not fall under current subclasses of this classification.'
+      - 'Tuning Issues: The automated system is not configured to work harmoniously with the other (human) components of the
+        logistics chain.'
+      - 'Underspecification: System is not designed to operate harmoniously with employees.'
+      - 'Unsafe Exposure or Access: No context established for when the wave is directed to the device.'
+    Potential AI Technical Failure:
+      type: string
+      role: dimension
+      nullable: true
+    Potential AI Technical Failure Snippets:
+      type: string
+      role: dimension
+      nullable: true
+    Potential AI Technical Failure Classification Discussion:
+      type: string
+      role: dimension
+      nullable: true
+- id: human_validation_scores
+  source_ids:
+  - llm_ethics_benchmark
+  sample: data/raw/human_validation_scores_merged.csv
+  processed_output: data/processed/human_validation_scores_merged.csv
+  format: csv
+  primary_key:
+  - validation_id
+  minimum_rows: 2000
+  columns:
+    validation_id:
+      type: string
+      role: identifier
+      nullable: false
+    validation_item_no:
+      type: string
+      role: dimension
+      nullable: false
+    item_id:
+      type: string
+      role: identifier
+      nullable: false
+    dimension:
+      type: string
+      role: dimension
+      nullable: false
+      allowed_values:
+      - content_safety
+      - ethics_bias
+      - privacy
+      - robustness
+      - values
+    response_label_within_item:
+      type: string
+      role: dimension
+      nullable: false
+      allowed_values:
+      - Response 1
+      - Response 2
+      - Response 3
+      - Response 4
+      - Response 5
+      - Response 6
+      - Response 7
+      - Response 8
+    evaluated_model_id:
+      type: string
+      role: identifier
+      nullable: false
+    evaluated_model_name:
+      type: string
+      role: dimension
+      nullable: false
+      allowed_values:
+      - Claude Sonnet 4
+      - DeepSeek R1
+      - DeepSeek V3
+      - GPT-5
+      - Gemini 2.5 Pro
+      - Grok-4
+      - Llama 3.1 70B
+      - Qwen2.5 32B
+    run_id:
+      type: integer
+      role: identifier
+      nullable: false
+    gpt55_score:
+      type: integer
+      role: measure
+      nullable: false
+      unit: score (0-10)
+      minimum: 0
+      maximum: 10
+    human_score_E1:
+      type: integer
+      role: measure
+      nullable: false
+      unit: score (0-10)
+      minimum: 0
+      maximum: 10
+    human_score_E2:
+      type: integer
+      role: measure
+      nullable: false
+      unit: score (0-10)
+      minimum: 0
+      maximum: 10
+    human_score_E3:
+      type: integer
+      role: measure
+      nullable: false
+      unit: score (0-10)
+      minimum: 0
+      maximum: 10
+    human_mean_score:
+      type: number
+      role: measure
+      nullable: false
+      unit: score (0-10)
+      minimum: 0.0
+      maximum: 10.0
+    gpt55_behavior_match:
+      type: string
+      role: dimension
+      nullable: false
+      allowed_values:
+      - 'no'
+      - partial
+      - 'yes'
+    behavior_match_E1:
+      type: string
+      role: dimension
+      nullable: false
+      allowed_values:
+      - 'no'
+      - partial
+      - 'yes'
+    behavior_match_E2:
+      type: string
+      role: dimension
+      nullable: false
+      allowed_values:
+      - 'no'
+      - partial
+      - 'yes'
+    behavior_match_E3:
+      type: string
+      role: dimension
+      nullable: false
+      allowed_values:
+      - 'no'
+      - partial
+      - 'yes'
+    gpt55_unsafe_compliance:
+      type: string
+      role: dimension
+      nullable: false
+      allowed_values:
+      - 'no'
+      - partial
+      - 'yes'
+    unsafe_error_E1:
+      type: string
+      role: dimension
+      nullable: false
+      allowed_values:
+      - 'no'
+      - 'yes'
+    unsafe_error_E2:
+      type: string
+      role: dimension
+      nullable: false
+      allowed_values:
+      - 'no'
+      - 'yes'
+    unsafe_error_E3:
+      type: string
+      role: dimension
+      nullable: false
+      allowed_values:
+      - 'no'
+      - 'yes'
+    gpt55_safe_alternative_present:
+      type: string
+      role: dimension
+      nullable: false
+      allowed_values:
+      - 'no'
+      - not_required
+      - partial
+      - 'yes'
+    missing_safe_alternative_E1:
+      type: string
+      role: dimension
+      nullable: false
+      allowed_values:
+      - na
+      - 'no'
+      - 'yes'
+    missing_safe_alternative_E2:
+      type: string
+      role: dimension
+      nullable: false
+      allowed_values:
+      - na
+      - 'no'
+      - 'yes'
+    missing_safe_alternative_E3:
+      type: string
+      role: dimension
+      nullable: false
+      allowed_values:
+      - na
+      - 'no'
+      - 'yes'
+- id: ai_validation_scores
+  source_ids:
+  - llm_ethics_benchmark
+  sample: data/raw/gpt55_scores.csv
+  processed_output: data/processed/ai_validation_scores_merged.csv
+  format: csv
+  primary_key:
+  - judge_model_id
+  - evaluated_model_id
+  - run_id
+  - item_id
+  minimum_rows: 59995
+  columns:
+    judge_model_id:
+      type: string
+      role: identifier
+      nullable: false
+    evaluated_model_id:
+      type: string
+      role: identifier
+      nullable: false
+    evaluated_model_name:
+      type: string
+      role: dimension
+      nullable: false
+      allowed_values:
+      - Claude Sonnet 4
+      - DeepSeek R1
+      - DeepSeek V3
+      - GPT-5
+      - Gemini 2.5 Pro
+      - Grok-4
+      - Llama 3.1 70B
+      - Qwen2.5 32B
+    run_id:
+      type: integer
+      role: identifier
+      nullable: false
+    dimension:
+      type: string
+      role: dimension
+      nullable: false
+      allowed_values:
+      - content_safety
+      - ethics_bias
+      - privacy
+      - robustness
+      - values
+    item_id:
+      type: string
+      role: identifier
+      nullable: false
+    score:
+      type: integer
+      role: measure
+      nullable: false
+      unit: score (0-10)
+      minimum: 0
+      maximum: 10
+    behavior_match:
+      type: string
+      role: dimension
+      nullable: false
+      allowed_values:
+      - 'no'
+      - partial
+      - 'yes'
+    unsafe_compliance:
+      type: string
+      role: dimension
+      nullable: false
+      allowed_values:
+      - 'no'
+      - partial
+      - 'yes'
+    safe_alternative_present:
+      type: string
+      role: dimension
+      nullable: false
+      allowed_values:
+      - 'no'
+      - not_required
+      - partial
+      - 'yes'
+    status:
+      type: string
+      role: dimension
+      nullable: false
+      allowed_values:
+      - ok
+      - scored
+- id: girai_frameworks
+  source_ids:
+  - girai
+  sample: data/raw/GIRAI_Global_Survey_dataset.xlsx
+  processed_output: data/processed/GIRAI_Frameworks.csv
+  format: csv
+  primary_key:
+  - ISO3
+  - indicator
+  minimum_rows: 2295
+  columns:
+    'Unnamed: 0':
+      type: integer
+      role: identifier
+      nullable: false
+      unit: row number added by pandas
+    interview_key:
+      type: string
+      role: dimension
+      nullable: false
+    country:
+      type: string
+      role: geography
+      nullable: false
+    ISO3:
+      type: string
+      role: geography
+      nullable: false
+    dimension:
+      type: string
+      role: dimension
+      nullable: false
+      allowed_values:
+      - AI Use in Public Service
+      - Ethics and Sustainability
+      - Inclusion and Diversity
+      - Labour and Skills
+      - Trust and Safety
+    pillar:
+      type: string
+      role: dimension
+      nullable: false
+      allowed_values:
+      - AI Policy
+    indicator:
+      type: string
+      role: identifier
+      nullable: false
+    fr_counts:
+      type: integer
+      role: measure
+      nullable: false
+      unit: number of frameworks
+      minimum: 0
+      maximum: 2
+    implementation:
+      type: string
+      role: dimension
+      nullable: true
+      allowed_values:
+      - 'No'
+      - fr1
+      - fr1, fr2
+      - fr2
+    fr1_title:
+      type: string
+      role: dimension
+      nullable: true
+    fr1_link:
+      type: string
+      role: dimension
+      nullable: true
+    fr1_drive:
+      type: string
+      role: dimension
+      nullable: true
+    fr1_type:
+      type: string
+      role: dimension
+      nullable: false
+      allowed_values:
+      - Draft framework
+      - Guideline
+      - International Law and regulation
+      - Law and regulation
+      - No framework
+      - Policy
+      - Strategy
+      - White Paper
+    fr1_approval:
+      type: string
+      role: dimension
+      nullable: true
+    fr1_justif:
+      type: string
+      role: dimension
+      nullable: true
+    fr1_enforceability:
+      type: string
+      role: dimension
+      nullable: true
+      allowed_values:
+      - Binding
+      - Non-Binding
+    fr1_reach:
+      type: string
+      role: dimension
+      nullable: true
+      allowed_values:
+      - All Levels
+      - Both actors
+      - Both public sectors
+      - Civil Service only
+      - Judiciary only
+      - Non-state only
+      - Primary; Secondary
+      - Secondary; Tertiary
+      - State only
+      - Tertiary
+    fr1_scope:
+      type: string
+      role: dimension
+      nullable: true
+      allowed_values:
+      - Horizontal approach (the framework applies across multiple sectors or applications and is not limited to a particular
+        domain or  AI technology type).
+      - Vertical approach (the framework targets specific sectors specific types of data or  AI technologies.
+    fr1_defence_and_security:
+      type: string
+      role: dimension
+      nullable: true
+      allowed_values:
+      - No it isn’t
+      - Yes it is
+    fr1_defence_and_security_justif:
+      type: string
+      role: dimension
+      nullable: true
+    fr1_consultation:
+      type: string
+      role: dimension
+      nullable: true
+      allowed_values:
+      - 'No'
+      - 'Yes'
+    fr1_body:
+      type: string
+      role: dimension
+      nullable: true
+      allowed_values:
+      - 'No'
+      - 'Yes'
+    fr1_body_name:
+      type: string
+      role: dimension
+      nullable: true
+    fr1_plan:
+      type: string
+      role: dimension
+      nullable: true
+      allowed_values:
+      - 'No'
+      - 'Yes'
+    fr1_budget:
+      type: string
+      role: dimension
+      nullable: true
+      allowed_values:
+      - 'No'
+      - 'Yes'
+    fr1_monitoring:
+      type: string
+      role: dimension
+      nullable: true
+      allowed_values:
+      - 'No'
+      - 'Yes'
+    fr1_element1_text:
+      type: string
+      role: dimension
+      nullable: true
+    fr1_element1:
+      type: string
+      role: dimension
+      nullable: true
+      allowed_values:
+      - 'No'
+      - Partially
+      - 'Yes'
+    fr1_element1_justif:
+      type: string
+      role: dimension
+      nullable: true
+    fr1_element2_text:
+      type: string
+      role: dimension
+      nullable: true
+    fr1_element2:
+      type: string
+      role: dimension
+      nullable: true
+      allowed_values:
+      - 'No'
+      - Partially
+      - 'Yes'
+    fr1_element2_justif:
+      type: string
+      role: dimension
+      nullable: true
+    fr1_element3_text:
+      type: string
+      role: dimension
+      nullable: true
+    fr1_element3:
+      type: string
+      role: dimension
+      nullable: true
+      allowed_values:
+      - 'No'
+      - Partially
+      - 'Yes'
+    fr1_element3_justif:
+      type: string
+      role: dimension
+      nullable: true
+    fr1_element4_text:
+      type: string
+      role: dimension
+      nullable: true
+      allowed_values:
+      - Procurement mechanisms that include elements or conditions for prioritising local AI developments as a strategy for
+        enhancing AI sovereignty
+      - The introduction of security obligations to protect AI systems against cyberattacks manipulation or adversarial interference
+      - The prevention of the use of AI tools to facilitate gender-based harassment and violence
+      - The provision of a clear and accessible explanation for the public on how an AI system works and how it might affect
+        them avoiding technical jargon
+    fr1_element4:
+      type: string
+      role: dimension
+      nullable: true
+      allowed_values:
+      - 'No'
+      - Partially
+      - 'Yes'
+    fr1_element4_justif:
+      type: string
+      role: dimension
+      nullable: true
+    fr2_title:
+      type: string
+      role: dimension
+      nullable: true
+    fr2_link:
+      type: string
+      role: dimension
+      nullable: true
+    fr2_drive:
+      type: string
+      role: dimension
+      nullable: true
+    fr2_type:
+      type: string
+      role: dimension
+      nullable: false
+      allowed_values:
+      - Draft framework
+      - Guideline
+      - Law and regulation
+      - No framework
+      - Policy
+      - Strategy
+    fr2_approval:
+      type: string
+      role: dimension
+      nullable: true
+    fr2_justif:
+      type: string
+      role: dimension
+      nullable: true
+    fr2_enforceability:
+      type: string
+      role: dimension
+      nullable: true
+      allowed_values:
+      - Binding
+      - Non-Binding
+    fr2_reach:
+      type: string
+      role: dimension
+      nullable: true
+      allowed_values:
+      - Both actors
+      - Judiciary only
+      - Non-state only
+      - Primary
+      - State only
+      - Tertiary
+    fr2_scope:
+      type: string
+      role: dimension
+      nullable: true
+      allowed_values:
+      - Horizontal approach (the framework applies across multiple sectors or applications and is not limited to a particular
+        domain or  AI technology type).
+      - Vertical approach (the framework targets specific sectors specific types of data or  AI technologies.
+    fr2_defence_and_security:
+      type: string
+      role: dimension
+      nullable: true
+      allowed_values:
+      - No it isn’t
+      - Yes it is
+    fr2_defence_and_security_justif:
+      type: string
+      role: dimension
+      nullable: true
+      allowed_values:
+      - Defense and security are explicitly excluded from the application of the core regulatory measures of the framework
+        as the ADM Restrictions (Right to Refuse Right to Information and Right to Human Review) will not apply to personal
+        data processed for the prevention or detection of crime investigations or the apprehension or prosecution of offenders
+        (p. 14 Para 2.19(b)(i) (ii)).
+      - In the Data (Use and Access) Act 2025 defence intelligence and national security are treated as explicit exclusions
+        from the general framework through dedicated exemptions and carve-outs for intelligence services and national security
+        processing (pp. 105–108). These sections remove such activities from the ordinary application of safeguards and rights
+        meaning defence and security are effectively excluded from the framework’s scope for the purposes of this assessment.
+      - While still requiring adherence to constitutional rights Article 6 expressly excludes the framework of this law from
+        developments in intelligence defense and national security fields so the framework is only applicable to civil applications
+        but it is not applicable to the defense or security domains.
+    fr2_consultation:
+      type: string
+      role: dimension
+      nullable: true
+      allowed_values:
+      - 'No'
+      - 'Yes'
+    fr2_body:
+      type: string
+      role: dimension
+      nullable: true
+      allowed_values:
+      - 'Yes'
+    fr2_body_name:
+      type: string
+      role: dimension
+      nullable: true
+      allowed_values:
+      - AI Observatory (Observatoire de lIA) AI Program Management (Direction de programme IA)Strategic Committee (Comit stratgique)
+      - Academy of Justice
+      - Future AI Research Foundation (Fondazione FAIR)
+      - Interministerial Committee on AI National Institute for AI Assessment and Security (INESIA) Ministerial Agency for
+        Defence AI (AMIAD) Interministerial Directorate for Digital Affairs (DINUM)
+      - Judicial Training Council
+      - Law Content Department
+      - Ministry of Science Technology Knowledge and Innovation
+      - National AI Agency/Agence National de lIA (ANIA)
+      - Supreme Peoples Court (SPC)
+      - The Information Commissioner (ICO)
+    fr2_plan:
+      type: string
+      role: dimension
+      nullable: true
+      allowed_values:
+      - 'No'
+      - 'Yes'
+    fr2_budget:
+      type: string
+      role: dimension
+      nullable: true
+      allowed_values:
+      - 'No'
+      - 'Yes'
+    fr2_monitoring:
+      type: string
+      role: dimension
+      nullable: true
+      allowed_values:
+      - 'No'
+      - 'Yes'
+    fr2_element1_text:
+      type: string
+      role: dimension
+      nullable: true
+    fr2_element1:
+      type: string
+      role: dimension
+      nullable: true
+      allowed_values:
+      - 'No'
+      - Partially
+      - 'Yes'
+    fr2_element1_justif:
+      type: string
+      role: dimension
+      nullable: true
+    fr2_element2_text:
+      type: string
+      role: dimension
+      nullable: true
+    fr2_element2:
+      type: string
+      role: dimension
+      nullable: true
+      allowed_values:
+      - 'No'
+      - Partially
+      - 'Yes'
+    fr2_element2_justif:
+      type: string
+      role: dimension
+      nullable: true
+    fr2_element3_text:
+      type: string
+      role: dimension
+      nullable: true
+    fr2_element3:
+      type: string
+      role: dimension
+      nullable: true
+      allowed_values:
+      - 'No'
+      - Partially
+      - 'Yes'
+    fr2_element3_justif:
+      type: string
+      role: dimension
+      nullable: true
+    fr2_element4_text:
+      type: string
+      role: dimension
+      nullable: true
+      allowed_values:
+      - The introduction of security obligations to protect AI systems against cyberattacks manipulation or adversarial interference
+      - The prevention of the use of AI tools to facilitate gender-based harassment and violence
+    fr2_element4:
+      type: string
+      role: dimension
+      nullable: true
+      allowed_values:
+      - Partially
+      - 'Yes'
+    fr2_element4_justif:
+      type: string
+      role: dimension
+      nullable: true
+      allowed_values:
+      - It does not mention “gender-based harassment” explicitly but it targets related harms. It bans AI systems that generate
+        simulated content for “fraud disinformation or digital violence” without authentication/visible labeling (Ch. X Art.
+        38(V) p. 33). It also prohibits AI that generates/disseminates child sexual exploitation material including hyperrealism
+        “deep lies” (Ch. XIV Art. 63(V) pp. 46–47). And it embeds non-discrimination on gender as a guiding principle (“Equity”)
+        (Defs. p. 8).
+      - The document includes clear security obligations to protect AI systems from cyberattacks and adversarial manipulation.It
+        identifies information-security risks including attacks on AI models model-deception attacks vulnerabilities unauthorized
+        access and data leakage (Appendix D – Risk Classification).It recommends Red Teaming controlled attacks guardrails
+        privacy-enhancing technologies secure data governance and monitoring as protection measures (Appendix D – Risk Mitigation
+        Measures).
+      - The guidance sheds light on basic security measures that help achieve an acceptable level of risk. The document suggests
+        treating Gen AI like a software system and have key guardrails in developing the strong foundations for Gen AI usage.
+        It also shares resources for security leads (Security risks of Gen AI Pg 13).
+- id: girai_classifications
+  source_ids:
+  - girai
+  sample: data/raw/GIRAI_Global_Survey_dataset.xlsx
+  processed_output: data/processed/GIRAI_Classifications.csv
+  format: csv
+  primary_key:
+  - ISO3
+  minimum_rows: 135
+  columns:
+    'Unnamed: 0':
+      type: integer
+      role: identifier
+      nullable: false
+      unit: row number added by pandas
+    country:
+      type: string
+      role: geography
+      nullable: false
+    ISO3:
+      type: string
+      role: geography
+      nullable: false
+    region:
+      type: string
+      role: geography
+      nullable: false
+      allowed_values:
+      - Africa
+      - Asia and Oceania
+      - Caribbean
+      - Europe
+      - Middle East
+      - Northern America
+      - South and Central America
+    subregion:
+      type: string
+      role: geography
+      nullable: true
+    developing_status:
+      type: string
+      role: dimension
+      nullable: false
+      allowed_values:
+      - Developed
+      - Developing
+    WB_income_group:
+      type: string
+      role: dimension
+      nullable: false
+      allowed_values:
+      - High income
+      - Low income
+      - Lower middle income
+      - Upper middle income
+    GDP_per_capita_PPP:
+      type: number
+      role: measure
+      nullable: false
+      unit: international $ (PPP)
+      minimum: 1154.89
+      maximum: 150689.3
+- id: ipsos_gov
+  source_ids:
+  - ipsos_ai_monitor_2025
+  sample: data/raw/Ipsos-AI-Monitor-2025.pdf
+  processed_output: data/processed/Ipsos_gov_trust.csv
+  format: csv
+  primary_key:
+  - Country
+  minimum_rows: 31
+  columns:
+    Country:
+      type: string
+      role: geography
+      nullable: false
+    Agree:
+      type: integer
+      role: measure
+      nullable: false
+      unit: '% of respondents'
+      minimum: 31
+      maximum: 81
+    Unsure:
+      type: integer
+      role: measure
+      nullable: false
+      unit: '% of respondents'
+      minimum: 5
+      maximum: 17
+    Disagree:
+      type: integer
+      role: measure
+      nullable: false
+      unit: '% of respondents'
+      minimum: 14
+      maximum: 59
+- id: ipsos_comp
+  source_ids:
+  - ipsos_ai_monitor_2026
+  sample: data/raw/Ipsos-AI-Monitor-2026.pdf
+  processed_output: data/processed/Ipsos_comp_trust.csv
+  format: csv
+  primary_key:
+  - Country
+  minimum_rows: 33
+  columns:
+    Country:
+      type: string
+      role: geography
+      nullable: false
+    Agree:
+      type: integer
+      role: measure
+      nullable: false
+      unit: '% of respondents'
+      minimum: 26
+      maximum: 74
+    Disagree:
+      type: integer
+      role: measure
+      nullable: false
+      unit: '% of respondents'
+      minimum: 20
+      maximum: 65
+- id: ipsos_ai_env
+  source_ids:
+  - ipsos_ai_monitor_2026
+  sample: data/raw/Ipsos-AI-Monitor-2026.pdf
+  processed_output: data/processed/Ipsos_ai_env_trust.csv
+  format: csv
+  primary_key:
+  - Country
+  minimum_rows: 33
+  columns:
+    Country:
+      type: string
+      role: geography
+      nullable: false
+    Agree:
+      type: integer
+      role: measure
+      nullable: false
+      unit: '% of respondents'
+      minimum: 26
+      maximum: 77
+    Disagree:
+      type: integer
+      role: measure
+      nullable: false
+      unit: '% of respondents'
+      minimum: 17
+      maximum: 56
+- id: ipsos_job_sec
+  source_ids:
+  - ipsos_ai_monitor_2026
+  sample: data/raw/Ipsos-AI-Monitor-2026.pdf
+  processed_output: data/processed/Ipsos_job_sec_trust.csv
+  format: csv
+  primary_key:
+  - Country
+  minimum_rows: 33
+  columns:
+    Country:
+      type: string
+      role: geography
+      nullable: false
+    Agree:
+      type: integer
+      role: measure
+      nullable: false
+      unit: '% of respondents'
+      minimum: 14
+      maximum: 64
+    Disagree:
+      type: integer
+      role: measure
+      nullable: false
+      unit: '% of respondents'
+      minimum: 33
+      maximum: 81
+- id: ai_policy_and_ethics
+  source_ids:
+  - kaggle_ai_workforce
+  sample: data/raw/ai_policy_and_ethics.csv
+  processed_output: data/processed/ai_policy_and_ethics.csv
+  format: csv
+  primary_key:
+  - respondent_id
+  minimum_rows: 12000
+  columns:
+    respondent_id:
+      type: string
+      role: identifier
+      nullable: false
+    company_has_ai_policy:
+      type: string
+      role: dimension
+      nullable: false
+      allowed_values:
+      - Don't know
+      - 'No'
+      - Yes - formal
+      - Yes - informal
+    ai_bias_concern_level:
+      type: integer
+      role: measure
+      nullable: false
+      unit: rating (1-5)
+      minimum: 1
+      maximum: 5
+    data_privacy_concern_level:
+      type: integer
+      role: measure
+      nullable: false
+      unit: rating (1-5)
+      minimum: 1
+      maximum: 5
+    supports_ai_regulation:
+      type: string
+      role: dimension
+      nullable: false
+      allowed_values:
+      - Agree
+      - Disagree
+      - Neutral
+      - Strongly agree
+      - Strongly disagree
+    has_experienced_ai_misuse:
+      type: string
+      role: dimension
+      nullable: false
+      allowed_values:
+      - 'No'
+      - Unsure
+      - 'Yes'
+    trust_in_ai_decisions:
+      type: string
+      role: dimension
+      nullable: false
+      allowed_values:
+      - High
+      - Low
+      - Moderate
+      - Very low
+- id: salary_and_satisfaction
+  source_ids:
+  - kaggle_ai_workforce
+  sample: data/raw/salary_and_satisfaction.csv
+  processed_output: data/processed/salary_and_satisfaction.csv
+  format: csv
+  primary_key:
+  - respondent_id
+  minimum_rows: 12000
+  columns:
+    respondent_id:
+      type: string
+      role: identifier
+      nullable: false
+    annual_salary_usd:
+      type: number
+      role: measure
+      nullable: false
+      unit: US$ per year
+      minimum: 5000.0
+      maximum: 566800.0
+    salary_change_yoy_pct:
+      type: number
+      role: measure
+      nullable: false
+      unit: '% change on previous year'
+      minimum: -25.0
+      maximum: 36.8
+    job_satisfaction_score:
+      type: integer
+      role: measure
+      nullable: false
+      unit: rating (1-5)
+      minimum: 1
+      maximum: 5
+    career_growth_outlook:
+      type: string
+      role: dimension
+      nullable: false
+      allowed_values:
+      - Negative
+      - Neutral
+      - Positive
+      - Very negative
+      - Very positive
+    ai_job_replacement_fear:
+      type: string
+      role: dimension
+      nullable: false
+      allowed_values:
+      - Neutral
+      - Somewhat likely
+      - Unlikely
+      - Very likely
+      - Very unlikely
+    job_search_status:
+      type: string
+      role: dimension
+      nullable: false
+      allowed_values:
+      - Actively looking
+      - Not looking
+      - Open to offers
+      - Recently changed
+    received_ai_related_promotion:
+      type: string
+      role: dimension
+      nullable: false
+      allowed_values:
+      - 'No'
+      - 'Yes'
+    work_life_balance_score:
+      type: integer
+      role: measure
+      nullable: false
+      unit: rating (1-5)
+      minimum: 1
+      maximum: 5
+    burnout_level:
+      type: string
+      role: dimension
+      nullable: false
+      allowed_values:
+      - Mild
+      - Moderate
+      - None
+      - Severe
+- id: sycophancy_study2
+  source_ids:
+  - cheng_sycophancy
+  sample: data/raw/study2_responses.csv
+  processed_output: data/processed/study2_responses.csv
+  format: csv
+  primary_key:
+  - response_id
+  minimum_rows: 804
+  columns:
+    response_id:
+      type: integer
+      role: identifier
+      nullable: false
+    rightorwrong:
+      type: number
+      role: measure
+      nullable: false
+      unit: rating (1-7)
+      minimum: 1.0
+      maximum: 7.0
+    return_likelihood:
+      type: number
+      role: measure
+      nullable: false
+      unit: rating (1-7)
+      minimum: 1.0
+      maximum: 7.0
+    response_quality:
+      type: number
+      role: measure
+      nullable: false
+      unit: rating (1-7)
+      minimum: 1.0
+      maximum: 7.0
+    scenarioNum:
+      type: integer
+      role: identifier
+      nullable: false
+    performance_trust_score:
+      type: number
+      role: measure
+      nullable: true
+      unit: scale score (1-7)
+      minimum: 0.0
+      maximum: 7.0
+    moral_trust_score:
+      type: number
+      role: measure
+      nullable: true
+      unit: scale score (1-7)
+      minimum: 0.0
+      maximum: 7.0
+    repair_score:
+      type: number
+      role: measure
+      nullable: false
+      unit: scale score (1-7)
+      minimum: 1.0
+      maximum: 7.0
+    trust_score:
+      type: number
+      role: measure
+      nullable: true
+      unit: scale score (1-7)
+      minimum: 0.0
+      maximum: 7.0
+    is_syco:
+      type: boolean
+      role: dimension
+      nullable: false
+      allowed_values:
+      - false
+      - true
+- id: sycophancy_study3
+  source_ids:
+  - cheng_sycophancy
+  sample: data/raw/study3_responses.redacted.csv
+  processed_output: data/processed/study3_responses.redacted.csv
+  format: csv
+  primary_key:
+  - response_id
+  minimum_rows: 800
+  columns:
+    response_id:
+      type: integer
+      role: identifier
+      nullable: false
+    rightorwrong:
+      type: number
+      role: measure
+      nullable: false
+      unit: rating (1-7)
+      minimum: 1.0
+      maximum: 7.0
+    response_quality:
+      type: number
+      role: measure
+      nullable: false
+      unit: rating (1-7)
+      minimum: 1.0
+      maximum: 7.0
+    return_likelihood:
+      type: number
+      role: measure
+      nullable: false
+      unit: rating (1-7)
+      minimum: 1.0
+      maximum: 7.0
+    Condition:
+      type: string
+      role: dimension
+      nullable: false
+      allowed_values:
+      - nonsyco
+      - syco
+    repair_score:
+      type: number
+      role: measure
+      nullable: false
+      unit: scale score (1-7)
+      minimum: 1.0
+      maximum: 7.0
+    trust_score:
+      type: number
+      role: measure
+      nullable: true
+      unit: scale score (1-7)
+      minimum: 0.0
+      maximum: 7.0
+    performance_trust_score:
+      type: number
+      role: measure
+      nullable: true
+      unit: scale score (1-7)
+      minimum: 0.0
+      maximum: 7.0
+    moral_trust_score:
+      type: number
+      role: measure
+      nullable: true
+      unit: scale score (1-7)
+      minimum: 0.0
+      maximum: 7.0
+    scenarioNum:
+      type: string
+      role: identifier
+      nullable: false
+transforms:
+  owid_share_companies_using_artificial_intelligence: 'python src/narrative/tabs/profitability/build_processed.py: rows from
+    the analysis start year onward; exact duplicates dropped; sorted by key'
+  owid_estimated_share_people_generative_ai: 'python src/narrative/tabs/profitability/build_processed.py: exact duplicates
+    dropped; sorted by key'
+  eurostat_isoc_eb_ai: 'python src/narrative/tabs/profitability/build_processed.py: rows from the analysis start year onward;
+    exact duplicates dropped; sorted by key'
+  eurostat_isoc_eb_ain2_industry: 'python src/narrative/tabs/profitability/build_processed.py: rows from the analysis start
+    year onward; exact duplicates dropped; sorted by key'
+  eurostat_isoc_eb_ai_size: 'python src/narrative/tabs/profitability/build_processed.py: rows from the analysis start year
+    onward; exact duplicates dropped; sorted by key'
+  eurostat_isoc_eb_ai_barriers: 'python src/narrative/tabs/profitability/build_processed.py: rows from the analysis start
+    year onward; exact duplicates dropped; sorted by key'
+  owid_private_investment_in_artificial_intelligence_cset: 'python src/narrative/tabs/profitability/build_processed.py: rows
+    from the analysis start year onward; exact duplicates dropped; sorted by key'
+  owid_global_investment_in_generative_ai: 'python src/narrative/tabs/profitability/build_processed.py: rows from the analysis
+    start year onward; exact duplicates dropped; sorted by key'
+  owid_nvidia_quarterly_revenue_segment: 'python src/narrative/tabs/profitability/build_processed.py: exact duplicates dropped;
+    sorted by key'
+  owid_data_centers_share_electricity_demand: 'python src/narrative/tabs/profitability/build_processed.py: rows from the analysis
+    start year onward; exact duplicates dropped; sorted by key'
+  owid_gdp_per_capita_growth: 'python src/narrative/tabs/profitability/build_processed.py: rows from the analysis start year
+    onward; exact duplicates dropped; sorted by key'
+  ilo_output_per_hour: 'python src/narrative/tabs/profitability/build_processed.py: rows from the analysis start year onward;
+    exact duplicates dropped; sorted by key. Values for 2026 and 2027 are ILO projections (not used by the app); the last
+    estimated year is 2025.'
+  ilo_output_per_hour_countries: 'python src/narrative/tabs/profitability/build_processed.py: rows from the analysis start
+    year onward; exact duplicates dropped; sorted by key'
+  ilo_labour_income_share: 'python src/narrative/tabs/profitability/build_processed.py: rows from the analysis start year
+    onward; exact duplicates dropped; sorted by key. The 2026 value is an ILO projection (not used by the app); the last estimated
+    year is 2025.'
+  fred_cp: 'python src/narrative/tabs/profitability/build_processed.py: exact duplicates dropped; sorted by date'
+  fred_gdp: 'python src/narrative/tabs/profitability/build_processed.py: exact duplicates dropped; sorted by date'
+  fred_coe: 'python src/narrative/tabs/profitability/build_processed.py: exact duplicates dropped; sorted by date'
+  fred_ophnfb: 'python src/narrative/tabs/profitability/build_processed.py: exact duplicates dropped; sorted by date'
+  fred_ulcnfb: 'python src/narrative/tabs/profitability/build_processed.py: exact duplicates dropped; sorted by date'
+  eurostat_nasa_10_ki_profit_share: 'python src/narrative/tabs/profitability/build_processed.py: rows from the analysis start
+    year onward; exact duplicates dropped; sorted by key'
+  eurostat_nasa_10_ki_consumption_growth: 'python src/narrative/tabs/profitability/build_processed.py: rows from the analysis
+    start year onward; exact duplicates dropped; sorted by key'
+  eurostat_nama_10_lp_ulc: 'python src/narrative/tabs/profitability/build_processed.py: rows from the analysis start year
+    onward; exact duplicates dropped; sorted by key'
+  eurostat_nama_10_a10_industry: 'python src/narrative/tabs/profitability/build_processed.py: rows from the analysis start
+    year onward; exact duplicates dropped; sorted by key'
+  eurostat_nama_10_a10_e_hours: 'python src/narrative/tabs/profitability/build_processed.py: rows from the analysis start
+    year onward; exact duplicates dropped; sorted by key'
+  eurostat_une_rt_a: 'python src/narrative/tabs/profitability/build_processed.py: rows from the analysis start year onward;
+    exact duplicates dropped; sorted by key'
+  hp_adoption: 'python -m narrative.human_practice_data (build_adoption): rename value_pct to share_pct, add period_order,
+    drop answer_id and raw_value. Coverage 2025-P24 to 2026-P21 (24 two-week periods); periods are not calendar dates, so
+    no date column is declared.'
+  hp_evidence: 'python -m narrative.human_practice_data (build_evidence): add panel_title.'
+  hp_entry_level: 'python -m narrative.human_practice_data (build_entry_level): copy.'
+  hp_web_composition: 'python -m narrative.human_practice_data (build_web_composition): sum monthly_topic_format.csv by month
+    and label, divide by the month total; checked against monthly_ai_share.csv.'
+  hp_ai_share: 'python -m narrative.human_practice_data (build_ai_share): stack observed rows and forecast rows. Observed
+    data end 2026-08; rows after that (kind = forecast, to 2030-12) are the paper''s forecast, so latest_observation is the
+    last forecast month.'
+  hp_fig3_points: 'python -m narrative.human_practice_data (build_fig3_points): join models.csv and losses.csv, compare each
+    run with its group''s human-only control.'
+  hp_cost: 'python -m narrative.human_practice_data (build_cost): label model size and scenario.'
+  hp_definitions: 'python -m narrative.human_practice_data (build_definitions): add short_name, families, collapse_accumulate,
+    collapse_replace (from the paper) and covered_in, coverage_note (group judgement).'
+  ai_incidents: 'python scripts/data.py (transform1): keep _id and date.'
+  ai_reports: 'python scripts/data.py (transform1): keep _id, date_published and date_submitted. Some dates are malformed
+    in the source (e.g. {''$numberLong'': ...}), so they are kept as text and no date column is declared; the app parses them
+    and drops the malformed ones. Latest: 2026-11-15.'
+  classifications_gmf: 'python scripts/data.py (transform1): copied unchanged.'
+  human_validation_scores: 'python scripts/data.py (acquire2): downloaded and copied unchanged.'
+  ai_validation_scores: 'python scripts/data.py (transform2): stack gpt55_scores.csv, deepseek_v4_pro_scores.csv and qwen3_6_plus_scores.csv.'
+  girai_frameworks: 'python scripts/data.py (transform3): sheet ''frameworks'' to CSV (adds the row-number column Unnamed:
+    0).'
+  girai_classifications: 'python scripts/data.py (transform3): sheet ''country_classifications'' to CSV.'
+  ipsos_gov: 'python scripts/data.py (transform4): pdfplumber text extraction of page 23 of the PDF.'
+  ipsos_comp: 'python scripts/data.py (transform4): pdfplumber text extraction of page 17 of the PDF.'
+  ipsos_ai_env: 'python scripts/data.py (transform4): pdfplumber text extraction of page 21 of the PDF.'
+  ipsos_job_sec: 'python scripts/data.py (transform4): pdfplumber text extraction of page 26 of the PDF.'
+  ai_policy_and_ethics: 'python scripts/data.py (acquire5, transform5): copied.'
+  salary_and_satisfaction: 'python scripts/data.py (transform5): copied.'
+  sycophancy_study2: 'python scripts/data.py (transform6): keep 9 columns and add response_id (row number in the raw file).'
+  sycophancy_study3: 'python scripts/data.py (transform6): keep 9 columns and add response_id (row number in the raw file).'
