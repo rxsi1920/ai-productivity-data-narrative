@@ -67,7 +67,9 @@ LIMITS = [
     ),
 ]
 
-from ..moral_degradation.views import LAST_REFRESH as MORAL_REFRESH  # same date as the Moral degradation page
+from ..moral_degradation.views import (
+    LAST_REFRESH as MORAL_REFRESH,  # same date as the Moral degradation page
+)
 
 SOURCES = [
     (
@@ -98,6 +100,7 @@ SOURCES = [
         ),
     ),
 ]
+
 
 @st.cache_data(show_spinner=False)
 def headline_figures() -> dict:
@@ -131,6 +134,7 @@ def headline_figures() -> dict:
         "reports_prev": r_prev,
         "reports_pct": (r_now - r_prev) / r_prev * 100 if r_prev else 0.0,
     }
+
 
 def _headline(col, label, value, delta, note, delta_color="normal"):
     with col, st.container(border=True):
@@ -188,8 +192,7 @@ def render_landing(pages):
     st.divider()
 
     st.caption(
-        "**What this data can't show**\n\n"
-        + "\n".join(f"- {item}" for item in LIMITS)
+        "**What this data can't show**\n\n" + "\n".join(f"- {item}" for item in LIMITS)
     )
 
     st.caption(

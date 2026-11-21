@@ -6,19 +6,18 @@ readme = "README.md"
 authors = [
     { name = "rxsi1920", email = "preranapinakoppa192@gmail.com" }
 ]
-requires-python = ">=3.12"
+requires-python = ">=3.11,<3.12"
 dependencies = [
     "altair>=6.3.0",
     "bs4>=0.0.2",
-    "countrycode>=0.6.0",
     "gdown>=6.5.1",
     "kagglehub>=1.0.3",
     "openpyxl==3.1.5",
-    "pandas>=3.1.0",
+    "pandas>=3.0.5",
     "pdfplumber>=0.11.10",
     "plotly>=7.1.0",
     "pycountry>=26.2.16",
-    "streamlit>=1.66.1",
+    "streamlit>=1.63.0",
 ]
 
 [project.scripts]

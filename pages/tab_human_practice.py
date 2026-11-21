@@ -29,6 +29,7 @@ def load_tables() -> dict[str, pd.DataFrame]:
     validate(tables)
     return tables
 
+
 def part_heading(label: str, title: str, sections: str) -> None:
     """A part label that sits above the numbered section headers in the page's hierarchy."""
     st.divider()
@@ -38,6 +39,7 @@ def part_heading(label: str, title: str, sections: str) -> None:
         unsafe_allow_html=True,
     )
     st.caption(sections)
+
 
 def human_practice_tab() -> None:
     tables = load_tables()
@@ -81,7 +83,11 @@ def human_practice_tab() -> None:
         float(latest["share"]),
         latest["month"],
     )
-    part_heading("Part C", "The cost to business", "What the feedback loop adds to the price of training a model")
+    part_heading(
+        "Part C",
+        "The cost to business",
+        "What the feedback loop adds to the price of training a model",
+    )
     views.render_cost(tables["cost"], tables["ai_share"])
 
     views.render_limits()

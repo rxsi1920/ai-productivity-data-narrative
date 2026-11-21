@@ -10,22 +10,23 @@ from streamlit.testing.v1 import AppTest
 
 def _home():
     import streamlit as st
-
     from narrative.tabs.landing.tab import render_landing
 
     st.set_page_config(layout="wide")
-    pages = [st.Page(lambda: None, title=t, url_path=u) for t, u in [
-        ("Profitability", "profitability"),
-        ("Feedback loop and cognition", "feedback-loop"),
-        ("Moral degradation", "moral-degradation"),
-        ("Overall conclusion", "overall-conclusion"),
-    ]]
+    pages = [
+        st.Page(lambda: None, title=t, url_path=u)
+        for t, u in [
+            ("Profitability", "profitability"),
+            ("Feedback loop and cognition", "feedback-loop"),
+            ("Moral degradation", "moral-degradation"),
+            ("Overall conclusion", "overall-conclusion"),
+        ]
+    ]
     render_landing(pages)
 
 
 def _profitability():
     import streamlit as st
-
     from narrative.tabs.profitability.tab import profitability_tab
 
     st.set_page_config(layout="wide")
@@ -34,7 +35,6 @@ def _profitability():
 
 def _moral_degradation():
     import streamlit as st
-
     from narrative.tabs.moral_degradation.tab import moral_degradation_tab
 
     st.set_page_config(layout="wide")
@@ -43,14 +43,17 @@ def _moral_degradation():
 
 def _overall_conclusion():
     import streamlit as st
-
     from narrative.tabs.overall_conclusion.tab import overall_conclusion_tab
 
     st.set_page_config(layout="wide")
     overall_conclusion_tab()
 
 
-@pytest.mark.parametrize("page", [_home, _profitability, _moral_degradation, _overall_conclusion], ids=lambda f: f.__name__)
+@pytest.mark.parametrize(
+    "page",
+    [_home, _profitability, _moral_degradation, _overall_conclusion],
+    ids=lambda f: f.__name__,
+)
 def test_page_runs_without_error(page):
     app = AppTest.from_function(page, default_timeout=180).run()
     assert not app.exception, [e.message for e in app.exception]
