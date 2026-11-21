@@ -1,10 +1,10 @@
 import streamlit as st
 
-from .tabs.human_practice.tab import human_practice_tab
-from .tabs.landing.tab import render_landing
-from .tabs.moral_degradation.tab import *
-from .tabs.overall_conclusion.tab import overall_conclusion_tab
-from .tabs.profitability.tab import *
+from tabs.tab_human_practice import human_practice_tab
+from tabs.tab_landing import render_landing
+from tabs.tab_moral_degradation import *
+from tabs.tab_overall_conclusion import overall_conclusion_tab
+from tabs.tab_profitability import *
 
 APP_TITLE = "AI: Gains vs Hidden Costs"
 

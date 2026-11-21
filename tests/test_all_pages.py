@@ -69,8 +69,7 @@ def test_overall_conclusion_has_every_part():
 def test_moral_report_count_matches_home():
     # The moral answer and the Home KPI must quote the same number of 2025 incident reports.
     import pandas as pd
-
-    from narrative.utils import get_proc_data_dir
+    from src.utils import get_proc_data_dir
 
     reports = pd.read_csv(get_proc_data_dir() / "ai_reports.csv")
     published = pd.to_datetime(reports["date_published"], errors="coerce", utc=True)

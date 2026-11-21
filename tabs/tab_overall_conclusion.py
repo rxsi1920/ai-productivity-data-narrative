@@ -1,10 +1,8 @@
 import streamlit as st
+from src.story import GROUP_ANSWER, GROUP_QUESTION
 
-from narrative.story import GROUP_ANSWER, GROUP_QUESTION
-
-from ..human_practice import views
-from ..human_practice.tab import load_tables
-from ..moral_degradation.tab import (
+from .tab_human_practice import load_tables
+from .tab_moral_degradation import (
     ai_reports_data,
     frameworks_data,
     gov_trust_ipsos_data,
@@ -12,13 +10,17 @@ from ..moral_degradation.tab import (
     syco_study2_data,
     syco_study3_data,
 )
-from ..moral_degradation.views import (
+from src.views import (
+    render_answer_text,
+    render_decision,
+    render_rollout,
+    render_questions_and_changes,
     render_moral_decision,
     render_moral_questions_and_changes,
     render_moral_rollout,
     render_moral_summary,
 )
-from ..profitability.tab import render_decision_points as render_profitability_decision
+from .tab_profitability import render_decision_points as render_profitability_decision
 
 ANSWER_LABEL = "Elaborated answer"
 
@@ -45,7 +47,7 @@ def overall_conclusion_tab():
         st.markdown(PROFITABILITY_ANSWER)
 
     st.caption("Feedback loop and cognition")
-    views.render_answer_text(tables, label=ANSWER_LABEL)
+    render_answer_text(tables, label=ANSWER_LABEL)
 
     st.caption("Moral degradation")
     render_moral_summary(ai_reports_data, label=ANSWER_LABEL)
@@ -56,10 +58,10 @@ def overall_conclusion_tab():
     render_profitability_decision()
 
     st.header("Decision points: Feedback loop and cognition")
-    views.render_decision(tables)
+    render_decision(tables)
     st.divider()
-    views.render_rollout(tables)
-    views.render_questions_and_changes()
+    render_rollout(tables)
+    render_questions_and_changes()
 
     st.header("Decision points: Moral Degradation")
     render_moral_decision(

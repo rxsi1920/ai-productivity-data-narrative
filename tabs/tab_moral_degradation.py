@@ -1,7 +1,7 @@
-from narrative.story import GROUP_QUESTION
-from narrative.utils import *
+from src.story import GROUP_QUESTION
+from src.utils import *
 
-from .views import *
+from src.views import *
 
 DATA_ROOT = get_proc_data_dir()
 RAW_ROOT = get_raw_data_dir()

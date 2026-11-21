@@ -5,10 +5,9 @@ from __future__ import annotations
 import pandas as pd
 import streamlit as st
 
-from narrative.human_practice_data import BUILDERS, PROCESSED, read_processed, validate
-from narrative.story import GROUP_QUESTION
-
-from . import views
+from src import views
+from src.data import BUILDERS, PROCESSED, read_processed, validate
+from src.story import GROUP_QUESTION
 
 PAGE_QUESTION = "What cost does the AI efficiency we are gaining now have on the expertise that tomorrow's workers and models need?"
 USER_STORY = (

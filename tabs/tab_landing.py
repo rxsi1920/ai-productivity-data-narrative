@@ -1,8 +1,7 @@
 import pandas as pd
 import streamlit as st
-
-from narrative.story import GROUP_ANSWER, GROUP_QUESTION
-from narrative.utils import get_proc_data_dir
+from src.story import GROUP_ANSWER, GROUP_QUESTION
+from src.utils import get_proc_data_dir
 
 DATA = get_proc_data_dir()
 
@@ -67,7 +66,7 @@ LIMITS = [
     ),
 ]
 
-from ..moral_degradation.views import (
+from src.views import (
     LAST_REFRESH as MORAL_REFRESH,  # same date as the Moral degradation page
 )
 

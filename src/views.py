@@ -1,9 +1,8 @@
-############################################################################################################################
-# --------------------------------------- MORAL DEGRADATION ----------------------------------------------------------------
-############################################################################################################################
+from __future__ import annotations
 
 import ast
 import functools
+import math
 import re
 
 import altair as alt
@@ -12,6 +11,11 @@ import pandas as pd
 import plotly.express as px
 import pycountry
 import streamlit as st
+from src.data import CONTEXT_NOTE, WILDAI_COMMIT, WORKFORCE_COMMIT
+
+############################################################################################################################
+# --------------------------------------- MORAL DEGRADATION ----------------------------------------------------------------
+############################################################################################################################
 
 
 def _shares_line(counts) -> str:
@@ -2441,17 +2445,6 @@ def render_moral_questions_and_changes() -> None:
 """Renderers for the human-practice page: the web-data and model-training charts (WildAI and Schaeffer et al.),
 the workforce charts, and the page's answer, decision, limits and sources blocks.  Each view sits in a keyed
 container and carries its own title, unit, source, latest-observation caption, controls, outputs and a CSV download."""
-
-from __future__ import annotations
-
-import math
-
-import altair as alt
-import numpy as np
-import pandas as pd
-import streamlit as st
-
-from narrative.human_practice_data import CONTEXT_NOTE, WILDAI_COMMIT, WORKFORCE_COMMIT
 
 HUMAN = "#2a78d6"
 AI = "#eb6834"

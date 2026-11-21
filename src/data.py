@@ -1,7 +1,9 @@
-############################################################################################################################
-# --------------------------------------- MORAL DEGRADATION ----------------------------------------------------------------
-############################################################################################################################
+from __future__ import annotations
 
+import argparse
+import hashlib
+import json
+import math
 import re
 import shutil
 import sys
@@ -15,7 +17,13 @@ import pdfplumber
 import requests
 from bs4 import BeautifulSoup
 
-from narrative import utils
+import utils
+from utils import *
+
+############################################################################################################################
+# --------------------------------------- MORAL DEGRADATION ----------------------------------------------------------------
+############################################################################################################################
+
 
 RAW_ROOT = utils.get_raw_data_dir()
 PROC_ROOT = utils.get_proc_data_dir()
@@ -710,19 +718,6 @@ and ``data/processed/human_practice/MANIFEST.json`` records the SHA-256 of each 
     uv run python -m narrative.human_practice_data --validate   # validate the existing processed files
 """
 
-from __future__ import annotations
-
-import argparse
-import hashlib
-import json
-import math
-import sys
-from pathlib import Path
-
-import pandas as pd
-
-from narrative import utils
-
 RAW = utils.get_raw_data_dir() / "human_practice"
 PROCESSED = utils.get_proc_data_dir() / "human_practice"
 WILDAI, SCHAEFFER, WORKFORCE = RAW / "wildai", RAW / "schaeffer", RAW / "workforce"
@@ -1222,10 +1217,6 @@ columns. Column names are kept so every figure on screen can be traced back to t
 All further calculations (growth rates, indices, ratios) are done in app.py and shown in each
 chart's ⓘ table and in the Appendix. Re-running on unchanged raw files gives identical output.
 """
-
-import pandas as pd
-
-from narrative.utils import *
 
 RAW, OUT = get_raw_data_dir(), get_proc_data_dir()
 OUT.mkdir(parents=True, exist_ok=True)

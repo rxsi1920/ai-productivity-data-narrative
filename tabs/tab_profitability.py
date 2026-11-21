@@ -15,8 +15,7 @@ import math
 import pandas as pd
 import plotly.graph_objects as go
 import streamlit as st
-
-from narrative.utils import *
+from src.utils import *
 
 DATA = get_proc_data_dir()
 LAST_REFRESH = "22 Oct 2026"  # date the source files in data/raw were downloaded
