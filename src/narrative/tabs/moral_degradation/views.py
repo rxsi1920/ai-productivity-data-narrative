@@ -1,7 +1,6 @@
 import ast
 import functools
 import re
-from datetime import date
 
 import altair as alt
 import numpy as np
@@ -81,7 +80,9 @@ def _source(*ids: str, url: str | None = None) -> str:
 
 def _footer(unit: str, frame=None) -> None:
     st.caption(f"Unit: {unit}", text_alignment="center")
-    latest = _latest_date(frame, _DATE_COLUMNS) if isinstance(frame, pd.DataFrame) else None
+    latest = (
+        _latest_date(frame, _DATE_COLUMNS) if isinstance(frame, pd.DataFrame) else None
+    )
     st.caption(
         f"{DATE_LABEL}: {latest}" if latest else f"{DATE_LABEL}: not applicable",
         text_alignment="center",
@@ -616,7 +617,9 @@ def render_human_validation_scores(data: pd.DataFrame) -> None:
             text_alignment="center",
         )
         _footer("score (0-10)", data)
-        _download(selected_rows, "human_validation_download", "human_validation_scores.csv")
+        _download(
+            selected_rows, "human_validation_download", "human_validation_scores.csv"
+        )
 
 
 @_view("judge_agreement_heatmap")
@@ -1982,7 +1985,7 @@ def render_syco_scenario_effects(
                 titleColor=muted,
             )
         )
-        
+
     def spread(label):
         sub = effects[
             (effects["outcome"] == label) & (effects["scenario"] != "All scenarios")
@@ -2008,9 +2011,13 @@ def render_syco_scenario_effects(
     with st.container():
         left, right = st.columns([1.5, 1], gap="small")
         with left:
-            st.altair_chart(panel("rightorwrong", True), use_container_width=True, theme=None)
+            st.altair_chart(
+                panel("rightorwrong", True), use_container_width=True, theme=None
+            )
         with right:
-            st.altair_chart(panel("repair_score", False), use_container_width=True, theme=None)
+            st.altair_chart(
+                panel("repair_score", False), use_container_width=True, theme=None
+            )
 
         st.caption(caption, text_alignment="center")
         _footer("points on a 1 to 7 scale", df)
@@ -2152,15 +2159,26 @@ def render_moral_decision(
             return "data not available"
 
     def syco() -> str:
-        s2 = syco_study2_data["is_syco"].astype(str).str.lower().isin(["true", "1", "1.0"])
+        s2 = (
+            syco_study2_data["is_syco"]
+            .astype(str)
+            .str.lower()
+            .isin(["true", "1", "1.0"])
+        )
         cond = syco_study3_data["Condition"].astype(str).str.lower()
         s3 = cond.str.contains("syco") & ~cond.str.contains("non")
 
         def gap(df, mask, col):
             return df.loc[mask, col].mean() - df.loc[~mask, col].mean()
 
-        right = [gap(syco_study2_data, s2, "rightorwrong"), gap(syco_study3_data, s3, "rightorwrong")]
-        repair = [gap(syco_study2_data, s2, "repair_score"), gap(syco_study3_data, s3, "repair_score")]
+        right = [
+            gap(syco_study2_data, s2, "rightorwrong"),
+            gap(syco_study3_data, s3, "rightorwrong"),
+        ]
+        repair = [
+            gap(syco_study2_data, s2, "repair_score"),
+            gap(syco_study3_data, s3, "repair_score"),
+        ]
         return (
             f"After chatting with a flattering AI, people rated themselves "
             f"{sum(right) / 2:+.2f} points more in the right and "
@@ -2180,7 +2198,9 @@ def render_moral_decision(
 
     def governance() -> str:
         fw = frameworks_data
-        binding = fw["fr1_enforceability"].eq("Binding") | fw["fr2_enforceability"].eq("Binding")
+        binding = fw["fr1_enforceability"].eq("Binding") | fw["fr2_enforceability"].eq(
+            "Binding"
+        )
         share = binding.groupby(fw["indicator"]).mean().sort_values()
         return (
             f"Share of {fw['country'].nunique()} countries with a binding framework: "
@@ -2189,7 +2209,9 @@ def render_moral_decision(
         )
 
     def incidents() -> str:
-        dates = pd.to_datetime(ai_reports_data["date_published"], errors="coerce").dropna()
+        dates = pd.to_datetime(
+            ai_reports_data["date_published"], errors="coerce"
+        ).dropna()
         per_year = dates.dt.year.value_counts().sort_index()
         per_year = per_year[per_year.index < pd.Timestamp.now().year]
         return (
@@ -2207,38 +2229,40 @@ def render_moral_decision(
         )
 
     st.subheader("Where to prioritise moral changes?")
-    df = pd.DataFrame([
-        {
-            "Area": "Assistants that talk to customers or staff",
-            "Lean towards": "Test for flattery before launch; keep human review on advice",
-            "Evidence on this page": safe(syco),
-            "Not settled": "One conversation, lab setting; lasting effects are untested.",
-        },
-        {
-            "Area": "Choosing and approving models",
-            "Lean towards": "Human-validated, independent testing, not a model grading itself",
-            "Evidence on this page": safe(validation),
-            "Not settled": "Constructed scenarios, not real decisions; AI-judge self-preference is suggestive only.",
-        },
-        {
-            "Area": "Compliance and governance",
-            "Lean towards": "Write internal rules where national rules are thin; Lobby the government to make rule changes.",
-            "Evidence on this page": safe(governance),
-            "Not settled": "Rules on paper are not enforcement; state-level rules are not counted.",
-        },
-        {
-            "Area": "Incident monitoring",
-            "Lean towards": "Log and review incidents, starting with the common failure types",
-            "Evidence on this page": safe(incidents),
-            "Not settled": "Self-reported and media-driven; more reports may mean more attention, not more harm.",
-        },
-        {
-            "Area": "Public trust and communication",
-            "Lean towards": "Show safeguards first, then ask for trust",
-            "Evidence on this page": safe(trust),
-            "Not settled": "Online samples under-represent people with less access; trust is not proof that safeguards work.",
-        },
-    ])
+    df = pd.DataFrame(
+        [
+            {
+                "Area": "Assistants that talk to customers or staff",
+                "Lean towards": "Test for flattery before launch; keep human review on advice",
+                "Evidence on this page": safe(syco),
+                "Not settled": "One conversation, lab setting; lasting effects are untested.",
+            },
+            {
+                "Area": "Choosing and approving models",
+                "Lean towards": "Human-validated, independent testing, not a model grading itself",
+                "Evidence on this page": safe(validation),
+                "Not settled": "Constructed scenarios, not real decisions; AI-judge self-preference is suggestive only.",
+            },
+            {
+                "Area": "Compliance and governance",
+                "Lean towards": "Write internal rules where national rules are thin; Lobby the government to make rule changes.",
+                "Evidence on this page": safe(governance),
+                "Not settled": "Rules on paper are not enforcement; state-level rules are not counted.",
+            },
+            {
+                "Area": "Incident monitoring",
+                "Lean towards": "Log and review incidents, starting with the common failure types",
+                "Evidence on this page": safe(incidents),
+                "Not settled": "Self-reported and media-driven; more reports may mean more attention, not more harm.",
+            },
+            {
+                "Area": "Public trust and communication",
+                "Lean towards": "Show safeguards first, then ask for trust",
+                "Evidence on this page": safe(trust),
+                "Not settled": "Online samples under-represent people with less access; trust is not proof that safeguards work.",
+            },
+        ]
+    )
     st.table(df)
 
 
@@ -2257,26 +2281,48 @@ def render_moral_rollout(
             return f"data not available ({type(e).__name__}: {e})"
 
     def syco_gaps() -> tuple[float, float]:
-        s2 = syco_study2_data["is_syco"].astype(str).str.lower().isin(["true", "1", "1.0"])
+        s2 = (
+            syco_study2_data["is_syco"]
+            .astype(str)
+            .str.lower()
+            .isin(["true", "1", "1.0"])
+        )
         cond = syco_study3_data["Condition"].astype(str).str.lower()
         s3 = cond.str.contains("syco") & ~cond.str.contains("non")
 
         def gap(df, mask, col):
             return df.loc[mask, col].mean() - df.loc[~mask, col].mean()
 
-        right = (gap(syco_study2_data, s2, "rightorwrong") + gap(syco_study3_data, s3, "rightorwrong")) / 2
-        repair = (gap(syco_study2_data, s2, "repair_score") + gap(syco_study3_data, s3, "repair_score")) / 2
+        right = (
+            gap(syco_study2_data, s2, "rightorwrong")
+            + gap(syco_study3_data, s3, "rightorwrong")
+        ) / 2
+        repair = (
+            gap(syco_study2_data, s2, "repair_score")
+            + gap(syco_study3_data, s3, "repair_score")
+        ) / 2
         return right, repair
 
     def binding_share() -> float:
         fw = frameworks_data
-        return (fw["fr1_enforceability"].eq("Binding") | fw["fr2_enforceability"].eq("Binding")).mean()
+        return (
+            fw["fr1_enforceability"].eq("Binding")
+            | fw["fr2_enforceability"].eq("Binding")
+        ).mean()
 
     def report_growth() -> tuple[int, int, float]:
-        dates = pd.to_datetime(ai_reports_data["date_published"], errors="coerce").dropna()
+        dates = pd.to_datetime(
+            ai_reports_data["date_published"], errors="coerce"
+        ).dropna()
         per_year = dates.dt.year.value_counts().sort_index()
-        per_year = per_year[per_year.index < pd.Timestamp.now().year]  # drop partial current year
-        return per_year.index[-1], per_year.iloc[-1], per_year.iloc[-1] / per_year.iloc[-2] - 1
+        per_year = per_year[
+            per_year.index < pd.Timestamp.now().year
+        ]  # drop partial current year
+        return (
+            per_year.index[-1],
+            per_year.iloc[-1],
+            per_year.iloc[-1] / per_year.iloc[-2] - 1,
+        )
 
     def trust_series() -> pd.Series:
         g = gov_trust_ipsos_data
@@ -2284,7 +2330,11 @@ def render_moral_rollout(
         return g.set_index("Country")["Agree"].astype(float)
 
     def model_scores() -> pd.Series:
-        return human_validation_data.groupby("evaluated_model_name")["human_mean_score"].mean().sort_values()
+        return (
+            human_validation_data.groupby("evaluated_model_name")["human_mean_score"]
+            .mean()
+            .sort_values()
+        )
 
     # --- Option 1: leave it to national regulation ---
     def reg_for() -> str:
@@ -2332,26 +2382,28 @@ def render_moral_rollout(
         "says for and against each option. It is an interpretation, not a finding of any one source."
     )
 
-    df = pd.DataFrame([
-        {
-            "Option": "Leave it to national regulation",
-            "What supports it": safe(reg_for),
-            "What argues against it": safe(reg_against),
-        },
-        {
-            "Option": "Leave it to companies and voluntary safeguards",
-            "What supports it": safe(self_for),
-            "What argues against it": safe(self_against),
-        },
-        {
-            "Option": "Binding rules plus independent, human-validated testing",
-            "What supports it": safe(combo_for),
-            "What argues against it": (
-                "This evidence does not test whether the combination works, "
-                "or what it costs. That is an open question."
-            ),
-        },
-    ])
+    df = pd.DataFrame(
+        [
+            {
+                "Option": "Leave it to national regulation",
+                "What supports it": safe(reg_for),
+                "What argues against it": safe(reg_against),
+            },
+            {
+                "Option": "Leave it to companies and voluntary safeguards",
+                "What supports it": safe(self_for),
+                "What argues against it": safe(self_against),
+            },
+            {
+                "Option": "Binding rules plus independent, human-validated testing",
+                "What supports it": safe(combo_for),
+                "What argues against it": (
+                    "This evidence does not test whether the combination works, "
+                    "or what it costs. That is an open question."
+                ),
+            },
+        ]
+    )
     st.table(df)
     st.caption(
         "Limits: the sycophancy studies are single conversations in a lab, the benchmarks use "

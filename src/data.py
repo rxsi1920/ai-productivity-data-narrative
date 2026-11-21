@@ -118,7 +118,9 @@ def transform1() -> Path:
     if AI_INCIDENTS_GMF_RAW.exists():
         shutil.copyfile(AI_INCIDENTS_GMF_RAW, AI_INCIDENTS_GMF_PROC)
     else:
-        print(f"Missing file: {AI_INCIDENTS_GMF_RAW} (export it from https://incidentdatabase.ai/taxonomies/gmf/)")
+        print(
+            f"Missing file: {AI_INCIDENTS_GMF_RAW} (export it from https://incidentdatabase.ai/taxonomies/gmf/)"
+        )
 
 
 def validate1() -> Path:

@@ -9,7 +9,6 @@ GROUP_QUESTION = "Do AI's measured productivity gains outweigh the hidden costs 
 
 def _feedback_loop_page():
     import streamlit as st
-
     from narrative.tabs.human_practice.tab import human_practice_tab
 
     st.set_page_config(layout="wide")

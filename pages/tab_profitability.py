@@ -18,7 +18,6 @@ import streamlit as st
 
 from narrative.utils import *
 
-
 DATA = get_proc_data_dir()
 LAST_REFRESH = "22 Oct 2026"  # date the source files in data/raw were downloaded
 
@@ -800,10 +799,15 @@ h_cind = record(
     "Pearson r across 6 EU27 industries; productivity = real GVA ÷ hours worked, 2025 ÷ 2021 − 1.",
 )
 
+
 def build_t_prod() -> str:
     oph = ilo("ilo_oph").pivot(index="region", columns="year", values="value")
-    w_pre = round(((oph.loc["World", 2019] / oph.loc["World", 2015]) ** (1 / 4) - 1) * 100, 2)
-    w_post = round(((oph.loc["World", 2025] / oph.loc["World", 2022]) ** (1 / 3) - 1) * 100, 2)
+    w_pre = round(
+        ((oph.loc["World", 2019] / oph.loc["World", 2015]) ** (1 / 4) - 1) * 100, 2
+    )
+    w_post = round(
+        ((oph.loc["World", 2025] / oph.loc["World", 2022]) ** (1 / 3) - 1) * 100, 2
+    )
 
     CPs, COE = fred("cp"), fred("coe")
     base = pd.Timestamp(AI_ERA_START)
@@ -818,10 +822,8 @@ def build_t_prod() -> str:
     )
 
     with st.container(key="prof_answer", border=True):
-        st.markdown(
-            t_prod,
-            unsafe_allow_html=True
-        )
+        st.markdown(t_prod, unsafe_allow_html=True)
+
 
 # --------------------------------------------------------------------------------------
 # Shared chart helpers (bump chart, scatter with fit, correlation text)
@@ -1098,10 +1100,11 @@ BG, PANEL, EDGE, GRID, TEXT, SUB = (
 )
 H = 400
 
+
 # deleted some formatting that is overruled by Manrope styling
 def inject_css():
     st.markdown(
-    f"""
+        f"""
     <style>
     .block-container {{padding-top: 2.6rem; padding-bottom: 1.2rem; max-width: 1640px;}}
     div[data-testid="stVerticalBlock"] {{gap: 0.6rem;}}
@@ -1136,8 +1139,8 @@ def inject_css():
     .foot a {{color: #2563EB;}}
     </style>
     """,
-    unsafe_allow_html=True,
-)
+        unsafe_allow_html=True,
+    )
 
 
 def mini(
@@ -2643,8 +2646,12 @@ def render_decision_points() -> None:
     """
     oph = ilo("ilo_oph").pivot(index="region", columns="year", values="value")
     # Rounded to 2 dp first, exactly as prod_reg is on the Profitability page, so the shown figures match.
-    w_pre = round(((oph.loc["World", 2019] / oph.loc["World", 2015]) ** (1 / 4) - 1) * 100, 2)
-    w_post = round(((oph.loc["World", 2025] / oph.loc["World", 2022]) ** (1 / 3) - 1) * 100, 2)
+    w_pre = round(
+        ((oph.loc["World", 2019] / oph.loc["World", 2015]) ** (1 / 4) - 1) * 100, 2
+    )
+    w_post = round(
+        ((oph.loc["World", 2025] / oph.loc["World", 2022]) ** (1 / 3) - 1) * 100, 2
+    )
 
     base = pd.Timestamp(AI_ERA_START)
     CPs, COE = fred("cp"), fred("coe")

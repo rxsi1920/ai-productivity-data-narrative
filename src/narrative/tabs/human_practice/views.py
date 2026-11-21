@@ -721,7 +721,9 @@ def _relative_gap(entry: pd.DataFrame) -> tuple[float, float, float]:
 
 
 # ----------------------------------------------------------------------------- answer
-def render_answer_text(tables: dict[str, pd.DataFrame], label: str = "Our answer") -> None:
+def render_answer_text(
+    tables: dict[str, pd.DataFrame], label: str = "Our answer"
+) -> None:
     evidence = tables["evidence"]
     out = evidence[evidence["panel"] == "output"]
     gains = int((out["direction"] == "gain").sum())

@@ -63,12 +63,20 @@ def overall_conclusion_tab():
 
     st.header("Decision points: Moral Degradation")
     render_moral_decision(
-        ai_reports_data, human_validation_data, frameworks_data,
-        gov_trust_ipsos_data, syco_study2_data, syco_study3_data,
+        ai_reports_data,
+        human_validation_data,
+        frameworks_data,
+        gov_trust_ipsos_data,
+        syco_study2_data,
+        syco_study3_data,
     )
     st.divider()
     render_moral_rollout(
-        ai_reports_data, human_validation_data, frameworks_data,
-        gov_trust_ipsos_data, syco_study2_data, syco_study3_data,
+        ai_reports_data,
+        human_validation_data,
+        frameworks_data,
+        gov_trust_ipsos_data,
+        syco_study2_data,
+        syco_study3_data,
     )
     render_moral_questions_and_changes()
